@@ -1,0 +1,6 @@
+{
+    // Digital IDE (sterben.fpga-support) linter 配置
+    // 内置 LSP 语义分析会对合法 Verilog（前向引用、非 ANSI parameter 位置）误报
+    // 将 linter.mode 设为 "shutdown" 以彻底关闭，避免假报错
+    "digital-ide.function.lsp.linter.mode": "shutdown"
+}
