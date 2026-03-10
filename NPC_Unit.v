@@ -15,7 +15,7 @@ always @(*) begin
         `NPC_PLUS4: NPC = PC + 4; // default
         `NPC_BRANCH: NPC = PC + IMM; // branch
         `NPC_JUMP: NPC = PC + IMM; // jal
-        `NPC_JALR: NPC = aluout & ~32'h1; // jalr: mask LSB per RISC-V spec
+        `NPC_JALR: NPC = aluout & ~32'h1; // jalr: make sure the last bit is 0
         default: NPC = PC + 4;
     endcase 
 end    

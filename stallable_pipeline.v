@@ -30,13 +30,12 @@ always @(posedge clk or posedge rst) begin
 end
 
 // ============================================================
-// 流水线级间寄存器有效位
+// 流水线级间寄存器有效位（4个，对应4个级间寄存器）
 // ============================================================
-reg  pipe1_valid; // IF
-reg  pipe2_valid; // ID
-reg  pipe3_valid; // EX
-reg  pipe4_valid; // MEM
-reg  pipe5_valid; // WB
+reg  pipe1_valid; // IF/ID  寄存器
+reg  pipe2_valid; // ID/EX  寄存器
+reg  pipe3_valid; // EX/MEM 寄存器
+reg  pipe4_valid; // MEM/WB 寄存器
 
 // ============================================================
 // IF 级（Stage 1）：接收指令（datain[31:0]）和 PC（datain[63:32]）
@@ -246,18 +245,16 @@ reg        mem_wb_regwrite;
 
 wire pipe4_allowin;
 wire pipe4_ready_go;
-wire pipe4_to_pipe5_valid;
 
-assign pipe4_ready_go      = 1'b1;
-assign pipe4_allowin       = !pipe4_valid || (pipe4_ready_go && pipe5_allowin);
-assign pipe4_to_pipe5_valid = pipe4_valid && pipe4_ready_go;
+assign pipe4_ready_go = 1'b1;
+assign pipe4_allowin  = !pipe4_valid || (pipe4_ready_go && out_allow);
 
 always @(posedge clk or posedge rst) begin
 	if (rst) begin
-		pipe4_valid        <= 1'b0;
-		mem_wb_result      <= 32'b0;
-		mem_wb_rd          <= 5'b0;
-		mem_wb_regwrite    <= 1'b0;
+		pipe4_valid     <= 1'b0;
+		mem_wb_result   <= 32'b0;
+		mem_wb_rd       <= 5'b0;
+		mem_wb_regwrite <= 1'b0;
 	end else begin
 		if (pipe4_allowin)
 			pipe4_valid <= pipe3_to_pipe4_valid;
@@ -270,26 +267,12 @@ always @(posedge clk or posedge rst) begin
 end
 
 // ============================================================
-// WB 级（Stage 5）：写回寄存器堆，输出结果
+// WB（Stage 5 输出）：从 MEM/WB 寄存器直接写回，无独立 valid 寄存器
 // ============================================================
-wire pipe5_allowin;
-wire pipe5_ready_go;
 
-assign pipe5_ready_go = 1'b1;
-assign pipe5_allowin  = !pipe5_valid || (pipe5_ready_go && out_allow);
-
-always @(posedge clk or posedge rst) begin
-	if (rst) begin
-		pipe5_valid <= 1'b0;
-	end else begin
-		if (pipe5_allowin)
-			pipe5_valid <= pipe4_to_pipe5_valid;
-	end
-end
-
-// 写回寄存器堆（同步写，WB级有效且RegWrite有效且rd非0）
+// 写回寄存器堆（MEM/WB 寄存器有效时同步写）
 always @(posedge clk) begin
-	if (!rst && pipe5_valid && mem_wb_regwrite && (mem_wb_rd != 5'b0))
+	if (!rst && pipe4_valid && mem_wb_regwrite && (mem_wb_rd != 5'b0))
 		regfile[mem_wb_rd] <= mem_wb_result;
 end
 
@@ -300,7 +283,7 @@ end
 // dataout[37]    = RegWrite
 // 其余位为 0
 // ============================================================
-assign validout       = pipe5_valid && pipe5_ready_go;
-assign dataout        = {{(WIDTH-38){1'b0}}, mem_wb_regwrite, mem_wb_rd, mem_wb_result};
+assign validout = pipe4_valid && pipe4_ready_go;
+assign dataout  = {{(WIDTH-38){1'b0}}, mem_wb_regwrite, mem_wb_rd, mem_wb_result};
 
 endmodule

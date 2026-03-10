@@ -7,10 +7,10 @@ module dm(
 );
     reg [31:0] RAM [127:0];
 
-    integer _i;
+    integer i;
     initial begin
-        for (_i = 0; _i < 128; _i = _i + 1)
-            RAM[_i] = 32'b0;
+        for (i = 0; i < 128; i = i + 1)
+            RAM[i] = 32'b0;
     end
 
     // 同步写

@@ -45,7 +45,7 @@ always @(*) begin
         `ALUOp_blt:  C = {31'b0, (A >= B)};                  // Zero=1 when A<B (signed)
         `ALUOp_bge:  C = {31'b0, (A < B)};                   // Zero=1 when A>=B (signed)
         `ALUOp_bltu: C = {31'b0, ($unsigned(A) >= $unsigned(B))}; // Zero=1 when A<B (unsigned)
-        `ALUOp_bgeu: C = {31'b0, ($unsigned(A) <  $unsigned(B))}; // Zero=1 when A>=B (unsigned)
+        `ALUOp_bgeu: C = {31'b0, ($unsigned(A) < $unsigned(B))};  // Zero=1 when A>=B (unsigned)
         default:     C = 32'b0;
     endcase
     Zero = (C == 0) ? 1 : 0;

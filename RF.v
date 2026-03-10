@@ -2,7 +2,6 @@ module RF(
     input clk,
     input rstn,
     input RFWr,
-    input [15:0] sw_i,
     input [4:0] A1,A2,A3,
     input [31:0] WD,
     output [31:0] RD1,RD2
@@ -14,7 +13,7 @@ module RF(
         if(!rstn) begin
             for(i=0;i<32;i=i+1) rf[i] <= i;
         end
-        else if(RFWr && (!sw_i[1]) && (A3 != 5'd0)) rf[A3] <= WD; // 正常模式下且RegWrite有效，写rd
+        else if(RFWr && (A3 != 5'd0)) rf[A3] <= WD; // 正常模式下且RegWrite有效，写rd
     end
 
     // 读rs1和rs2
