@@ -4,7 +4,7 @@ module RF(
     input RFWr,
     input [4:0] A1,A2,A3,
     input [31:0] WD,
-    output [31:0] RD1,RD2
+    output reg [31:0] RD1,RD2
 );
     reg [31:0] rf[31:0]; // reg [31:0]为数据类型，rf[31:0]为数组，32位宽，32个寄存器
 
@@ -17,7 +17,16 @@ module RF(
     end
 
     // 读rs1和rs2
-    assign RD1 = (A1 != 0) ? rf[A1] : 0;
-    assign RD2 = (A2 != 0) ? rf[A2] : 0;
+    always @(negedge clk or negedge rstn) begin
+        if(!rstn) begin
+            RD1 <= 0;
+            RD2 <= 0;
+        end
+        else begin
+            RD1 <= (A1 != 0) ? rf[A1] : 0;
+            RD2 <= (A2 != 0) ? rf[A2] : 0;
+        end
+    end
+    
 
 endmodule

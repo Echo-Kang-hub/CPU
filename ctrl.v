@@ -78,14 +78,6 @@ wire i_auipc  = utype & ~Op[5]; // auipc 0010111
 assign RegWrite = rtype | itype_r | itype_l | i_jal | i_jalr | i_lui | i_auipc;
 assign MemWrite = stype;
 
-// ---- EXTOp（one-hot，与EXT.v对应）----
-// EXTOp[5]=ITYPE_SHAMT, [4]=ITYPE, [3]=STYPE, [2]=BTYPE, [1]=UTYPE, [0]=JTYPE
-assign EXTOp[5] = itype_shamt;
-assign EXTOp[4] = itype_l | (itype_r & ~itype_shamt) | i_jalr;
-assign EXTOp[3] = stype;
-assign EXTOp[2] = btype;
-assign EXTOp[1] = i_lui | i_auipc;
-assign EXTOp[0] = i_jal;
 
 // ---- ALUOp（用always块保证覆盖所有指令）----
 // 编码与alu.v中define一致：
