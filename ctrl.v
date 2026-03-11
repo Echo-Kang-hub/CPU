@@ -9,7 +9,6 @@ module ctrl(
     output reg [4:0] ALUOp,
     output [2:0] NPCOp,
     output ALUSrc,
-    output ALUSrcA,  // A端来源：0=RD1, 1=PC（用于auipc）
     output [2:0] DMType,
     output [1:0] WDSel // MemtoReg: 00=aluout 01=mem 10=PC+4 11=imm(lui)
 );
@@ -111,9 +110,8 @@ assign NPCOp[0] = btype & Zero; // 分支条件成立（Zero由ALU根据分支�
 assign NPCOp[1] = i_jal;
 assign NPCOp[2] = i_jalr;
 
-// ---- ALUSrc / ALUSrcA ----
+// ---- ALUSrc ----
 assign ALUSrc  = itype_r | itype_l | stype | i_jalr | i_lui | i_auipc; // B来自立即数
-assign ALUSrcA = i_auipc; // A来自PC（auipc: PC + uimm<<12）
 
 // ---- WDSel ----
 // 00=aluout, 01=mem(load), 10=PC+4(jal/jalr), 11=immout(lui)

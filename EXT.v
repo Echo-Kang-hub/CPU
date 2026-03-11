@@ -1,3 +1,5 @@
+// todo：有符号数和无符号数的区分
+
 // 立即数扩展
 `define EXT_CTRL_ITYPE_SHAMT 6'b100000
 `define EXT_CTRL_ITYPE 6'b010000

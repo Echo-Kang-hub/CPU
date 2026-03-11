@@ -1,7 +1,9 @@
 ﻿// 五级流水线 RISC-V CPU
 // I0: LUI/AUIPC；
 // I3: ADDI/SLTI/SLTIU/XORI/ORI/ANDI/SLLI/SRLI/SRAI
+// I4: ADD/SUB/SLL/SLT/SLTU/XOR/SRL/SRA/OR/AND
 
+// todo：NPCOp的替换或其他
 
 module SCPU(
     input  clk,
@@ -35,10 +37,8 @@ module SCPU(
 
     // NPC generation: branch/jal/jalr
     // NPCOp from ctrl (ID stage); aluout forwarded from EX/MA register
-    wire [2:0] NPCOp;
-
-    NPC_Unit U_NPC(
-        .PC(PC), .NPCOp(NPCOp), .IMM(immout), .aluout(MA_aluout),
+    PC_mux U_PC_mux(
+        .branch(branch), .jump(jump), .PC(PC), .IMM(MA_pcimm), .aluout(MA_aluout),
         .NPC(NPC)
     );
 
@@ -62,9 +62,9 @@ module SCPU(
         end 
         else begin
             if (IF_ID_allowin) begin
-                IF_ID_valid <= 1'b1;        // IF 级始终有效
-                IF_ID_pc    <= PC;          // 锁存本拍 PC（AUIPC 等需要）
-                IF_ID_instr <= inst_in;     // 锁存 IM 组合输出的指令
+                IF_ID_valid <= 1'b1;  
+                IF_ID_pc    <= PC;          
+                IF_ID_instr <= inst_in;    
             end
         end
     end
@@ -79,7 +79,7 @@ module SCPU(
 
     // to ctrl 
     wire [6:0]  Op      = instr[6:0];
-    wire [6:0]  Funct7  = instr[31:25]; // add/sub/sll/slt/sltu/xor/srl/sra/or/and 10
+    wire [6:0]  Funct7  = instr[31:25];
     wire [2:0]  Funct3  = instr[14:12];
 
     // to RF
@@ -93,7 +93,7 @@ module SCPU(
 
 
     // Control signals
-    wire ID_RegWrite, ID_MemWrite, ID_ALUSrc, ID_ALUSrcA;
+    wire ID_RegWrite, ID_MemWrite, ID_ALUSrc;
     wire [4:0]  ID_ALUOp;
     wire [2:0]  ID_DMType;
     wire [1:0]  ID_WDSel;
@@ -131,7 +131,6 @@ module SCPU(
     // from ctrl
     reg [4:0]  ID_EX_ALUOp;
     reg        ID_EX_ALUSrc;
-    reg        ID_EX_ALUSrcA;   // AUIPC: A端选PC
     reg        ID_EX_RegWrite;
     reg [1:0]  ID_EX_WDSel;
     reg        ID_EX_MemWrite;
@@ -273,7 +272,7 @@ module SCPU(
     reg EX_MA_Zero;
     
     // from ID/EX
-    reg [31:0] EX_MA_imm;      // LUI 需要：WDSel=11 时写回立即数
+    reg [31:0] EX_MA_imm;  // LUI 需要：WDSel=11 时写回立即数
     reg [31:0] EX_MA_RD2; // for store
     reg [4:0]  EX_MA_rd;
     // ctrl from ID/EX
@@ -345,7 +344,7 @@ module SCPU(
     wire [31:0] MA_aluout  = EX_MA_aluout;
     wire [31:0] MA_RD2     = EX_MA_RD2;
 
-    // forwarded for WB
+    // to WB_mux
     wire [31:0] MA_imm     = EX_MA_imm;
     wire [31:0] MA_pc4     = EX_MA_pc4;
     wire [4:0]  MA_rd      = EX_MA_rd;
@@ -355,6 +354,8 @@ module SCPU(
     wire [1:0]  MA_WDSel   = EX_MA_WDSel;
     wire        MA_MemWrite = EX_MA_MemWrite;
     wire [2:0]  MA_DMType  = EX_MA_DMType;
+
+
 
     assign mem_w    = EX_MA_valid && MA_MemWrite;
     assign Addr_out = MA_aluout;
