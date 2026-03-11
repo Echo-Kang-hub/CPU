@@ -17,7 +17,7 @@ module RF(
     end
 
     // 读rs1和rs2
-    assign RD1 = (A1 != 0)?rf[A1]:0;
-    assign RD2 = (A2 != 0)?rf[A2]:0;
+    assign RD1 = (A1 != 0) ? rf[A1] : 0;
+    assign RD2 = (A2 != 0) ? rf[A2] : 0;
 
 endmodule

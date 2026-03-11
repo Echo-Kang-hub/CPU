@@ -72,8 +72,7 @@ module SCPU(
     wire [31:0] RD1, RD2, WD;
 
     RF U_RF(
-        .clk(clk), .rstn(~reset),
-        .RFWr(RegWrite),
+        .clk(clk), .rstn(~reset),.RFWr(RegWrite),
         .A1(rs1), .A2(rs2), .A3(rd),
         .WD(WD), .RD1(RD1), .RD2(RD2)
     );
