@@ -33,7 +33,7 @@ module SCPU(
     wire PCwr = 1'b1;
     
     // 例化PC_Unit module 时序逻辑
-    PC_Unit U_PC(.clk(clk),.rst(reset),.NPC(NPC),.PCwr(PCwr),.PC(PC));
+    PC_Unit U_PC(.clk(clk),.rstn(~reset),.NPC(NPC),.PCwr(PCwr),.PC(PC));
 
     // 例化NPC_Unit module 组合逻辑
     NPC_Unit U_NPC(.PC(PC),.NPCOp(NPCOp),.IMM(immout),.aluout(aluout),.NPC(NPC));
@@ -57,7 +57,7 @@ module SCPU(
 
     RF U_RF(
         .clk(clk),
-        .rstn(reset),
+        .rstn(~reset),
         .RFWr(RegWrite),
         .A1(rs1),
         .A2(rs2),

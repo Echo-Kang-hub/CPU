@@ -9,7 +9,7 @@ module RF(
 reg [31:0] rf[31:0]; // reg [31:0]为数据类型，rf[31:0]为数组，32位宽，32个寄存器
 
 integer i;
-always @(posedge clk or negedge rstn) begin
+always @(negedge clk or negedge rstn) begin
     if(!rstn) begin
         for(i=0;i<32;i=i+1) rf[i] <= i;
     end
@@ -17,7 +17,7 @@ always @(posedge clk or negedge rstn) begin
 end
 
 // 读rs1和rs2
-assign RD1 = (A1 != 0)?rf[A1]:0;
-assign RD2 = (A2 != 0)?rf[A2]:0;
+assign RD1 = (A1 != 0) ? rf[A1] : 0;
+assign RD2 = (A2 != 0) ? rf[A2] : 0;
 
 endmodule
