@@ -33,7 +33,7 @@ module SCPU(
     wire PCwr = 1'b1;
     
     // 例化PC_Unit module 时序逻辑
-    PC_Unit U_PC(.clk(clk),.rst(~reset),.NPC(NPC),.PCwr(PCwr),.PC(PC));
+    PC_Unit U_PC(.clk(clk),.rst(reset),.NPC(NPC),.PCwr(PCwr),.PC(PC));
 
     // 例化NPC_Unit module 组合逻辑
     NPC_Unit U_NPC(.PC(PC),.NPCOp(NPCOp),.IMM(immout),.aluout(aluout),.NPC(NPC));
@@ -123,36 +123,35 @@ module SCPU(
         .Zero(Zero)
     );
 
-    wire [1:0] dm_byte_sel = aluout[1:0];
-    reg  [31:0] load_data;
+    reg [31:0] load_data;
+    wire [7:0]  selected_byte;
+    wire [15:0] selected_half;
+
+    assign selected_byte = Data_in >> (aluout[1:0] * 8);
+    assign selected_half = aluout[1] ? Data_in[31:16] : Data_in[15:0];
+
     always @(*) begin
-        case (DMType[1:0])
-            2'b00: begin // 字节
-                case (dm_byte_sel)
-                    2'b00: load_data = DMType[2] ? {24'b0, Data_in[7:0]}    : {{24{Data_in[7]}},  Data_in[7:0]};
-                    2'b01: load_data = DMType[2] ? {24'b0, Data_in[15:8]}   : {{24{Data_in[15]}}, Data_in[15:8]};
-                    2'b10: load_data = DMType[2] ? {24'b0, Data_in[23:16]}  : {{24{Data_in[23]}}, Data_in[23:16]};
-                    default: load_data = DMType[2] ? {24'b0, Data_in[31:24]} : {{24{Data_in[31]}}, Data_in[31:24]};
-                endcase
-            end
-            2'b01: begin // 半字
-                load_data = dm_byte_sel[1]
-                    ? (DMType[2] ? {16'b0, Data_in[31:16]} : {{16{Data_in[31]}}, Data_in[31:16]})
-                    : (DMType[2] ? {16'b0, Data_in[15:0]}  : {{16{Data_in[15]}}, Data_in[15:0]});
-            end
-            default: load_data = Data_in; // 字（lw）
+        case (DMType)
+            `DM_BYTE:  load_data = {{24{selected_byte[7]}}, selected_byte}; // LB (符号扩展)
+            `DM_BYTEU: load_data = {24'b0, selected_byte};                 // LBU (零扩展)
+            `DM_HALF:  load_data = {{16{selected_half[15]}}, selected_half}; // LH (符号扩展)
+            `DM_HALFU: load_data = {16'b0, selected_half};                 // LHU (零扩展)
+            `DM_WORD:  load_data = Data_in;                                // LW
+            default:   load_data = Data_in;
         endcase
     end
 
-    assign WD = (WDSel == `WD_ALU) ? (PC + 4) : // jal/jalr
+    assign WD = (WDSel == `WD_ALU) ? aluout : // slti/sltiu/addi/add/sub/sll/slt/sltu/xor/srl/sra/or/and
                 (WDSel == `WD_MEM) ? load_data : // load
-                (WDSel == `WD_ALU) ? aluout : // slti/sltiu/addi/add/sub/sll/slt/sltu/xor/srl/sra/or/and
+                (WDSel == `WD_PC4) ? (PC + 4) : // jal/jalr
                 (WDSel == `WD_IMM) ? immout : // lui
                 (WDSel == `WD_PCIMM) ? (PC + immout) : // auipc
                 32'h00000000;
 
+    assign PC_out = PC;
     assign mem_w    = MemWrite;
     assign Addr_out = aluout;    // 内存地址（ALU结果）
     assign Data_out = RD2;       // 写内存数据（store 时为 rs2）
+    assign reg_data = (reg_sel == 5'b0) ? 32'b0 : U_RF.rf[reg_sel];
 
 endmodule 
