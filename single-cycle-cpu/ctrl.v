@@ -1,3 +1,4 @@
+`include "definition.vh"
 module ctrl(
     input [6:0] Op,
     input [6:0] Funct7,
@@ -5,137 +6,155 @@ module ctrl(
     input Zero,
     output RegWrite,
     output MemWrite,
-    output [5:0] EXTOp,
-    output [4:0] ALUOp,
-    output [2:0] NPCOp,
+    output [1:0] NPCOp,
+    output [2:0] EXTOp,
     output ALUSrc,
+    output [4:0] ALUOp,
     output [2:0] DMType,
-    output [1:0] WDSel // MemtoReg
+    output [2:0] WDSel // MemtoReg
 );
-// R_type 10条
-wire rtype = ~Op[6] & Op[5] & Op[4] & ~Op[3] & ~Op[2] & Op[1] & Op[0]; //0110011
-wire i_add = rtype & ~Funct3[2] & ~Funct3[1] & ~Funct3[0] & ~Funct7[5]; // add 0000000 000
-wire i_sub = rtype & ~Funct3[2] & ~Funct3[1] & ~Funct3[0] & Funct7[5]; // sub 0100000 000
-wire i_sll = rtype & ~Funct3[2] & ~Funct3[1] & Funct3[0]; // sll 0000000 001
-wire i_slt = rtype & ~Funct3[2] & Funct3[1] & ~Funct3[0]; // slt 0000000 010
-wire i_sltu = rtype & ~Funct3[2] & Funct3[1] & Funct3[0]; // sltu 0000000 011
-wire i_xor = rtype & Funct3[2] & ~Funct3[1] & ~Funct3[0]; // xor 0000000 100
-wire i_srl = rtype & Funct3[2] & ~Funct3[1] & Funct3[0] & ~Funct7[5]; // srl 0000000 101
-wire i_sra = rtype & Funct3[2] & ~Funct3[1] & Funct3[0] & Funct7[5]; // sra 0100000 101
-wire i_or  = rtype & Funct3[2] & Funct3[1] & ~Funct3[0]; // or 0000000 110
-wire i_and = rtype & Funct3[2] & Funct3[1] & Funct3[0]; // and 0000000 111
+    // R_type 10条
+    // I4: ADD/SUB/SLL/SLT/SLTU/XOR/SRL/SRA/OR/AND 10
+    wire rtype = ~Op[6] & Op[5] & Op[4] & ~Op[3] & ~Op[2] & Op[1] & Op[0]; //0110011
+    wire i_add = rtype & ~Funct3[2] & ~Funct3[1] & ~Funct3[0] & ~Funct7[5]; // add 0000000 000
+    wire i_sub = rtype & ~Funct3[2] & ~Funct3[1] & ~Funct3[0] & Funct7[5]; // sub 0100000 000
+    wire i_sll = rtype & ~Funct3[2] & ~Funct3[1] & Funct3[0]; // sll 0000000 001
+    wire i_slt = rtype & ~Funct3[2] & Funct3[1] & ~Funct3[0]; // slt 0000000 010
+    wire i_sltu = rtype & ~Funct3[2] & Funct3[1] & Funct3[0]; // sltu 0000000 011
+    wire i_xor = rtype & Funct3[2] & ~Funct3[1] & ~Funct3[0]; // xor 0000000 100
+    wire i_srl = rtype & Funct3[2] & ~Funct3[1] & Funct3[0] & ~Funct7[5]; // srl 0000000 101
+    wire i_sra = rtype & Funct3[2] & ~Funct3[1] & Funct3[0] & Funct7[5]; // sra 0100000 101
+    wire i_or  = rtype & Funct3[2] & Funct3[1] & ~Funct3[0]; // or 0000000 110
+    wire i_and = rtype & Funct3[2] & Funct3[1] & Funct3[0]; // and 0000000 111
 
-// i_l type load 5条
-wire itype_l = ~Op[6] & ~Op[5] & ~Op[4] & ~Op[3] & ~Op[2] & Op[1] & Op[0]; //0000011
-wire i_lb = itype_l & ~Funct3[2] & ~Funct3[1] & ~Funct3[0]; //lb 000
-wire i_lh = itype_l & ~Funct3[2] & ~Funct3[1] & Funct3[0];  //lh 001
-wire i_lw = itype_l & ~Funct3[2] & Funct3[1] & ~Funct3[0];  //lw 010
-wire i_lbu = itype_l & Funct3[2] & ~Funct3[1] & ~Funct3[0]; //lbu 100
-wire i_lhu = itype_l & Funct3[2] & ~Funct3[1] & Funct3[0];  //lh 101
- 
- // i_r type 涉及Reg与imm运算，ALU with immediate 10条
-wire itype_r = ~Op[6] & ~Op[5] & Op[4] & ~Op[3] & ~Op[2] & Op[1] & Op[0]; //0010011
-wire i_addi = itype_r & ~Funct3[2] & ~Funct3[1] & ~Funct3[0]; // addi 000 func3
-wire i_slti = itype_r & ~Funct3[2] & Funct3[1] & ~Funct3[0]; // slti 010 func3
-wire i_sltiu = itype_r & ~Funct3[2] & Funct3[1] & Funct3[0]; // sltiu 011 func3
+    // i_l type load 5条
+    // I2：LB/LH/LW/LBU/LHU 5
+    wire load = ~Op[6] & ~Op[5] & ~Op[4] & ~Op[3] & ~Op[2] & Op[1] & Op[0]; //0000011
+    wire i_lb = load & ~Funct3[2] & ~Funct3[1] & ~Funct3[0]; //lb 000
+    wire i_lh = load & ~Funct3[2] & ~Funct3[1] & Funct3[0];  //lh 001
+    wire i_lw = load & ~Funct3[2] & Funct3[1] & ~Funct3[0];  //lw 010
+    wire i_lbu = load & Funct3[2] & ~Funct3[1] & ~Funct3[0]; //lbu 100
+    wire i_lhu = load & Funct3[2] & ~Funct3[1] & Funct3[0];  //lhu 101
+    
+    // i_r type 涉及Reg与imm运算，ALU with immediate 10条
+    // I3: ADDI/SLTI/SLTIU/XORI/ORI/ANDI/SLLI/SRLI/SRAI 9
+    wire itype_r = ~Op[6] & ~Op[5] & Op[4] & ~Op[3] & ~Op[2] & Op[1] & Op[0]; //0010011
+    wire i_addi = itype_r & ~Funct3[2] & ~Funct3[1] & ~Funct3[0]; // addi 000 func3
+    wire i_xori = itype_r & Funct3[2] & ~Funct3[1] & ~Funct3[0]; // xori 100 func3
+    wire i_ori = itype_r & Funct3[2] & Funct3[1] & ~Funct3[0]; // ori 110 func3
+    wire i_andi = itype_r & Funct3[2] & Funct3[1] & Funct3[0]; // andi 111 func3
+    wire i_slti = itype_r & ~Funct3[2] & Funct3[1] & ~Funct3[0]; // slti 010 func3
+    wire i_sltiu = itype_r & ~Funct3[2] & Funct3[1] & Funct3[0]; // sltiu 011 func3
 
-wire i_slli = itype_r & ~Funct3[2] & ~Funct3[1] & Funct3[0]; // slli 001
-wire i_srli = itype_r & Funct3[2] & ~Funct3[1] & Funct3[0] & ~Funct7[5]; // srli 101 0000000
-wire i_srai = itype_r & Funct3[2] & ~Funct3[1] & Funct3[0] & Funct7[5]; // srai 101 0100000
-wire itype_shamt = i_slli | i_srli | i_srai;
+    wire i_slli = itype_r & ~Funct3[2] & ~Funct3[1] & Funct3[0]; // slli 001
+    wire i_srli = itype_r & Funct3[2] & ~Funct3[1] & Funct3[0] & ~Funct7[5]; // srli 101 0000000
+    wire i_srai = itype_r & Funct3[2] & ~Funct3[1] & Funct3[0] & Funct7[5]; // srai 101 0100000
+    wire itype_shamt = i_slli | i_srli | i_srai;
 
-// jalr
-wire i_jalr = Op[6] & Op[5] & ~Op[4] & ~Op[3] & Op[2] & Op[1] & Op[0]; //1100111
+    // jalr
+    wire i_jalr = Op[6] & Op[5] & ~Op[4] & ~Op[3] & Op[2] & Op[1] & Op[0]; //1100111
 
-// s format store 3条
-wire stype = ~Op[6] & Op[5] & ~Op[4] & ~Op[3] & ~Op[2] & Op[1] & Op[0];//0100011
-wire i_sb = stype & ~Funct3[2] & ~Funct3[1] & ~Funct3[0]; // sb 000
-wire i_sh = stype & ~Funct3[2] & ~Funct3[1] & Funct3[0];  // sh 001
-wire i_sw = stype & ~Funct3[2] & Funct3[1] & ~Funct3[0];  // sw 010
+    // s format store 3条
+    // I2: SB/SH/SW 3
+    wire store = ~Op[6] & Op[5] & ~Op[4] & ~Op[3] & ~Op[2] & Op[1] & Op[0];//0100011
+    wire i_sb = store & ~Funct3[2] & ~Funct3[1] & ~Funct3[0]; // sb 000
+    wire i_sh = store & ~Funct3[2] & ~Funct3[1] & Funct3[0];  // sh 001
+    wire i_sw = store & ~Funct3[2] & Funct3[1] & ~Funct3[0];  // sw 010
 
-// B_type 6条
-wire btype = Op[6] & Op[5] & ~Op[4] & ~Op[3] & ~Op[2] & Op[1] & Op[0]; //1100011
-wire i_beq = btype & ~Funct3[2] & ~Funct3[1] & ~Funct3[0]; // beq 000
-wire i_bne = btype & ~Funct3[2] & ~Funct3[1] & Funct3[0];  // bne 001
-wire i_blt = btype & Funct3[2] & ~Funct3[1] & ~Funct3[0];  // blt 100
-wire i_bge = btype & Funct3[2] & ~Funct3[1] & Funct3[0];   // bge 101
-wire i_bltu = btype & Funct3[2] & Funct3[1] & ~Funct3[0]; // bltu 110
-wire i_bgeu = btype & Funct3[2] & Funct3[1] & Funct3[0];  // bgeu 111
+    // B_type 6条
+    // I1: BEQ/BNE/BLT/BGE/BLTU/BGEU 6
+    wire branch = Op[6] & Op[5] & ~Op[4] & ~Op[3] & ~Op[2] & Op[1] & Op[0]; //1100011
+    wire i_beq = branch & ~Funct3[2] & ~Funct3[1] & ~Funct3[0]; // beq 000
+    wire i_bne = branch & ~Funct3[2] & ~Funct3[1] & Funct3[0];  // bne 001
+    wire i_blt = branch & Funct3[2] & ~Funct3[1] & ~Funct3[0];  // blt 100
+    wire i_bge = branch & Funct3[2] & ~Funct3[1] & Funct3[0];   // bge 101
+    wire i_bltu = branch & Funct3[2] & Funct3[1] & ~Funct3[0]; // bltu 110
+    wire i_bgeu = branch & Funct3[2] & Funct3[1] & Funct3[0];  // bgeu 111
 
-// J_type 1条
-wire jtype = Op[6] & Op[5] & ~Op[4] & Op[3] & Op[2] & Op[1] & Op[0]; //1101111
-wire i_jal = jtype; // jal 
+    // J_type 1条
+    wire jtype = Op[6] & Op[5] & ~Op[4] & Op[3] & Op[2] & Op[1] & Op[0]; //1101111
+    wire i_jal = jtype; // jal 
 
-// U_type 2条
-wire utype = ~Op[6] & Op[4] & ~Op[3] & Op[2] & Op[1] & Op[0]; //0X10111
-wire i_lui = utype & Op[5]; // lui 0110111
-wire i_auipc = utype & ~Op[5]; // auipc 0010111
+    // U_type 2条
+    // I0: LUI/AUIPC 2 
+    wire utype = ~Op[6] & Op[4] & ~Op[3] & Op[2] & Op[1] & Op[0]; //0X10111
+    wire i_lui = utype & Op[5]; // lui 0110111
+    wire i_auipc = utype & ~Op[5]; // auipc 0010111
 
+    assign RegWrite = rtype | itype_r | load | i_jal | i_jalr | i_lui | i_auipc; 
+    assign MemWrite = store; 
 
-assign RegWrite = rtype | itype_r | itype_l | i_jal | i_jalr; // register write (含跳转返回地址)
-assign MemWrite = stype; // memory write
+    reg [1:0] NPCOp_reg;
+    reg [1:0] EXTOp_reg;
+    reg       ALUSrc_reg;
+    reg [4:0] ALUOp_reg;
+    reg [2:0] DMType_reg;
+    reg [2:0] WDSel_reg;
 
-//`define EXT_CTRL_ITYPE_SHAMT 6'b100000
-//`define EXT_CTRL_ITYPE 6'b010000
-//`define EXT_CTRL_STYPE 6'b001000
-//`define EXT_CTRL_BTYPE 6'b000100
-//`define EXT_CTRL_UTYPE 6'b000010
-//`define EXT_CTRL_JTYPE 6'b000001
-assign EXTOp[5] = itype_shamt;
-assign EXTOp[4] = itype_l | (itype_r & ~itype_shamt) | i_jalr;
-assign EXTOp[3] = stype;
-assign EXTOp[2] = btype;
-assign EXTOp[1] = i_lui | i_auipc;
-assign EXTOp[0] = i_jal;
+    assign NPCOp  = NPCOp_reg;
+    assign EXTOp  = EXTOp_reg;
+    assign ALUSrc = ALUSrc_reg;
+    assign ALUOp  = ALUOp_reg;
+    assign DMType = DMType_reg;
+    assign WDSel  = WDSel_reg;
 
+    always @(*) begin
+        
+        NPCOp_reg  = `NPC_PLUS4; // 默认 PC + 4
+        EXTOp_reg  = `EXT_ITYPE; // 默认 I 型扩展
+        ALUSrc_reg = 1'b0;       // 默认 ALU B口 来自寄存器
+        ALUOp_reg  = `ALUOp_add;   // 默认 ALU 做加法 (算地址常用)
+        DMType_reg = `DM_WORD;   // 默认 32位 访存
+        WDSel_reg  = `WD_ALU;    // 默认 写回 ALU 结果
+        
+        // NPCOp
+        if      (branch && Zero) NPCOp_reg = `NPC_BRANCH;
+        else if (i_jal)          NPCOp_reg = `NPC_JAL;
+        else if (i_jalr)         NPCOp_reg = `NPC_JALR;
 
-//`define ALUOp_nop 5'b00000
+        // EXTOp
+        if      (itype_shamt) EXTOp_reg = `EXT_SHAMT;
+        else if (store)       EXTOp_reg = `EXT_STYPE;
+        else if (branch)      EXTOp_reg = `EXT_BTYPE;
+        else if (utype)       EXTOp_reg = `EXT_UTYPE;
+        else if (jtype)       EXTOp_reg = `EXT_JTYPE;
+        // 其余情况（Load, 算术I型, jalr）默认使用 EXT_ITYPE
 
-//`define ALUOp_sll 5'b00001
-//`define ALUOp_srl 5'b00010
-//`define ALUOp_sra 5'b00101
+        // ALUSrc
+        // 只有 R型运算 和 Branch分支 比较的是两个寄存器 (1'b0)，其余大多需要立即数参与计算
+        if (itype_r | load | store | i_jal | i_jalr) ALUSrc_reg = 1'b1;
 
-//`define ALUOp_add 5'b00011
+        // ALUOp
+        if      (i_sub)                 ALUOp_reg = `ALUOp_sub;
+        else if (i_and | i_andi)        ALUOp_reg = `ALUOp_and;
+        else if (i_or  | i_ori)         ALUOp_reg = `ALUOp_or;
+        else if (i_xor | i_xori)        ALUOp_reg = `ALUOp_xor;
+        else if (i_sll | i_slli)        ALUOp_reg = `ALUOp_sll;
+        else if (i_srl | i_srli)        ALUOp_reg = `ALUOp_srl;
+        else if (i_sra | i_srai)        ALUOp_reg = `ALUOp_sra;
+        else if (i_slt | i_slti)        ALUOp_reg = `ALUOp_slt;
+        else if (i_sltu| i_sltiu)       ALUOp_reg = `ALUOp_sltu;
+        else if (i_beq)                 ALUOp_reg = `ALUOp_beq;
+        else if (i_bne)                 ALUOp_reg = `ALUOp_bne;
+        else if (i_blt)                 ALUOp_reg = `ALUOp_blt;
+        else if (i_bge)                 ALUOp_reg = `ALUOp_bge;
+        else if (i_bltu)                ALUOp_reg = `ALUOp_bltu;
+        else if (i_bgeu)                ALUOp_reg = `ALUOp_bgeu;
+        // 其余默认 ALU_ADD (涵盖了 add, addi, load, store 的地址计算)
 
-//`define ALUOp_beq 5'b00100
-//`define ALUOp_bne 5'b01000
-//`define ALUOp_blt 5'b01100
-//`define ALUOp_bge 5'b10000
-//`define ALUOp_bltu 5'b10100
-//`define ALUOp_bgeu 5'b11000
-assign ALUOp[0] = i_add | i_addi | stype | itype_l | i_jalr | i_sll | i_sra | i_slli | i_srai;
-assign ALUOp[1] = i_add | i_addi | stype | itype_l | i_jalr | i_srl | i_srli;
-assign ALUOp[2] = i_beq | i_blt | i_bltu | i_sra | i_srai;
-assign ALUOp[3] = i_bne | i_blt | i_bgeu;
-assign ALUOp[4] = i_bge | i_bltu | i_bgeu;
+        // DMType
+        if      (i_lb | i_sb)    DMType_reg = `DM_BYTE;
+        else if (i_lh | i_sh)    DMType_reg = `DM_HALF;
+        else if (i_lbu)          DMType_reg = `DM_BYTEU;
+        else if (i_lhu)          DMType_reg = `DM_HALFU;
+        // 其余 lw, sw 默认 DM_WORD
 
-
-//`define NPC_PLUS4 3'b000
-//`define NPC_BRANCH 3'b001
-//`define NPC_JUMP 3'b010
-//`define NPC_JALR 3'b100
-assign NPCOp[0] = btype & Zero;
-assign NPCOp[1] = i_jal;
-assign NPCOp[2] = i_jalr;
-
-
-assign ALUSrc = itype_r | itype_l | stype | i_jal | i_jalr; // ALU B is from instruction immediate
-
-// ALU_DM->RF RF_WD
-// WDSel FromALU 2'b00
-// WDSel FromMEM 2'b01
-// WDSel FromPC 2'b10
-assign WDSel[0] = itype_l;
-assign WDSel[1] = i_jal | i_jalr;
-
-
-// dm_word 3'b000
-// dm_halfword 3'b001
-// dm_halfword_unsigned 3'b010
-// dm_byte 3'b011
-// dm_byte_unsigned 3'b100
-assign DMType[2] = i_lbu; // bu
-assign DMType[1] = i_lb | i_sb | i_lhu; // hu和b
-assign DMType[0] = i_lh | i_sh | i_lb | i_sb; // h和b
+        // WDSel
+        if      (load)           WDSel_reg = `WD_MEM;
+        else if (i_jal | i_jalr) WDSel_reg = `WD_PC4;
+        else if (i_lui)          WDSel_reg = `WD_IMM;
+        else if (i_auipc)        WDSel_reg = `WD_PCIMM;
+        // 其余默认 WD_ALU
+    end
 
 endmodule

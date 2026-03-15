@@ -1,4 +1,12 @@
 `timescale 1ns / 1ps
+
+`include "PC_Unit.v"
+`include "NPC_Unit.v"
+`include "RF.v"
+`include "EXT.v"
+`include "ctrl.v"
+`include "alu.v"
+
 // 37条指令
 // I0: LUI/AUIPC 2 
 // I3: ADDI/SLTI/SLTIU/XORI/ORI/ANDI/SLLI/SRLI/SRAI 9
@@ -25,7 +33,7 @@ module SCPU(
     wire PCwr = 1'b1;
     
     // 例化PC_Unit module 时序逻辑
-    PC_Unit U_PC(.clk(Clk_CPU),.rst(~rstn),.NPC(NPC),.PCwr(PCwr),.PC(PC));
+    PC_Unit U_PC(.clk(clk),.rst(~reset),.NPC(NPC),.PCwr(PCwr),.PC(PC));
 
     // 例化NPC_Unit module 组合逻辑
     NPC_Unit U_NPC(.PC(PC),.NPCOp(NPCOp),.IMM(immout),.aluout(aluout),.NPC(NPC));
@@ -48,8 +56,8 @@ module SCPU(
     wire [31:0] RD1,RD2;
 
     RF U_RF(
-        .clk(Clk_CPU),
-        .rstn(rstn),
+        .clk(clk),
+        .rstn(reset),
         .RFWr(RegWrite),
         .A1(rs1),
         .A2(rs2),
@@ -74,11 +82,11 @@ module SCPU(
 
     // 控制信号
     wire        RegWrite, MemWrite, ALUSrc, ALUSrcA, Zero;
-    wire [2:0]  NPCOp;
+    wire [1:0]  NPCOp;
     wire [4:0]  ALUOp;
-    wire [5:0]  EXTOp;
+    wire [2:0]  EXTOp;
     wire [2:0]  DMType;
-    wire [1:0]  WDSel;
+    wire [2:0]  WDSel;
 
     // 例化ctrl模块 组合逻辑
     ctrl u_ctrl(
@@ -88,17 +96,17 @@ module SCPU(
         .Zero(Zero),
         .RegWrite(RegWrite),
         .MemWrite(MemWrite),
-        .EXTOp(EXTOp),
-        .ALUOp(ALUOp),
-        .ALUSrc(ALUSrc),
         .NPCOp(NPCOp),
+        .EXTOp(EXTOp),
+        .ALUSrc(ALUSrc),
+        .ALUOp(ALUOp),
         .DMType(DMType),
         .WDSel(WDSel)
     );
 
     // RF->ALU ALU_A_B
     assign A = RD1;
-    assign B = (ALUSrc == 1'b0)?RD2:immout;
+    assign B = (ALUSrc == 1'b0)? RD2 : immout;
 
     // ALU->DM DM_addr_din
     assign dm_addr = aluout;
@@ -115,15 +123,34 @@ module SCPU(
         .Zero(Zero)
     );
 
-    // WDSel FromALU 2'b00
-    // WDSel FromMEM 2'b01
-    // WDSel FromPC 2'b10
-    assign WD = (WDSel == 2'b10) ? (PC + 4) :
-                (WDSel == 2'b01) ? Data_in : 
-                (WDSel == 2'b00) ? aluout : 32'h00000000;
+    wire [1:0] dm_byte_sel = aluout[1:0];
+    reg  [31:0] load_data;
+    always @(*) begin
+        case (DMType[1:0])
+            2'b00: begin // 字节
+                case (dm_byte_sel)
+                    2'b00: load_data = DMType[2] ? {24'b0, Data_in[7:0]}    : {{24{Data_in[7]}},  Data_in[7:0]};
+                    2'b01: load_data = DMType[2] ? {24'b0, Data_in[15:8]}   : {{24{Data_in[15]}}, Data_in[15:8]};
+                    2'b10: load_data = DMType[2] ? {24'b0, Data_in[23:16]}  : {{24{Data_in[23]}}, Data_in[23:16]};
+                    default: load_data = DMType[2] ? {24'b0, Data_in[31:24]} : {{24{Data_in[31]}}, Data_in[31:24]};
+                endcase
+            end
+            2'b01: begin // 半字
+                load_data = dm_byte_sel[1]
+                    ? (DMType[2] ? {16'b0, Data_in[31:16]} : {{16{Data_in[31]}}, Data_in[31:16]})
+                    : (DMType[2] ? {16'b0, Data_in[15:0]}  : {{16{Data_in[15]}}, Data_in[15:0]});
+            end
+            default: load_data = Data_in; // 字（lw）
+        endcase
+    end
 
+    assign WD = (WDSel == `WD_ALU) ? (PC + 4) : // jal/jalr
+                (WDSel == `WD_MEM) ? load_data : // load
+                (WDSel == `WD_ALU) ? aluout : // slti/sltiu/addi/add/sub/sll/slt/sltu/xor/srl/sra/or/and
+                (WDSel == `WD_IMM) ? immout : // lui
+                (WDSel == `WD_PCIMM) ? (PC + immout) : // auipc
+                32'h00000000;
 
-    // ---- 对外输出 ----
     assign mem_w    = MemWrite;
     assign Addr_out = aluout;    // 内存地址（ALU结果）
     assign Data_out = RD2;       // 写内存数据（store 时为 rs2）

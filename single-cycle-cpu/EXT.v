@@ -1,11 +1,4 @@
-// 立即数扩展
-`define EXT_CTRL_ITYPE_SHAMT 6'b100000
-`define EXT_CTRL_ITYPE 6'b010000
-`define EXT_CTRL_STYPE 6'b001000
-`define EXT_CTRL_BTYPE 6'b000100
-`define EXT_CTRL_UTYPE 6'b000010
-`define EXT_CTRL_JTYPE 6'b000001
-
+`include "definition.vh"
 module EXT(
     input [4:0] iimm_shamt,
     input [11:0] iimm,
@@ -13,17 +6,17 @@ module EXT(
     input [11:0] bimm,
     input [19:0] uimm,
     input [19:0] jimm,
-    input [5:0] EXTOp,
+    input [2:0] EXTOp,
     output reg [31:0] immout
 );
 always @(*) begin
     case (EXTOp)
-		`EXT_CTRL_ITYPE_SHAMT: immout <= {27'b0,iimm_shamt[4:0]}; // I-type 立即数 (用于 slli/srli/srai)
-		`EXT_CTRL_ITYPE: immout <= {{20{iimm[11]}}, iimm[11:0]}; // I-type 立即数 (用于 addi, lw, jalr 等)
-		`EXT_CTRL_STYPE: immout <= {{20{simm[11]}}, simm[11:0]}; // S-type 立即数 (用于 sw 等)
-		`EXT_CTRL_BTYPE: immout<= {{19{bimm[11]}},bimm[11:0],1'b0}; // B-type 立即数 (用于 beq 等)
-		`EXT_CTRL_UTYPE: immout <= {uimm[19:0], 12'b0}; // U-type 立即数 (用于 lui, auipc)
-		`EXT_CTRL_JTYPE: immout<= {{11{jimm[19]}},jimm[19:0],1'b0}; // J-type 立即数 (用于 jal)
+		`EXT_SHAMT: immout <= {27'b0,iimm_shamt[4:0]}; // I-type 立即数 (用于 slli/srli/srai)
+		`EXT_ITYPE: immout <= {{20{iimm[11]}}, iimm[11:0]}; // I-type 立即数 (用于 addi, lw, jalr 等)
+		`EXT_STYPE: immout <= {{20{simm[11]}}, simm[11:0]}; // S-type 立即数 (用于 sw 等)
+		`EXT_BTYPE: immout<= {{19{bimm[11]}},bimm[11:0],1'b0}; // B-type 立即数 (用于 beq 等)
+		`EXT_UTYPE: immout <= {uimm[19:0], 12'b0}; // U-type 立即数 (用于 lui, auipc)
+		`EXT_JTYPE: immout<= {{11{jimm[19]}},jimm[19:0],1'b0}; // J-type 立即数 (用于 jal)
 		default: immout <= 32'b0;
 	endcase
 end
