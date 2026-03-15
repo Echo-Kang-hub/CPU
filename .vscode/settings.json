@@ -6,5 +6,5 @@
 
     // iverilog linter: -y . 让 iverilog 在当前目录按模块名搜索 .v 文件
     // 文件名须与模块名一致（如 PC_Unit.v ↔ module PC_Unit），-y . 即可自动找到所有模块
-    "verilog.linting.iverilog.arguments": "-y ."
+    // "verilog.linting.iverilog.arguments": "-y ."
 }
