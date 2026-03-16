@@ -18,12 +18,12 @@ module pipeline_top(
     input  wire        rstn,
 
     // Instruction Memory
-    output wire [31:0] instr_address,
+    output wire [31:0] instr_addr,
     input  wire [31:0] instr,
 
     // Data Memory
     output wire        dm_write_enable,
-    output wire [31:0] dm_address,
+    output wire [31:0] dm_addr,
     output wire [31:0] dm_write_data,
     input  wire [31:0] dm_read_data,
     output wire [2:0]  dm_type // 可选：用于传 DMType（如字节/半字掩码）
@@ -63,9 +63,9 @@ module pipeline_top(
     wire FLUSH_ID; 
     wire FLUSH_EX;
     
-    // 分支重定向 (Branch Redirect - 从 EX 或 ID 发出，送回 IF 修正 PC)
+    // 分支重定向 (Branch Redirect 计划从 ID 发出，送回 IF 修正 PC)
     wire        Branch_taken;
-    wire [31:0] Branch_target_address;
+    wire [31:0] Branch_target_addr;
 
     // 前递数据 (Forwarding - 提前把算好的数据送回 ID 级解决数据冒险)
     wire [31:0] EX_forwarding_data;
@@ -86,13 +86,13 @@ module pipeline_top(
         .IF_to_ID_bus           (IF_to_ID_bus),
         
         // IM 接口
-        .instr_address    (instr_address),
+        .instr_addr    (instr_addr),
         .instr  (instr),
         
         // 控制流反馈 (分支预测失败/冲刷)
         .Branch_taken           (Branch_taken),
-        .Branch_target_address  (Branch_target_address)
-        // .FLUSH_IF               (FLUSH_IF)
+        .Branch_target_addr  (Branch_target_addr),
+        .FLUSH_IF               (FLUSH_IF)
     );
 
     // --- 2. 译码级 (Instruction Decode) ---
@@ -112,7 +112,7 @@ module pipeline_top(
 
         // 接收来自 WB 级的写回信号 (写入寄存器堆)
         .RF_write_enable        (RF_write_enable_from_WB),
-        .RF_write_address       (RF_write_address_from_WB),
+        .RF_write_addr          (RF_write_address_from_WB),
         .RF_write_data          (RF_write_data_from_WB)
         
         // 前递信号输入 (解决数据冒险)
@@ -141,7 +141,7 @@ module pipeline_top(
         
         // 分支计算结果送回 IF
         .Branch_taken           (Branch_taken),
-        .Branch_target_address  (Branch_target_address)
+        .Branch_target_addr  (Branch_target_addr)
         
         // // 前递输出
         // .EX_forwarding_data     (EX_forwarding_data),
@@ -167,7 +167,7 @@ module pipeline_top(
         
         // DM 接口
         .dm_write_enable (dm_write_enable),
-        .dm_address      (dm_address),
+        .dm_addr         (dm_addr),
         .dm_write_data   (dm_write_data),
         .dm_read_data    (dm_read_data),
         .dm_type         (dm_type)
@@ -188,7 +188,7 @@ module pipeline_top(
 
         // 写回数据到 ID 级的 RF (寄存器堆)
         .RF_write_enable        (RF_write_enable_from_WB),
-        .RF_write_address       (RF_write_address_from_WB),
+        .RF_write_addr          (RF_write_address_from_WB),
         .RF_write_data          (RF_write_data_from_WB),
         
         // 前递输出
