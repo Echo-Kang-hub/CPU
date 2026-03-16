@@ -148,10 +148,32 @@ module SCPU(
                 (WDSel == `WD_PCIMM) ? (PC + immout) : // auipc
                 32'h00000000;
 
+    reg [31:0] store_data;
+    always @(*) begin
+        case(DMType)
+            `DM_BYTE: begin // SB (存字节)
+                case(aluout[1:0])
+                    2'b00: store_data = {Data_in[31:8], RD2[7:0]};
+                    2'b01: store_data = {Data_in[31:16], RD2[7:0], Data_in[7:0]};
+                    2'b10: store_data = {Data_in[31:24], RD2[7:0], Data_in[15:0]};
+                    2'b11: store_data = {RD2[7:0], Data_in[23:0]};
+                endcase
+            end
+            `DM_HALF: begin // SH (存半字)
+                case(aluout[1]) // 半字必须按 2 字节对齐，所以只看 aluout[1]
+                    1'b0: store_data = {Data_in[31:16], RD2[15:0]};
+                    1'b1: store_data = {RD2[15:0], Data_in[15:0]};
+                endcase
+            end
+            default: begin  // SW (存字)
+                store_data = RD2;
+            end
+        endcase
+    end
+
     assign PC_out = PC;
     assign mem_w    = MemWrite;
     assign Addr_out = aluout;    // 内存地址（ALU结果）
-    assign Data_out = RD2;       // 写内存数据（store 时为 rs2）
     assign reg_data = (reg_sel == 5'b0) ? 32'b0 : U_RF.rf[reg_sel];
 
 endmodule 

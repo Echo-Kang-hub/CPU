@@ -1,6 +1,6 @@
 `include "SCPU.v"
-`include "im.v"
 `include "dm.v"
+`include "im.v"
 
 module sccomp(clk, rstn, reg_sel, reg_data);
    input          clk;
