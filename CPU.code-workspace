@@ -1,0 +1,18 @@
+{
+	"folders": [
+		{
+			"path": "."
+		},
+		{
+			"path": "pipeline-cpu"
+		},
+		{
+			"path": "single-cycle-cpu"
+		}
+	],
+	"settings": {
+		"digital-ide.function.lsp.linter.mode": "shutdown",
+		"verilog.linting.iverilog.runAtFileLocation": true,
+        "verilog.linting.iverilog.arguments": "-g2012 -I . -I ../include -y . -y ../common -y ../hazard"
+	}
+}

@@ -1,3 +1,0 @@
-{
-    "verilog.linting.iverilog.arguments": "-g2012 -y pipeline-cpu -I pipeline-cpu"
-}

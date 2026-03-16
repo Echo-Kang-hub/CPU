@@ -1,3 +1,0 @@
-{
-    "verilog.linting.iverilog.arguments": "-g2012 -y single-cycle-cpu -I single-cycle-cpu"
-}
