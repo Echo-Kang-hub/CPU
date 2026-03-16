@@ -174,6 +174,7 @@ module SCPU(
     assign PC_out = PC;
     assign mem_w    = MemWrite;
     assign Addr_out = aluout;    // 内存地址（ALU结果）
+    assign Data_out = store_data; // 存储数据
     assign reg_data = (reg_sel == 5'b0) ? 32'b0 : U_RF.rf[reg_sel];
 
 endmodule 
