@@ -5,10 +5,10 @@ module ctrl(
     input [2:0] Funct3,
     input Zero,
     output RegWrite,
+    output ALUSrc,
     output MemWrite,
     output [1:0] NPCOp,
     output [2:0] EXTOp,
-    output ALUSrc,
     output [4:0] ALUOp,
     output [2:0] DMType,
     output [2:0] WDSel // MemtoReg
@@ -85,7 +85,7 @@ module ctrl(
     assign MemWrite = store; 
 
     reg [1:0] NPCOp_reg;
-    reg [1:0] EXTOp_reg;
+    reg [2:0] EXTOp_reg;
     reg       ALUSrc_reg;
     reg [4:0] ALUOp_reg;
     reg [2:0] DMType_reg;

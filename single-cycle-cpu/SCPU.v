@@ -81,10 +81,10 @@ module SCPU(
     );
 
     // 控制信号
-    wire        RegWrite, MemWrite, ALUSrc, ALUSrcA, Zero;
+    wire        RegWrite, MemWrite, ALUSrc, Zero;
     wire [1:0]  NPCOp;
-    wire [4:0]  ALUOp;
     wire [2:0]  EXTOp;
+    wire [4:0]  ALUOp;
     wire [2:0]  DMType;
     wire [2:0]  WDSel;
 

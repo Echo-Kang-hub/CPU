@@ -7,12 +7,12 @@
 `define NPC_JALR   2'b11
 
 // EXTOp
-`define EXT_ITYPE  3'b000
-`define EXT_STYPE  3'b001
-`define EXT_BTYPE  3'b010
-`define EXT_UTYPE  3'b011
-`define EXT_JTYPE  3'b100
-`define EXT_SHAMT  3'b101
+`define EXT_SHAMT  3'b000
+`define EXT_ITYPE  3'b001
+`define EXT_STYPE  3'b010
+`define EXT_BTYPE  3'b011
+`define EXT_UTYPE  3'b100
+`define EXT_JTYPE  3'b101
 
 // ALUOp: 00xxx算术逻辑, 01xxx移位比较, 10xxx分支
 `define ALUOp_add  5'b00000
