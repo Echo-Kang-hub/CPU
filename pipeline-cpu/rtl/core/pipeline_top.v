@@ -1,3 +1,5 @@
+`ifndef __PIPELINE_TOP_V__
+`define __PIPELINE_TOP_V__
 `include "definition.vh"
 `include "IF_stage.v"
 `include "ID_stage.v"
@@ -50,10 +52,10 @@ module pipeline_top(
     wire        Jalr_taken;
     wire [31:0] Jalr_target_addr;
 
-    // 控制冲刷 (由于暂不考虑冒险，普通情况下给0)
+    // 控制冲刷
     // 但如果有跳转发生，必须冲刷掉 IF 阶段刚好取进来的错误指令！
-    wire flush_ifid = Branch_taken || Jal_taken || Jalr_taken;
-    wire flush_idex = 1'b0; // 暂不处理 load-use 冒险
+    wire Flush_IFID = Branch_taken || Jal_taken || Jalr_taken;
+    wire Flush_IDEX = 1'b0; // 暂不处理 load-use 冒险
 
 
     IF_stage u_IF_stage(
@@ -79,7 +81,7 @@ module pipeline_top(
     ID_stage u_ID_stage(
         .clk                (clk),
         .reset              (reset),
-        .FLUSH_IFID         (flush_ifid),
+        .FLUSH_IFID         (Flush_IFID),
         
         .IF_to_ID_valid     (IF_to_ID_valid),
         .IF_to_ID_bus       (IF_to_ID_bus),
@@ -104,7 +106,7 @@ module pipeline_top(
     EX_stage u_EX_stage(
         .clk                (clk),
         .reset              (reset),
-        .FLUSH_IDEX         (flush_idex),
+        .FLUSH_IDEX         (Flush_IDEX),
         
         .ID_to_EX_valid     (ID_to_EX_valid),
         .ID_to_EX_bus       (ID_to_EX_bus),
@@ -147,3 +149,4 @@ module pipeline_top(
     );
 
 endmodule
+`endif 

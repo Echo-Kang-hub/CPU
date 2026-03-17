@@ -1,3 +1,5 @@
+`ifndef __EX_STAGE_V__   
+`define __EX_STAGE_V__
 `include "definition.vh"
 
 module EX_stage(
@@ -24,8 +26,10 @@ module EX_stage(
     assign EX_allowin = !EX_valid || (EX_ready_go && MA_allowin);
     assign EX_to_MA_valid = EX_valid && EX_ready_go;
 
-    always @(posedge clk or posedge reset or posedge FLUSH_IDEX) begin
-        if (reset || FLUSH_IDEX) 
+    always @(posedge clk or posedge reset) begin
+        if (reset) 
+            EX_valid <= 1'b0;
+        else if (FLUSH_IDEX)
             EX_valid <= 1'b0;
         else begin
             if (EX_allowin) 
@@ -80,3 +84,4 @@ module EX_stage(
         EX_MemtoReg, EX_RegWrite, EX_rd}; // WB
 
 endmodule
+`endif

@@ -1,3 +1,5 @@
+`ifndef __MA_STAGE_V__   
+`define __MA_STAGE_V__
 `include "definition.vh"
 
 module MA_stage(
@@ -69,3 +71,4 @@ module MA_stage(
         MA_MemtoReg, MA_RegWrite, MA_rd}; 
 
 endmodule
+`endif

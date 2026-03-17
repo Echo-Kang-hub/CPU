@@ -1,3 +1,6 @@
+`ifndef __IF_STAGE_V__   
+`define __IF_STAGE_V__
+
 `include "definition.vh"
 
 module IF_stage(
@@ -53,3 +56,4 @@ module IF_stage(
     assign IF_to_ID_bus   = {PC_addr, instr}; 
 
 endmodule
+`endif

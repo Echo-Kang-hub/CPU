@@ -1,3 +1,5 @@
+`ifndef __WB_STAGE_V__   
+`define __WB_STAGE_V__
 `include "definition.vh"
 
 module WB_stage(
@@ -51,3 +53,4 @@ module WB_stage(
     assign RF_write_data_out = (WB_MemtoReg == `MemtoReg_MEM) ? WB_DM_read_data : 
                                (WB_MemtoReg == `MemtoReg_PC4) ? WB_PC_plus_4 : WB_aluout;
 endmodule
+`endif

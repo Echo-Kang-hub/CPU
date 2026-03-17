@@ -17,10 +17,10 @@ module tb;
         .reset            (reset),
         .instr_addr       (instr_addr),
         .instr            (instr),
-        .DM_addr          (DM_write_addr),   // 注意：你顶层模块里叫 DM_addr 和 DM_wdata 等
-        .DM_wdata         (DM_write_data),
-        .DM_we            (DM_write_enable),
-        .DM_rdata         (DM_read_data)
+        .DM_write_addr    (DM_write_addr),
+        .DM_write_data    (DM_write_data),
+        .DM_write_enable  (DM_write_enable),
+        .DM_read_data     (DM_read_data)
     );
     
 

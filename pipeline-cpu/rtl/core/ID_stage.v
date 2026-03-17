@@ -1,3 +1,5 @@
+`ifndef __ID_STAGE_V__   
+`define __ID_STAGE_V__
 `include "definition.vh"
 
 module ID_stage(
@@ -37,8 +39,10 @@ module ID_stage(
     assign ID_allowin = !ID_valid || (ID_ready_go && EX_allowin);
     assign ID_to_EX_valid = ID_valid && ID_ready_go;
 
-    always @(posedge clk or posedge reset or posedge FLUSH_IFID) begin
-        if (reset || FLUSH_IFID) 
+    always @(posedge clk or posedge reset) begin
+        if (reset) 
+            ID_valid <= 1'b0;
+        else if (FLUSH_IFID)
             ID_valid <= 1'b0;
         else begin
             if (ID_allowin) 
@@ -150,3 +154,4 @@ module ID_stage(
         MemtoReg, RegWrite, rd};
 
 endmodule
+`endif

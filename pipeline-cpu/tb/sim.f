@@ -1,12 +1,20 @@
-// tb/sim.f 的内容
-// 1. 告诉编译器头文件在哪 (+incdir+ 是 Verilog 专门用来指定 include 路径的语法)
 +incdir+../rtl/include
++incdir+../rtl/core
 
-// 2. 把所有核心设计文件加进来 (支持通配符)
-../rtl/core/*.v
-../rtl/common/*.v
-
-// 3. 把测试平台加进来
 pipeline_tb.v
 
-// 执行 iverilog -o sim.out -c sim.f
+../rtl/core/IF_stage.v
+../rtl/core/ID_stage.v
+../rtl/core/EX_stage.v
+../rtl/core/MA_stage.v
+../rtl/core/WB_stage.v
+../rtl/core/pipeline_top.v
+
+../rtl/utils/PC.v
+../rtl/utils/NPC.v
+../rtl/utils/alu.v
+../rtl/utils/RF.v
+../rtl/utils/EXT.v
+../rtl/utils/ctrl.v
+
+// iverilog -o sim.out -c sim.f
