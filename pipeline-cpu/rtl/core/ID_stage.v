@@ -136,7 +136,15 @@ module ID_stage(
     assign Jal_target_addr = PC_addr + immout; // immout换成jimm也行
     assign Jalr_taken = (opcode == 7'b1100111); // jalr
     assign Jalr_target_addr = (RD1 + immout) & 32'hfffffffe; // clear the least significant bit，immout换成iimm也行
+    wire [31:0] PC_plus_4 = PC_addr + 4;
 
-    assign ID_to_EX_bus = {PC_addr, RD1, RD2, ALUOp, ALUSrc, rd, RegWrite, MemWrite};
+    assign ID_to_EX_bus = {
+        PC_addr, 
+        RD1, RD2, 
+        immout, 
+        PC_plus_4,
+        ALUOp, ALUSrc, 
+        MemWrite, DMType, 
+        WDSel, RegWrite, rd};
 
 endmodule
