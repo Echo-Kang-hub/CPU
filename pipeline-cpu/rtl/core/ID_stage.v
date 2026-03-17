@@ -67,25 +67,26 @@ module ID_stage(
     wire [19:0] jimm      = {instr[31],instr[19:12],instr[20],instr[30:21]}; // jal
 
     // Control
-    wire RegWrite, ALUSrc, MemWrite;
+    wire RegWrite, ALUSrc1, ALUSrc2, MemWrite;
     wire [2:0] EXTOp;
     wire [2:0] BranchOp;
     wire [3:0] ALUOp;
     wire [2:0] DMType;
-    wire [2:0] WDSel;
+    wire [1:0] MemtoReg;
 
     ctrl u_ctrl(
         .Op(opcode),
         .Funct7(funct7),
         .Funct3(funct3),
         .RegWrite(RegWrite),
-        .ALUSrc(ALUSrc),
+        .ALUSrc1(ALUSrc1),
+        .ALUSrc2(ALUSrc2),
         .MemWrite(MemWrite),
         .EXTOp(EXTOp),
         .BranchOp(BranchOp),
         .ALUOp(ALUOp),
         .DMType(DMType),
-        .WDSel(WDSel)
+        .MemtoReg(MemtoReg)
     );
 
     // Register File
@@ -140,11 +141,10 @@ module ID_stage(
 
     assign ID_to_EX_bus = {
         PC_addr, 
-        RD1, RD2, 
-        immout, 
         PC_plus_4,
-        ALUOp, ALUSrc, 
-        MemWrite, DMType, 
-        WDSel, RegWrite, rd};
+        RD1, RD2, 
+        ALUOp, ALUSrc1, ALUSrc2,
+        MemWrite, DMType,
+        MemtoReg, RegWrite, rd};
 
 endmodule

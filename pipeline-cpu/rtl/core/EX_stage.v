@@ -39,7 +39,7 @@ module EX_stage(
     wire [31:0] RD1, RD2;
     // EX
     wire [3:0]  ALUOp;
-    wire ALUSrc;
+    wire ALUSrc1, ALUSrc2;
     //MA
     wire EX_MemWrite;
     wire [2:0]  EX_DMType;
@@ -54,19 +54,19 @@ module EX_stage(
 
     assign {
         PC_addr, 
+        EX_PC_plus_4,
         RD1, RD2, 
-        ALUOp, ALUSrc, 
-        EX_MemWrite, EX_DMType, 
-        EX_WDSel, EX_RegWrite, EX_rd,
-        EX_immout, 
-        EX_PC_plus_4} = ID_to_EX_bus_reg;
+        ALUOp, ALUSrc1, ALUSrc2,
+        EX_MemWrite, EX_DMType,
+        EX_MemtoReg, EX_RegWrite, EX_rd} = ID_to_EX_bus_reg;
 
     wire [31:0] A, B;
     wire [31:0] aluout;
-    assign B = (ALUSrc == 1'b0)? RD2 : EX_immout;
+    assign A = (ALUSrc1 == 1'b0)? RD1 : PC_addr;
+    assign B = (ALUSrc2 == 1'b0)? RD2 : EX_immout;
 
     alu ALU(
-        .A(RD1),
+        .A(A),
         .B(B),
         .ALUOp(ALUOp),
         .C(aluout)
@@ -74,8 +74,8 @@ module EX_stage(
 
     assign EX_to_MA_bus = {
         aluout, RD2, // data
+        EX_PC_plus_4,
         EX_MemWrite, EX_DMType, // MA 
-        EX_WDSel, EX_RegWrite, EX_rd,
-        EX_PC_plus_4}; // WB
+        EX_WDSel, EX_RegWrite, EX_rd}; // WB
 
 endmodule

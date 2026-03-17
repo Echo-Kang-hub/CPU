@@ -16,6 +16,8 @@ always @(*) begin
         `ALUOp_and:  C = A & B;
         `ALUOp_or:   C = A | B;
         `ALUOp_xor:  C = A ^ B;
+        `ALUOp_lui:  C = B;
+        `ALUOp_auipc: C = A + B;
 
         `ALUOp_sll: C = A << B[4:0];
         `ALUOp_srl: C = A >> B[4:0];

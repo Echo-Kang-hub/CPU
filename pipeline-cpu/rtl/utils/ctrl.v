@@ -4,13 +4,14 @@ module ctrl(
     input [6:0] Funct7,
     input [2:0] Funct3,
     output RegWrite,
-    output ALUSrc,
+    output ALUSrc1,
+    output ALUSrc2,
     output MemWrite,
     output [2:0] EXTOp,
     output [2:0] BranchOp,
     output [3:0] ALUOp,
     output [2:0] DMType,
-    output [2:0] WDSel // MemtoReg
+    output [1:0] MemtoReg 
 );
     // R_type 10条
     // I4: ADD/SUB/SLL/SLT/SLTU/XOR/SRL/SRA/OR/AND 10
@@ -85,26 +86,29 @@ module ctrl(
 
     reg [2:0] EXTOp_reg;
     reg [2:0] BranchOp_reg;
-    reg       ALUSrc_reg;
+    reg       ALUSrc1_reg;
+    reg       ALUSrc2_reg;
     reg [3:0] ALUOp_reg;
     reg [2:0] DMType_reg;
-    reg [2:0] WDSel_reg;
+    reg [1:0] MemtoReg_reg;
 
     assign EXTOp  = EXTOp_reg;
     assign BranchOp = BranchOp_reg;
-    assign ALUSrc = ALUSrc_reg;
+    assign ALUSrc1 = ALUSrc1_reg;
+    assign ALUSrc2 = ALUSrc2_reg;
     assign ALUOp  = ALUOp_reg;
     assign DMType = DMType_reg;
-    assign WDSel  = WDSel_reg;
+    assign MemtoReg  = MemtoReg_reg;
 
     always @(*) begin
         
         EXTOp_reg  = `EXT_ITYPE; // 默认 I 型扩展
         BranchOp_reg = `Branch_NONE; // 默认不比较，直接过
-        ALUSrc_reg = 1'b0;       // 默认 ALU B口 来自寄存器
+        ALUSrc1_reg = 1'b0;      // 默认 ALU A口 来自寄存器
+        ALUSrc2_reg = 1'b0;      // 默认 ALU B口 来自寄存器
         ALUOp_reg  = `ALUOp_add;   // 默认 ALU 做加法 (算地址常用)
         DMType_reg = `DM_WORD;   // 默认 32位 访存
-        WDSel_reg  = `WD_ALU;    // 默认 写回 ALU 结果
+        MemtoReg_reg  = `MemtoReg_ALU;    // 默认 写回 ALU 结果
         
         // EXTOp
         if      (itype_shamt) EXTOp_reg = `EXT_SHAMT;
@@ -127,7 +131,8 @@ module ctrl(
 
         // ALUSrc
         // 只有 R型运算 和 Branch分支 比较的是两个寄存器 (1'b0)，其余大多需要立即数参与计算
-        if (itype_r | load | store | i_jal | i_jalr) ALUSrc_reg = 1'b1;
+        if (i_auipc) ALUSrc1_reg = 1'b1;
+        if (itype_r | load | store) ALUSrc2_reg = 1'b1;
 
         // ALUOp
         if      (i_sub)                 ALUOp_reg = `ALUOp_sub;
@@ -139,6 +144,8 @@ module ctrl(
         else if (i_sra | i_srai)        ALUOp_reg = `ALUOp_sra;
         else if (i_slt | i_slti)        ALUOp_reg = `ALUOp_slt;
         else if (i_sltu| i_sltiu)       ALUOp_reg = `ALUOp_sltu;
+        else if (i_lui)                 ALUOp_reg = `ALUOp_lui;
+        else if (i_auipc)               ALUOp_reg = `ALUOp_auipc;
         // 其余默认 ALU_ADD (涵盖了 add, addi, load, store 的地址计算)
 
         // DMType
@@ -148,12 +155,10 @@ module ctrl(
         else if (i_lhu)          DMType_reg = `DM_HALFU;
         // 其余 lw, sw 默认 DM_WORD
 
-        // WDSel
-        if      (load)           WDSel_reg = `WD_MEM;
-        else if (i_jal | i_jalr) WDSel_reg = `WD_PC4;
-        else if (i_lui)          WDSel_reg = `WD_IMM;
-        else if (i_auipc)        WDSel_reg = `WD_PCIMM;
-        // 其余默认 WD_ALU
+        // MemtoReg
+        if      (load)           MemtoReg_reg = `MemtoReg_MEM;
+        else if (i_jal | i_jalr) MemtoReg_reg = `MemtoReg_PC4;
+        // 其余默认 MemtoReg_ALU
     end
 
 endmodule

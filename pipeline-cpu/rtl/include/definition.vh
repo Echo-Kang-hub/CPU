@@ -29,12 +29,16 @@
 `define ALUOp_and  4'b0010
 `define ALUOp_or   4'b0011
 `define ALUOp_xor  4'b0100
+`define ALUOp_lui  4'b0101
+`define ALUOp_auipc 4'b0110
 
 `define ALUOp_sll  4'b1000
 `define ALUOp_srl  4'b1001
 `define ALUOp_sra  4'b1010
 `define ALUOp_slt  4'b1100
 `define ALUOp_sltu 4'b1101
+
+
 
 // DMType
 `define DM_WORD    3'b000 // lw, sw
@@ -43,9 +47,7 @@
 `define DM_BYTE    3'b011 // lb, sb
 `define DM_BYTEU   3'b100 // lbu
 
-// WDSel
-`define WD_ALU     3'b000
-`define WD_MEM     3'b001 // load
-`define WD_PC4     3'b010 // jal, jalr
-`define WD_IMM     3'b011 // lui
-`define WD_PCIMM   3'b100 // auipc
+// MemtoReg
+`define MemtoReg_ALU     2'b00 // auipc, lui, R-type, I-type (except load)
+`define MemtoReg_MEM     2'b01 // load
+`define MemtoReg_PC4     2'b10 // jal, jalr
