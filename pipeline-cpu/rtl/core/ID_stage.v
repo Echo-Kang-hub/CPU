@@ -3,7 +3,7 @@
 module ID_stage(
     input  wire        clk,
     input  wire        reset,
-    input  wire        FLUSH_IF,
+    input  wire        FLUSH_IFID,
 
     // from IF
     input  wire        IF_to_ID_valid, 
@@ -37,8 +37,8 @@ module ID_stage(
     assign ID_allowin = !ID_valid || (ID_ready_go && EX_allowin);
     assign ID_to_EX_valid = ID_valid && ID_ready_go;
 
-    always @(posedge clk) begin
-        if (reset || FLUSH_IF) 
+    always @(posedge clk or posedge reset or posedge FLUSH_IFID) begin
+        if (reset || FLUSH_IFID) 
             ID_valid <= 1'b0;
         else begin
             if (ID_allowin) 
@@ -70,7 +70,7 @@ module ID_stage(
     wire RegWrite, ALUSrc, MemWrite;
     wire [2:0] EXTOp;
     wire [2:0] BranchOp;
-    wire [4:0] ALUOp;
+    wire [3:0] ALUOp;
     wire [2:0] DMType;
     wire [2:0] WDSel;
 

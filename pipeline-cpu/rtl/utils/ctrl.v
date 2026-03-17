@@ -8,7 +8,7 @@ module ctrl(
     output MemWrite,
     output [2:0] EXTOp,
     output [2:0] BranchOp,
-    output [4:0] ALUOp,
+    output [3:0] ALUOp,
     output [2:0] DMType,
     output [2:0] WDSel // MemtoReg
 );
@@ -86,7 +86,7 @@ module ctrl(
     reg [2:0] EXTOp_reg;
     reg [2:0] BranchOp_reg;
     reg       ALUSrc_reg;
-    reg [4:0] ALUOp_reg;
+    reg [3:0] ALUOp_reg;
     reg [2:0] DMType_reg;
     reg [2:0] WDSel_reg;
 

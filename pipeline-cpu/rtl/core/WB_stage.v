@@ -28,16 +28,15 @@ module WB_stage(
     // WB 是流水线最后一棒，它之后就是物理的 RF 了，所以它总是允许写入
     assign WB_allowin = !MA_to_WB_valid || WB_ready_go; 
 
-    always @(posedge clk) begin
+    always @(posedge clk or posedge reset) begin
         if (reset) 
             MA_to_WB_valid <= 1'b0;
-        else if (WB_allowin) 
-            MA_to_WB_valid <= MA_to_WB_valid;
-    end
-
-    always @(posedge clk) begin
-        if (WB_allowin && MA_to_WB_valid) 
-            MA_to_WB_bus_reg <= MA_to_WB_bus;
+        else begin
+            if (WB_allowin) 
+                MA_to_WB_valid <= MA_to_WB_valid;
+            if (WB_allowin && MA_to_WB_valid) 
+                MA_to_WB_bus_reg <= MA_to_WB_bus;
+        end
     end
 
     // ==========================================

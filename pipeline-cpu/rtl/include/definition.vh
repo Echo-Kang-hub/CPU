@@ -23,18 +23,18 @@
 `define Branch_BLTU 3'b101
 `define Branch_BGEU 3'b110
 
-// ALUOp: 00xxx算术逻辑, 01xxx移位比较, 10xxx分支
-`define ALUOp_add  5'b00000
-`define ALUOp_sub  5'b00001
-`define ALUOp_and  5'b00010
-`define ALUOp_or   5'b00011
-`define ALUOp_xor  5'b00100
+// ALUOp: 0xxx算术逻辑, 1xxx移位比较
+`define ALUOp_add  4'b0000
+`define ALUOp_sub  4'b0001
+`define ALUOp_and  4'b0010
+`define ALUOp_or   4'b0011
+`define ALUOp_xor  4'b0100
 
-`define ALUOp_sll  5'b01000
-`define ALUOp_srl  5'b01001
-`define ALUOp_sra  5'b01010
-`define ALUOp_slt  5'b01100
-`define ALUOp_sltu 5'b01101
+`define ALUOp_sll  4'b1000
+`define ALUOp_srl  4'b1001
+`define ALUOp_sra  4'b1010
+`define ALUOp_slt  4'b1100
+`define ALUOp_sltu 4'b1101
 
 // DMType
 `define DM_WORD    3'b000 // lw, sw

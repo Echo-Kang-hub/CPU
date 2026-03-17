@@ -3,7 +3,7 @@
 module EX_stage(
     input  wire        clk,
     input  wire        reset,
-    input  wire        FLUSH_ID, // 处理 Load-Use 冒险时冲刷本级
+    input  wire        FLUSH_IDEX, // 处理 Load-Use 冒险时冲刷本级
 
     // from ID
     input  wire        ID_to_EX_valid,
@@ -24,21 +24,20 @@ module EX_stage(
     assign EX_allowin = !EX_valid || (EX_ready_go && MA_allowin);
     assign EX_to_MA_valid = EX_valid && EX_ready_go;
 
-    always @(posedge clk) begin
-        if (reset || FLUSH_ID) 
+    always @(posedge clk or posedge reset or posedge FLUSH_IDEX) begin
+        if (reset || FLUSH_IDEX) 
             EX_valid <= 1'b0;
-        else if (EX_allowin) 
-            EX_valid <= ID_to_EX_valid;
-    end
-
-    always @(posedge clk) begin
-        if (EX_allowin && ID_to_EX_valid) 
-            ID_to_EX_bus_reg <= ID_to_EX_bus;
+        else begin
+            if (EX_allowin) 
+                EX_valid <= ID_to_EX_valid;
+            if (EX_allowin && ID_to_EX_valid) 
+                ID_to_EX_bus_reg <= ID_to_EX_bus;
+        end
     end
 
 
     wire [31:0] PC_addr, RD1, RD2, immout;
-    wire [4:0]  ALUOp, EX_rd;
+    wire [3:0]  ALUOp, EX_rd;
     wire        EX_RegWrite, EX_MemWrite;
     assign {PC_addr, RD1, RD2, ALUOp, ALUSrc, EX_rd, EX_RegWrite, EX_MemWrite} = ID_to_EX_bus_reg;
 
@@ -53,6 +52,6 @@ module EX_stage(
         .C(aluout)
     );
 
-    assign EX_to_MA_bus = {PC_addr, aluout, ALUSrc, EX_rd, EX_RegWrite, EX_MemWrite};
+    assign EX_to_MA_bus = {aluout, B, EX_rd, EX_RegWrite, EX_MemWrite};
 
 endmodule
