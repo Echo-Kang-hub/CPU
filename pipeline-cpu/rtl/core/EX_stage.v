@@ -56,6 +56,7 @@ module EX_stage(
         PC_addr, 
         EX_PC_plus_4,
         RD1, RD2, 
+        EX_immout,
         ALUOp, ALUSrc1, ALUSrc2,
         EX_MemWrite, EX_DMType,
         EX_MemtoReg, EX_RegWrite, EX_rd} = ID_to_EX_bus_reg;
@@ -76,6 +77,6 @@ module EX_stage(
         aluout, RD2, // data
         EX_PC_plus_4,
         EX_MemWrite, EX_DMType, // MA 
-        EX_WDSel, EX_RegWrite, EX_rd}; // WB
+        EX_MemtoReg, EX_RegWrite, EX_rd}; // WB
 
 endmodule

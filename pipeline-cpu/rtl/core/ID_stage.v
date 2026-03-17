@@ -123,19 +123,20 @@ module ID_stage(
     wire branch_ltu = ($unsigned(RD1) < $unsigned(RD2));
     wire branch_geu = ($unsigned(RD1) >= $unsigned(RD2));
 
-    assign Branch_taken = (BranchOp == `Branch_BEQ)  ? branch_eq  :
+    assign Branch_taken = ID_valid && (
+                          (BranchOp == `Branch_BEQ)  ? branch_eq  :
                           (BranchOp == `Branch_BNE)  ? branch_ne  :
                           (BranchOp == `Branch_BLT)  ? branch_lt  :
                           (BranchOp == `Branch_BGE)  ? branch_ge  :
                           (BranchOp == `Branch_BLTU) ? branch_ltu :
-                          (BranchOp == `Branch_BGEU) ? branch_geu : 1'b0;
+                          (BranchOp == `Branch_BGEU) ? branch_geu : 1'b0);
 
     assign Branch_target_addr = PC_addr + immout;
 
     // Jal/Jalr calculation
-    assign Jal_taken = (opcode == 7'b1101111); // jal
+    assign Jal_taken  = ID_valid && (opcode == 7'b1101111); // jal
     assign Jal_target_addr = PC_addr + immout; // immout换成jimm也行
-    assign Jalr_taken = (opcode == 7'b1100111); // jalr
+    assign Jalr_taken = ID_valid && (opcode == 7'b1100111); // jalr
     assign Jalr_target_addr = (RD1 + immout) & 32'hfffffffe; // clear the least significant bit，immout换成iimm也行
     wire [31:0] PC_plus_4 = PC_addr + 4;
 
@@ -143,6 +144,7 @@ module ID_stage(
         PC_addr, 
         PC_plus_4,
         RD1, RD2, 
+        immout,
         ALUOp, ALUSrc1, ALUSrc2,
         MemWrite, DMType,
         MemtoReg, RegWrite, rd};

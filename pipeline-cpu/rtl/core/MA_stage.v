@@ -42,9 +42,11 @@ module MA_stage(
             
     end
 
+    wire [31:0] MA_PC_plus_4;
     // MA
     wire [31:0] MA_aluout;
     wire MA_MemWrite;
+    wire [2:0]  MA_DMType;
     // WB
     wire [1:0] MA_MemtoReg;
     wire MA_RegWrite;

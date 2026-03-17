@@ -1,207 +1,149 @@
-`timescale 1ns / 1ps
 `include "definition.vh"
 `include "IF_stage.v"
 `include "ID_stage.v"
 `include "EX_stage.v"
 `include "MA_stage.v"
 `include "WB_stage.v"
-
-// 37条基本指令
-// I0: LUI/AUIPC (2)
-// I3: ADDI/SLTI/SLTIU/XORI/ORI/ANDI/SLLI/SRLI/SRAI (9)
-// I4: ADD/SUB/SLL/SLT/SLTU/XOR/SRL/SRA/OR/AND (10)
-// I1: JAL/JALR/BEQ/BNE/BLT/BGE/BLTU/BGEU (8)
-// I2: LB/LH/LW/LBU/LHU/SB/SH/SW (8)
-
 module pipeline_top(
     input  wire        clk,
-    input  wire        rstn,
+    input  wire        reset,
 
-    // Instruction Memory
+    // Instruction Memory (IMEM) Interface
     output wire [31:0] instr_addr,
     input  wire [31:0] instr,
 
-    // Data Memory
-    output wire        dm_write_enable,
-    output wire [31:0] dm_addr,
-    output wire [31:0] dm_write_data,
-    input  wire [31:0] dm_read_data,
-    output wire [2:0]  dm_type // 可选：用于传 DMType（如字节/半字掩码）
+    // Data Memory (DMEM) Interface
+    output wire [31:0] DM_write_addr,
+    output wire [31:0] DM_write_data,
+    output wire        DM_write_enable,
+    // output wire [2:0]  DM_Type, // 如果你的内存模块支持 Byte/Half 操作，就把这个引脚加上
+    input  wire [31:0] DM_read_data
 );
 
-    // 内部复位信号（低电平有效转高电平有效）
-    wire reset = ~rstn;
 
-    // IF -> ID 阶段
-    wire                    IF_to_ID_valid;
-    wire                    ID_allowin;
-    wire [`IF_TO_ID_WD-1:0] IF_to_ID_bus;  // 包含: {PC, Instruction}
+    wire IF_to_ID_valid;
+    wire [`IF_to_ID_BUS_WIDTH-1:0] IF_to_ID_bus;
+    wire ID_allowin;
 
-    // ID -> EX 阶段
-    wire                    ID_to_EX_valid;
-    wire                    EX_allowin;
-    wire [`ID_TO_EX_WD-1:0] ID_to_EX_bus;  // 包含: {PC, ALU_Op, RF_read_data1, RF_read_data2, Immediate, 各种控制信号...}
+    wire ID_to_EX_valid;
+    wire [`ID_to_EX_BUS_WIDTH-1:0] ID_to_EX_bus;
+    wire EX_allowin;
 
-    // EX -> MA 阶段
-    wire                    EX_to_MA_valid;
-    wire                    MA_allowin;
-    wire [`EX_TO_MA_WD-1:0] EX_to_MA_bus;  // 包含: {PC, ALU_Result, RF_read_data2(用于Store), 访存控制, 写回控制...}
+    wire EX_to_MA_valid;
+    wire [`EX_to_MA_BUS_WIDTH-1:0] EX_to_MA_bus;
+    wire MA_allowin;
 
-    // MA -> WB 阶段
-    wire                    MA_to_WB_valid;
-    wire                    WB_allowin;
-    wire [`MA_TO_WB_WD-1:0] MA_to_WB_bus;  // 包含: {PC, ALU_Result, Memory_read_data, 写回控制...}
+    wire MA_to_WB_valid;
+    wire [`MA_to_WB_BUS_WIDTH-1:0] MA_to_WB_bus;
+    wire WB_allowin;
 
+    // WB -> ID (寄存器写回)
+    wire        RF_write_enable;
+    wire [4:0]  RF_write_addr;
+    wire [31:0] RF_write_data;
 
-    // 写回信号 (从 WB 级倒流回 ID 级的寄存器堆 RF)
-    wire        RF_write_enable_from_WB;
-    wire [4:0]  RF_write_address_from_WB;
-    wire [31:0] RF_write_data_from_WB;
-    
-    // 冲刷信号 (Flush - 用于清空流水线级里的错误数据)
-    wire FLUSH_IF; 
-    wire FLUSH_ID; 
-    wire FLUSH_EX;
-    
-    // 分支重定向 (Branch Redirect 计划从 ID 发出，送回 IF 修正 PC)
+    // ID -> IF (分支跳转)
     wire        Branch_taken;
     wire [31:0] Branch_target_addr;
+    wire        Jal_taken;
+    wire [31:0] Jal_target_addr;
+    wire        Jalr_taken;
+    wire [31:0] Jalr_target_addr;
 
-    // 前递数据 (Forwarding - 提前把算好的数据送回 ID 级解决数据冒险)
-    wire [31:0] EX_forwarding_data;
-    wire [31:0] MA_forwarding_data;
-    wire [31:0] WB_forwarding_data;
+    // 控制冲刷 (由于暂不考虑冒险，普通情况下给0)
+    // 但如果有跳转发生，必须冲刷掉 IF 阶段刚好取进来的错误指令！
+    wire flush_ifid = Branch_taken || Jal_taken || Jalr_taken;
+    wire flush_idex = 1'b0; // 暂不处理 load-use 冒险
 
 
-    
-
-    // --- 1. 取指级 (Instruction Fetch) ---
-    IF_stage U_IF (
-        .clk                    (clk),
-        .reset                  (reset),
+    IF_stage u_IF_stage(
+        .clk                (clk),
+        .reset              (reset),
         
-        // 握手与总线
-        .ID_allowin             (ID_allowin),
-        .IF_to_ID_valid         (IF_to_ID_valid),
-        .IF_to_ID_bus           (IF_to_ID_bus),
+        .ID_allowin         (ID_allowin),
         
-        // IM 接口
-        .instr_addr    (instr_addr),
-        .instr  (instr),
+        .instr_addr         (instr_addr),
+        .instr              (instr),
         
-        // 控制流反馈 (分支预测失败/冲刷)
-        .Branch_taken           (Branch_taken),
-        .Branch_target_addr  (Branch_target_addr),
-        .FLUSH_IF               (FLUSH_IF)
+        .Branch_taken       (Branch_taken),
+        .Branch_target_addr (Branch_target_addr),
+        .Jal_taken          (Jal_taken),
+        .Jal_target_addr    (Jal_target_addr),
+        .Jalr_taken         (Jalr_taken),
+        .Jalr_target_addr   (Jalr_target_addr),
+        
+        .IF_to_ID_valid     (IF_to_ID_valid),
+        .IF_to_ID_bus       (IF_to_ID_bus)
     );
 
-    // --- 2. 译码级 (Instruction Decode) ---
-    ID_stage U_ID (
-        .clk                    (clk),
-        .reset                  (reset),
+    ID_stage u_ID_stage(
+        .clk                (clk),
+        .reset              (reset),
+        .FLUSH_IFID         (flush_ifid),
         
-        // 与 IF 的握手
-        .ID_allowin             (ID_allowin),
-        .IF_to_ID_valid         (IF_to_ID_valid),
-        .IF_to_ID_bus           (IF_to_ID_bus),
+        .IF_to_ID_valid     (IF_to_ID_valid),
+        .IF_to_ID_bus       (IF_to_ID_bus),
+        .ID_allowin         (ID_allowin),
         
-        // 与 EX 的握手
-        .EX_allowin             (EX_allowin),
-        .ID_to_EX_valid         (ID_to_EX_valid),
-        .ID_to_EX_bus           (ID_to_EX_bus),
-
-        // 接收来自 WB 级的写回信号 (写入寄存器堆)
-        .RF_write_enable        (RF_write_enable_from_WB),
-        .RF_write_addr          (RF_write_address_from_WB),
-        .RF_write_data          (RF_write_data_from_WB)
+        .EX_allowin         (EX_allowin),
+        .ID_to_EX_valid     (ID_to_EX_valid),
+        .ID_to_EX_bus       (ID_to_EX_bus),
         
-        // 前递信号输入 (解决数据冒险)
-        // .EX_forwarding_data  (EX_forwarding_data), 
-        // .MA_forwarding_data  (MA_forwarding_data),
-        // .WB_forwarding_data  (WB_forwarding_data), 
+        .WB_RF_write_enable (RF_write_enable),
+        .WB_RF_write_addr   (RF_write_addr),
+        .WB_RF_write_data   (RF_write_data),
         
-        // 冲刷
-        // .FLUSH_ID               (FLUSH_ID)
+        .Branch_taken       (Branch_taken),
+        .Branch_target_addr (Branch_target_addr),
+        .Jal_taken          (Jal_taken),
+        .Jal_target_addr    (Jal_target_addr),
+        .Jalr_taken         (Jalr_taken),
+        .Jalr_target_addr   (Jalr_target_addr)
     );
 
-    // --- 3. 执行级 (Execution) ---
-    EX_stage U_EX (
-        .clk                    (clk),
-        .reset                  (reset),
+    EX_stage u_EX_stage(
+        .clk                (clk),
+        .reset              (reset),
+        .FLUSH_IDEX         (flush_idex),
         
-        // 与 ID 的握手
-        .EX_allowin             (EX_allowin),
-        .ID_to_EX_valid         (ID_to_EX_valid),
-        .ID_to_EX_bus           (ID_to_EX_bus),
+        .ID_to_EX_valid     (ID_to_EX_valid),
+        .ID_to_EX_bus       (ID_to_EX_bus),
+        .EX_allowin         (EX_allowin),
         
-        // 与 MA 的握手
-        .MA_allowin             (MA_allowin),
-        .EX_to_MA_valid         (EX_to_MA_valid),
-        .EX_to_MA_bus           (EX_to_MA_bus),
-        
-        // 分支计算结果送回 IF
-        .Branch_taken           (Branch_taken),
-        .Branch_target_addr  (Branch_target_addr)
-        
-        // // 前递输出
-        // .EX_forwarding_data     (EX_forwarding_data),
-        
-        // // 冲刷
-        // .FLUSH_EX               (FLUSH_EX)
+        .MA_allowin         (MA_allowin),
+        .EX_to_MA_valid     (EX_to_MA_valid),
+        .EX_to_MA_bus       (EX_to_MA_bus)
     );
 
-    // --- 4. 访存级 (Memory Access) ---
-    MA_stage U_MA (
-        .clk                    (clk),
-        .reset                  (reset),
+    MA_stage u_MA_stage(
+        .clk                (clk),
+        .reset              (reset),
         
-        // 与 EX 的握手
-        .MA_allowin             (MA_allowin),
-        .EX_to_MA_valid         (EX_to_MA_valid),
-        .EX_to_MA_bus           (EX_to_MA_bus),
+        .EX_to_MA_valid     (EX_to_MA_valid),
+        .EX_to_MA_bus       (EX_to_MA_bus),
+        .MA_allowin         (MA_allowin),
         
-        // 与 WB 的握手
-        .WB_allowin             (WB_allowin),
-        .MA_to_WB_valid         (MA_to_WB_valid),
-        .MA_to_WB_bus           (MA_to_WB_bus),
+        .WB_allowin         (WB_allowin),
+        .MA_to_WB_valid     (MA_to_WB_valid),
+        .MA_to_WB_bus       (MA_to_WB_bus),
         
-        // DM 接口
-        .dm_write_enable (dm_write_enable),
-        .dm_addr         (dm_addr),
-        .dm_write_data   (dm_write_data),
-        .dm_read_data    (dm_read_data),
-        .dm_type         (dm_type)
-        
-        // // 前递输出
-        // .MA_forwarding_data       (MA_forwarding_data)
+        .DM_write_addr      (DM_write_addr),
+        .DM_write_data      (DM_write_data),
+        .DM_write_enable    (DM_write_enable),
+        .DM_read_data       (DM_read_data)
     );
 
-    // --- 5. 写回级 (Write Back) ---
-    WB_stage U_WB (
-        .clk                    (clk),
-        .reset                  (reset),
+    WB_stage u_WB_stage(
+        .clk                (clk),
+        .reset              (reset),
         
-        // 与 MA 的握手
-        .WB_allowin             (WB_allowin),
-        .MA_to_WB_valid         (MA_to_WB_valid),
-        .MA_to_WB_bus           (MA_to_WB_bus),
-
-        // 写回数据到 ID 级的 RF (寄存器堆)
-        .RF_write_enable        (RF_write_enable_from_WB),
-        .RF_write_addr          (RF_write_address_from_WB),
-        .RF_write_data          (RF_write_data_from_WB),
+        .MA_to_WB_valid     (MA_to_WB_valid),
+        .MA_to_WB_bus       (MA_to_WB_bus),
+        .WB_allowin         (WB_allowin),
         
-        // 前递输出
-        .WB_forwarding_data     (WB_forwarding_data)
+        .RF_write_enable_out(RF_write_enable),
+        .RF_write_addr_out  (RF_write_addr),
+        .RF_write_data_out  (RF_write_data)
     );
-
-
-    // =========================================================================
-    // 4. 冲突控制单元 (Hazard Controller) - 初期不实现，接0处理
-    // =========================================================================
-    
-    assign FLUSH_IF = 1'b0;
-    assign FLUSH_ID = 1'b0;
-    assign FLUSH_EX = 1'b0;
 
 endmodule

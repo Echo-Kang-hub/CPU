@@ -13,6 +13,6 @@
 	"settings": {
 		"digital-ide.function.lsp.linter.mode": "shutdown",
 		"verilog.linting.iverilog.runAtFileLocation": true,
-        "verilog.linting.iverilog.arguments": "-g2012 -I . -I ../include -y . -y ../utils -y ../hazard"
+        "verilog.linting.iverilog.arguments": "-g2012 -I . -I ../include -I ../rtl/core -y . -y ../utils -y ../hazard -y ../rtl/core"
 	}
 }
