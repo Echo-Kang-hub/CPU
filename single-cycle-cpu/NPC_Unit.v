@@ -7,13 +7,13 @@ module NPC_Unit(
     input [31:0] aluout,
     output reg [31:0] NPC
 );
-always @(*) begin
-    case(NPCOp)
-        `NPC_PLUS4: NPC = PC + 4; // default
-        `NPC_BRANCH: NPC = PC + IMM; // branch
-        `NPC_JAL: NPC = PC + IMM; // jal
-        `NPC_JALR: NPC = aluout; // jalr
-        default: NPC = PC + 4;
-    endcase 
-end    
+    always @(*) begin
+        case(NPCOp)
+            `NPC_PLUS4: NPC = PC + 4; // default
+            `NPC_BRANCH: NPC = PC + IMM; // branch
+            `NPC_JAL: NPC = PC + IMM; // jal
+            `NPC_JALR: NPC = aluout; // jalr
+            default: NPC = PC + 4;
+        endcase 
+    end    
 endmodule

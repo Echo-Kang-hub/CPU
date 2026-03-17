@@ -32,10 +32,10 @@ module SCPU(
     wire [31:0] NPC;
     wire PCwr = 1'b1;
     
-    // 例化PC_Unit module 时序逻辑
+    // PC
     PC_Unit U_PC(.clk(clk),.rstn(~reset),.NPC(NPC),.PCwr(PCwr),.PC(PC));
 
-    // 例化NPC_Unit module 组合逻辑
+    // NPC
     NPC_Unit U_NPC(.PC(PC),.NPCOp(NPCOp),.IMM(immout),.aluout(aluout),.NPC(NPC));
 
     //Decode
@@ -80,7 +80,7 @@ module SCPU(
         .immout(immout)
     );
 
-    // 控制信号
+    // Control
     wire        RegWrite, MemWrite, ALUSrc, Zero;
     wire [1:0]  NPCOp;
     wire [2:0]  EXTOp;
@@ -88,7 +88,6 @@ module SCPU(
     wire [2:0]  DMType;
     wire [2:0]  WDSel;
 
-    // 例化ctrl模块 组合逻辑
     ctrl u_ctrl(
         .Op(Op),
         .Funct7(Funct7),
@@ -112,9 +111,10 @@ module SCPU(
     assign dm_addr = aluout;
     assign dm_din = RD2;
 
+    // ALU
     wire [31:0] A,B;
     wire [31:0] aluout;
-    // 例化alu模块 组合逻辑
+    
     alu U_alu(
         .A(A),
         .B(B),
@@ -151,7 +151,7 @@ module SCPU(
     reg [31:0] store_data;
     always @(*) begin
         case(DMType)
-            `DM_BYTE: begin // SB (存字节)
+            `DM_BYTE: begin // SB
                 case(aluout[1:0])
                     2'b00: store_data = {Data_in[31:8], RD2[7:0]};
                     2'b01: store_data = {Data_in[31:16], RD2[7:0], Data_in[7:0]};
@@ -159,13 +159,13 @@ module SCPU(
                     2'b11: store_data = {RD2[7:0], Data_in[23:0]};
                 endcase
             end
-            `DM_HALF: begin // SH (存半字)
+            `DM_HALF: begin // SH
                 case(aluout[1]) // 半字必须按 2 字节对齐，所以只看 aluout[1]
                     1'b0: store_data = {Data_in[31:16], RD2[15:0]};
                     1'b1: store_data = {RD2[15:0], Data_in[15:0]};
                 endcase
             end
-            default: begin  // SW (存字)
+            default: begin  // SW
                 store_data = RD2;
             end
         endcase
@@ -173,8 +173,8 @@ module SCPU(
 
     assign PC_out = PC;
     assign mem_w    = MemWrite;
-    assign Addr_out = aluout;    // 内存地址（ALU结果）
-    assign Data_out = store_data; // 存储数据
+    assign Addr_out = aluout; 
+    assign Data_out = store_data;
     assign reg_data = (reg_sel == 5'b0) ? 32'b0 : U_RF.rf[reg_sel];
 
 endmodule 
