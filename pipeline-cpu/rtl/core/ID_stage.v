@@ -127,7 +127,8 @@ module ID_stage(
     wire branch_ltu = ($unsigned(RD1) < $unsigned(RD2));
     wire branch_geu = ($unsigned(RD1) >= $unsigned(RD2));
 
-    assign Branch_taken = ID_valid && (
+    wire is_branch_type = (instr[6:0] == 7'b1100011);
+    assign Branch_taken = ID_valid && is_branch_type && (
                           (BranchOp == `Branch_BEQ)  ? branch_eq  :
                           (BranchOp == `Branch_BNE)  ? branch_ne  :
                           (BranchOp == `Branch_BLT)  ? branch_lt  :

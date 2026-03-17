@@ -1,202 +1,602 @@
-========== RISC-V Pipeline Simulation Log ==========
-Time: 15000 | [IF]  Fetch PC = 0x00000000, Instr = 0x00000013
-----------------------------------------------------
-Time: 25000 | [IF]  Fetch PC = 0x00000004, Instr = 0x00000013
-----------------------------------------------------
-Time: 35000 | [IF]  Fetch PC = 0xxxxxxxxx, Instr = 0xxxxxxxxx
-----------------------------------------------------
-Time: 45000 | [IF]  Fetch PC = 0xxxxxxxxx, Instr = 0xxxxxxxxx
-----------------------------------------------------
-Time: 55000 | [IF]  Fetch PC = 0xxxxxxxxx, Instr = 0xxxxxxxxx
-----------------------------------------------------
-Time: 65000 | [IF]  Fetch PC = 0xxxxxxxxx, Instr = 0xxxxxxxxx
-----------------------------------------------------
-Time: 75000 | [IF]  Fetch PC = 0xxxxxxxxx, Instr = 0xxxxxxxxx
-----------------------------------------------------
-Time: 85000 | [IF]  Fetch PC = 0xxxxxxxxx, Instr = 0xxxxxxxxx
-----------------------------------------------------
-Time: 95000 | [IF]  Fetch PC = 0xxxxxxxxx, Instr = 0xxxxxxxxx
-----------------------------------------------------
-Time: 105000 | [IF]  Fetch PC = 0xxxxxxxxx, Instr = 0xxxxxxxxx
-----------------------------------------------------
-Time: 115000 | [IF]  Fetch PC = 0xxxxxxxxx, Instr = 0xxxxxxxxx
-----------------------------------------------------
-Time: 125000 | [IF]  Fetch PC = 0xxxxxxxxx, Instr = 0xxxxxxxxx
-----------------------------------------------------
-Time: 135000 | [IF]  Fetch PC = 0xxxxxxxxx, Instr = 0xxxxxxxxx
-----------------------------------------------------
-Time: 145000 | [IF]  Fetch PC = 0xxxxxxxxx, Instr = 0xxxxxxxxx
-----------------------------------------------------
-Time: 155000 | [IF]  Fetch PC = 0xxxxxxxxx, Instr = 0xxxxxxxxx
-----------------------------------------------------
-Time: 165000 | [IF]  Fetch PC = 0xxxxxxxxx, Instr = 0xxxxxxxxx
-----------------------------------------------------
-Time: 175000 | [IF]  Fetch PC = 0xxxxxxxxx, Instr = 0xxxxxxxxx
-----------------------------------------------------
-Time: 185000 | [IF]  Fetch PC = 0xxxxxxxxx, Instr = 0xxxxxxxxx
-----------------------------------------------------
-Time: 195000 | [IF]  Fetch PC = 0xxxxxxxxx, Instr = 0xxxxxxxxx
-----------------------------------------------------
-Time: 205000 | [IF]  Fetch PC = 0xxxxxxxxx, Instr = 0xxxxxxxxx
-----------------------------------------------------
-Time: 215000 | [IF]  Fetch PC = 0xxxxxxxxx, Instr = 0xxxxxxxxx
-----------------------------------------------------
-Time: 225000 | [IF]  Fetch PC = 0xxxxxxxxx, Instr = 0xxxxxxxxx
-----------------------------------------------------
-Time: 235000 | [IF]  Fetch PC = 0xxxxxxxxx, Instr = 0xxxxxxxxx
-----------------------------------------------------
-Time: 245000 | [IF]  Fetch PC = 0xxxxxxxxx, Instr = 0xxxxxxxxx
-----------------------------------------------------
-Time: 255000 | [IF]  Fetch PC = 0xxxxxxxxx, Instr = 0xxxxxxxxx
-----------------------------------------------------
-Time: 265000 | [IF]  Fetch PC = 0xxxxxxxxx, Instr = 0xxxxxxxxx
-----------------------------------------------------
-Time: 275000 | [IF]  Fetch PC = 0xxxxxxxxx, Instr = 0xxxxxxxxx
-----------------------------------------------------
-Time: 285000 | [IF]  Fetch PC = 0xxxxxxxxx, Instr = 0xxxxxxxxx
-----------------------------------------------------
-Time: 295000 | [IF]  Fetch PC = 0xxxxxxxxx, Instr = 0xxxxxxxxx
-----------------------------------------------------
-Time: 305000 | [IF]  Fetch PC = 0xxxxxxxxx, Instr = 0xxxxxxxxx
-----------------------------------------------------
-Time: 315000 | [IF]  Fetch PC = 0xxxxxxxxx, Instr = 0xxxxxxxxx
-----------------------------------------------------
-Time: 325000 | [IF]  Fetch PC = 0xxxxxxxxx, Instr = 0xxxxxxxxx
-----------------------------------------------------
-Time: 335000 | [IF]  Fetch PC = 0xxxxxxxxx, Instr = 0xxxxxxxxx
-----------------------------------------------------
-Time: 345000 | [IF]  Fetch PC = 0xxxxxxxxx, Instr = 0xxxxxxxxx
-----------------------------------------------------
-Time: 355000 | [IF]  Fetch PC = 0xxxxxxxxx, Instr = 0xxxxxxxxx
-----------------------------------------------------
-Time: 365000 | [IF]  Fetch PC = 0xxxxxxxxx, Instr = 0xxxxxxxxx
-----------------------------------------------------
-Time: 375000 | [IF]  Fetch PC = 0xxxxxxxxx, Instr = 0xxxxxxxxx
-----------------------------------------------------
-Time: 385000 | [IF]  Fetch PC = 0xxxxxxxxx, Instr = 0xxxxxxxxx
-----------------------------------------------------
-Time: 395000 | [IF]  Fetch PC = 0xxxxxxxxx, Instr = 0xxxxxxxxx
-----------------------------------------------------
-Time: 405000 | [IF]  Fetch PC = 0xxxxxxxxx, Instr = 0xxxxxxxxx
-----------------------------------------------------
-Time: 415000 | [IF]  Fetch PC = 0xxxxxxxxx, Instr = 0xxxxxxxxx
-----------------------------------------------------
-Time: 425000 | [IF]  Fetch PC = 0xxxxxxxxx, Instr = 0xxxxxxxxx
-----------------------------------------------------
-Time: 435000 | [IF]  Fetch PC = 0xxxxxxxxx, Instr = 0xxxxxxxxx
-----------------------------------------------------
-Time: 445000 | [IF]  Fetch PC = 0xxxxxxxxx, Instr = 0xxxxxxxxx
-----------------------------------------------------
-Time: 455000 | [IF]  Fetch PC = 0xxxxxxxxx, Instr = 0xxxxxxxxx
-----------------------------------------------------
-Time: 465000 | [IF]  Fetch PC = 0xxxxxxxxx, Instr = 0xxxxxxxxx
-----------------------------------------------------
-Time: 475000 | [IF]  Fetch PC = 0xxxxxxxxx, Instr = 0xxxxxxxxx
-----------------------------------------------------
-Time: 485000 | [IF]  Fetch PC = 0xxxxxxxxx, Instr = 0xxxxxxxxx
-----------------------------------------------------
-Time: 495000 | [IF]  Fetch PC = 0xxxxxxxxx, Instr = 0xxxxxxxxx
-----------------------------------------------------
-Time: 505000 | [IF]  Fetch PC = 0xxxxxxxxx, Instr = 0xxxxxxxxx
-----------------------------------------------------
-Time: 515000 | [IF]  Fetch PC = 0xxxxxxxxx, Instr = 0xxxxxxxxx
-----------------------------------------------------
-Time: 525000 | [IF]  Fetch PC = 0xxxxxxxxx, Instr = 0xxxxxxxxx
-----------------------------------------------------
-Time: 535000 | [IF]  Fetch PC = 0xxxxxxxxx, Instr = 0xxxxxxxxx
-----------------------------------------------------
-Time: 545000 | [IF]  Fetch PC = 0xxxxxxxxx, Instr = 0xxxxxxxxx
-----------------------------------------------------
-Time: 555000 | [IF]  Fetch PC = 0xxxxxxxxx, Instr = 0xxxxxxxxx
-----------------------------------------------------
-Time: 565000 | [IF]  Fetch PC = 0xxxxxxxxx, Instr = 0xxxxxxxxx
-----------------------------------------------------
-Time: 575000 | [IF]  Fetch PC = 0xxxxxxxxx, Instr = 0xxxxxxxxx
-----------------------------------------------------
-Time: 585000 | [IF]  Fetch PC = 0xxxxxxxxx, Instr = 0xxxxxxxxx
-----------------------------------------------------
-Time: 595000 | [IF]  Fetch PC = 0xxxxxxxxx, Instr = 0xxxxxxxxx
-----------------------------------------------------
-Time: 605000 | [IF]  Fetch PC = 0xxxxxxxxx, Instr = 0xxxxxxxxx
-----------------------------------------------------
-Time: 615000 | [IF]  Fetch PC = 0xxxxxxxxx, Instr = 0xxxxxxxxx
-----------------------------------------------------
-Time: 625000 | [IF]  Fetch PC = 0xxxxxxxxx, Instr = 0xxxxxxxxx
-----------------------------------------------------
-Time: 635000 | [IF]  Fetch PC = 0xxxxxxxxx, Instr = 0xxxxxxxxx
-----------------------------------------------------
-Time: 645000 | [IF]  Fetch PC = 0xxxxxxxxx, Instr = 0xxxxxxxxx
-----------------------------------------------------
-Time: 655000 | [IF]  Fetch PC = 0xxxxxxxxx, Instr = 0xxxxxxxxx
-----------------------------------------------------
-Time: 665000 | [IF]  Fetch PC = 0xxxxxxxxx, Instr = 0xxxxxxxxx
-----------------------------------------------------
-Time: 675000 | [IF]  Fetch PC = 0xxxxxxxxx, Instr = 0xxxxxxxxx
-----------------------------------------------------
-Time: 685000 | [IF]  Fetch PC = 0xxxxxxxxx, Instr = 0xxxxxxxxx
-----------------------------------------------------
-Time: 695000 | [IF]  Fetch PC = 0xxxxxxxxx, Instr = 0xxxxxxxxx
-----------------------------------------------------
-Time: 705000 | [IF]  Fetch PC = 0xxxxxxxxx, Instr = 0xxxxxxxxx
-----------------------------------------------------
-Time: 715000 | [IF]  Fetch PC = 0xxxxxxxxx, Instr = 0xxxxxxxxx
-----------------------------------------------------
-Time: 725000 | [IF]  Fetch PC = 0xxxxxxxxx, Instr = 0xxxxxxxxx
-----------------------------------------------------
-Time: 735000 | [IF]  Fetch PC = 0xxxxxxxxx, Instr = 0xxxxxxxxx
-----------------------------------------------------
-Time: 745000 | [IF]  Fetch PC = 0xxxxxxxxx, Instr = 0xxxxxxxxx
-----------------------------------------------------
-Time: 755000 | [IF]  Fetch PC = 0xxxxxxxxx, Instr = 0xxxxxxxxx
-----------------------------------------------------
-Time: 765000 | [IF]  Fetch PC = 0xxxxxxxxx, Instr = 0xxxxxxxxx
-----------------------------------------------------
-Time: 775000 | [IF]  Fetch PC = 0xxxxxxxxx, Instr = 0xxxxxxxxx
-----------------------------------------------------
-Time: 785000 | [IF]  Fetch PC = 0xxxxxxxxx, Instr = 0xxxxxxxxx
-----------------------------------------------------
-Time: 795000 | [IF]  Fetch PC = 0xxxxxxxxx, Instr = 0xxxxxxxxx
-----------------------------------------------------
-Time: 805000 | [IF]  Fetch PC = 0xxxxxxxxx, Instr = 0xxxxxxxxx
-----------------------------------------------------
-Time: 815000 | [IF]  Fetch PC = 0xxxxxxxxx, Instr = 0xxxxxxxxx
-----------------------------------------------------
-Time: 825000 | [IF]  Fetch PC = 0xxxxxxxxx, Instr = 0xxxxxxxxx
-----------------------------------------------------
-Time: 835000 | [IF]  Fetch PC = 0xxxxxxxxx, Instr = 0xxxxxxxxx
-----------------------------------------------------
-Time: 845000 | [IF]  Fetch PC = 0xxxxxxxxx, Instr = 0xxxxxxxxx
-----------------------------------------------------
-Time: 855000 | [IF]  Fetch PC = 0xxxxxxxxx, Instr = 0xxxxxxxxx
-----------------------------------------------------
-Time: 865000 | [IF]  Fetch PC = 0xxxxxxxxx, Instr = 0xxxxxxxxx
-----------------------------------------------------
-Time: 875000 | [IF]  Fetch PC = 0xxxxxxxxx, Instr = 0xxxxxxxxx
-----------------------------------------------------
-Time: 885000 | [IF]  Fetch PC = 0xxxxxxxxx, Instr = 0xxxxxxxxx
-----------------------------------------------------
-Time: 895000 | [IF]  Fetch PC = 0xxxxxxxxx, Instr = 0xxxxxxxxx
-----------------------------------------------------
-Time: 905000 | [IF]  Fetch PC = 0xxxxxxxxx, Instr = 0xxxxxxxxx
-----------------------------------------------------
-Time: 915000 | [IF]  Fetch PC = 0xxxxxxxxx, Instr = 0xxxxxxxxx
-----------------------------------------------------
-Time: 925000 | [IF]  Fetch PC = 0xxxxxxxxx, Instr = 0xxxxxxxxx
-----------------------------------------------------
-Time: 935000 | [IF]  Fetch PC = 0xxxxxxxxx, Instr = 0xxxxxxxxx
-----------------------------------------------------
-Time: 945000 | [IF]  Fetch PC = 0xxxxxxxxx, Instr = 0xxxxxxxxx
-----------------------------------------------------
-Time: 955000 | [IF]  Fetch PC = 0xxxxxxxxx, Instr = 0xxxxxxxxx
-----------------------------------------------------
-Time: 965000 | [IF]  Fetch PC = 0xxxxxxxxx, Instr = 0xxxxxxxxx
-----------------------------------------------------
-Time: 975000 | [IF]  Fetch PC = 0xxxxxxxxx, Instr = 0xxxxxxxxx
-----------------------------------------------------
-Time: 985000 | [IF]  Fetch PC = 0xxxxxxxxx, Instr = 0xxxxxxxxx
-----------------------------------------------------
-Time: 995000 | [IF]  Fetch PC = 0xxxxxxxxx, Instr = 0xxxxxxxxx
-----------------------------------------------------
-Time: 1005000 | [IF]  Fetch PC = 0xxxxxxxxx, Instr = 0xxxxxxxxx
-----------------------------------------------------
+========== RISC-V Pipeline X-Ray Debug Log ==========
+================= Time: 25000 =================
+[IF] PC = 0x00000000 | Instr = 0x00000013
+[ID] PC = 0xxxxxxxxx | RD1 = 0xxxxxxxxx | RD2 = 0xxxxxxxxx | Imm = 0xxxxxxxxx
+     Branch_taken = 0 | Jal_taken = 0 | Jalr_taken = 0
+[EX] PC = 0x000000Xx | ALU_A = 0xxxxxxxxx | ALU_B = 0xxxxxxxxx | ALU_Out = 0xxxxxxxxx
+
+================= Time: 35000 =================
+[IF] PC = 0x00000004 | Instr = 0x00000013
+[ID] PC = 0xxxxxxxxx | RD1 = 0xxxxxxxxx | RD2 = 0xxxxxxxxx | Imm = 0xxxxxxxxx
+     Branch_taken = x | Jal_taken = x | Jalr_taken = x
+[EX] PC = 0x000000Xx | ALU_A = 0xxxxxxxxx | ALU_B = 0xxxxxxxxx | ALU_Out = 0xxxxxxxxx
+
+================= Time: 45000 =================
+[IF] PC = 0xxxxxxxxx | Instr = 0xxxxxxxxx
+[ID] PC = 0xxxxxxxxx | RD1 = 0xxxxxxxxx | RD2 = 0xxxxxxxxx | Imm = 0xxxxxxxxx
+     Branch_taken = x | Jal_taken = x | Jalr_taken = x
+[EX] PC = 0x000000Xx | ALU_A = 0xxxxxxxxx | ALU_B = 0xxxxxxxxx | ALU_Out = 0xxxxxxxxx
+
+================= Time: 55000 =================
+[IF] PC = 0xxxxxxxxx | Instr = 0xxxxxxxxx
+[ID] PC = 0xxxxxxxxx | RD1 = 0xxxxxxxxx | RD2 = 0xxxxxxxxx | Imm = 0xxxxxxxxx
+     Branch_taken = x | Jal_taken = x | Jalr_taken = x
+[EX] PC = 0x000000Xx | ALU_A = 0xxxxxxxxx | ALU_B = 0xxxxxxxxx | ALU_Out = 0xxxxxxxxx
+
+================= Time: 65000 =================
+[IF] PC = 0xxxxxxxxx | Instr = 0xxxxxxxxx
+[ID] PC = 0xxxxxxxxx | RD1 = 0xxxxxxxxx | RD2 = 0xxxxxxxxx | Imm = 0xxxxxxxxx
+     Branch_taken = x | Jal_taken = x | Jalr_taken = x
+[EX] PC = 0x000000Xx | ALU_A = 0xxxxxxxxx | ALU_B = 0xxxxxxxxx | ALU_Out = 0xxxxxxxxx
+
+================= Time: 75000 =================
+[IF] PC = 0xxxxxxxxx | Instr = 0xxxxxxxxx
+[ID] PC = 0xxxxxxxxx | RD1 = 0xxxxxxxxx | RD2 = 0xxxxxxxxx | Imm = 0xxxxxxxxx
+     Branch_taken = x | Jal_taken = x | Jalr_taken = x
+[EX] PC = 0x000000Xx | ALU_A = 0xxxxxxxxx | ALU_B = 0xxxxxxxxx | ALU_Out = 0xxxxxxxxx
+
+================= Time: 85000 =================
+[IF] PC = 0xxxxxxxxx | Instr = 0xxxxxxxxx
+[ID] PC = 0xxxxxxxxx | RD1 = 0xxxxxxxxx | RD2 = 0xxxxxxxxx | Imm = 0xxxxxxxxx
+     Branch_taken = x | Jal_taken = x | Jalr_taken = x
+[EX] PC = 0x000000Xx | ALU_A = 0xxxxxxxxx | ALU_B = 0xxxxxxxxx | ALU_Out = 0xxxxxxxxx
+
+================= Time: 95000 =================
+[IF] PC = 0xxxxxxxxx | Instr = 0xxxxxxxxx
+[ID] PC = 0xxxxxxxxx | RD1 = 0xxxxxxxxx | RD2 = 0xxxxxxxxx | Imm = 0xxxxxxxxx
+     Branch_taken = x | Jal_taken = x | Jalr_taken = x
+[EX] PC = 0x000000Xx | ALU_A = 0xxxxxxxxx | ALU_B = 0xxxxxxxxx | ALU_Out = 0xxxxxxxxx
+
+================= Time: 105000 =================
+[IF] PC = 0xxxxxxxxx | Instr = 0xxxxxxxxx
+[ID] PC = 0xxxxxxxxx | RD1 = 0xxxxxxxxx | RD2 = 0xxxxxxxxx | Imm = 0xxxxxxxxx
+     Branch_taken = x | Jal_taken = x | Jalr_taken = x
+[EX] PC = 0x000000Xx | ALU_A = 0xxxxxxxxx | ALU_B = 0xxxxxxxxx | ALU_Out = 0xxxxxxxxx
+
+================= Time: 115000 =================
+[IF] PC = 0xxxxxxxxx | Instr = 0xxxxxxxxx
+[ID] PC = 0xxxxxxxxx | RD1 = 0xxxxxxxxx | RD2 = 0xxxxxxxxx | Imm = 0xxxxxxxxx
+     Branch_taken = x | Jal_taken = x | Jalr_taken = x
+[EX] PC = 0x000000Xx | ALU_A = 0xxxxxxxxx | ALU_B = 0xxxxxxxxx | ALU_Out = 0xxxxxxxxx
+
+================= Time: 125000 =================
+[IF] PC = 0xxxxxxxxx | Instr = 0xxxxxxxxx
+[ID] PC = 0xxxxxxxxx | RD1 = 0xxxxxxxxx | RD2 = 0xxxxxxxxx | Imm = 0xxxxxxxxx
+     Branch_taken = x | Jal_taken = x | Jalr_taken = x
+[EX] PC = 0x000000Xx | ALU_A = 0xxxxxxxxx | ALU_B = 0xxxxxxxxx | ALU_Out = 0xxxxxxxxx
+
+================= Time: 135000 =================
+[IF] PC = 0xxxxxxxxx | Instr = 0xxxxxxxxx
+[ID] PC = 0xxxxxxxxx | RD1 = 0xxxxxxxxx | RD2 = 0xxxxxxxxx | Imm = 0xxxxxxxxx
+     Branch_taken = x | Jal_taken = x | Jalr_taken = x
+[EX] PC = 0x000000Xx | ALU_A = 0xxxxxxxxx | ALU_B = 0xxxxxxxxx | ALU_Out = 0xxxxxxxxx
+
+================= Time: 145000 =================
+[IF] PC = 0xxxxxxxxx | Instr = 0xxxxxxxxx
+[ID] PC = 0xxxxxxxxx | RD1 = 0xxxxxxxxx | RD2 = 0xxxxxxxxx | Imm = 0xxxxxxxxx
+     Branch_taken = x | Jal_taken = x | Jalr_taken = x
+[EX] PC = 0x000000Xx | ALU_A = 0xxxxxxxxx | ALU_B = 0xxxxxxxxx | ALU_Out = 0xxxxxxxxx
+
+================= Time: 155000 =================
+[IF] PC = 0xxxxxxxxx | Instr = 0xxxxxxxxx
+[ID] PC = 0xxxxxxxxx | RD1 = 0xxxxxxxxx | RD2 = 0xxxxxxxxx | Imm = 0xxxxxxxxx
+     Branch_taken = x | Jal_taken = x | Jalr_taken = x
+[EX] PC = 0x000000Xx | ALU_A = 0xxxxxxxxx | ALU_B = 0xxxxxxxxx | ALU_Out = 0xxxxxxxxx
+
+================= Time: 165000 =================
+[IF] PC = 0xxxxxxxxx | Instr = 0xxxxxxxxx
+[ID] PC = 0xxxxxxxxx | RD1 = 0xxxxxxxxx | RD2 = 0xxxxxxxxx | Imm = 0xxxxxxxxx
+     Branch_taken = x | Jal_taken = x | Jalr_taken = x
+[EX] PC = 0x000000Xx | ALU_A = 0xxxxxxxxx | ALU_B = 0xxxxxxxxx | ALU_Out = 0xxxxxxxxx
+
+================= Time: 175000 =================
+[IF] PC = 0xxxxxxxxx | Instr = 0xxxxxxxxx
+[ID] PC = 0xxxxxxxxx | RD1 = 0xxxxxxxxx | RD2 = 0xxxxxxxxx | Imm = 0xxxxxxxxx
+     Branch_taken = x | Jal_taken = x | Jalr_taken = x
+[EX] PC = 0x000000Xx | ALU_A = 0xxxxxxxxx | ALU_B = 0xxxxxxxxx | ALU_Out = 0xxxxxxxxx
+
+================= Time: 185000 =================
+[IF] PC = 0xxxxxxxxx | Instr = 0xxxxxxxxx
+[ID] PC = 0xxxxxxxxx | RD1 = 0xxxxxxxxx | RD2 = 0xxxxxxxxx | Imm = 0xxxxxxxxx
+     Branch_taken = x | Jal_taken = x | Jalr_taken = x
+[EX] PC = 0x000000Xx | ALU_A = 0xxxxxxxxx | ALU_B = 0xxxxxxxxx | ALU_Out = 0xxxxxxxxx
+
+================= Time: 195000 =================
+[IF] PC = 0xxxxxxxxx | Instr = 0xxxxxxxxx
+[ID] PC = 0xxxxxxxxx | RD1 = 0xxxxxxxxx | RD2 = 0xxxxxxxxx | Imm = 0xxxxxxxxx
+     Branch_taken = x | Jal_taken = x | Jalr_taken = x
+[EX] PC = 0x000000Xx | ALU_A = 0xxxxxxxxx | ALU_B = 0xxxxxxxxx | ALU_Out = 0xxxxxxxxx
+
+================= Time: 205000 =================
+[IF] PC = 0xxxxxxxxx | Instr = 0xxxxxxxxx
+[ID] PC = 0xxxxxxxxx | RD1 = 0xxxxxxxxx | RD2 = 0xxxxxxxxx | Imm = 0xxxxxxxxx
+     Branch_taken = x | Jal_taken = x | Jalr_taken = x
+[EX] PC = 0x000000Xx | ALU_A = 0xxxxxxxxx | ALU_B = 0xxxxxxxxx | ALU_Out = 0xxxxxxxxx
+
+================= Time: 215000 =================
+[IF] PC = 0xxxxxxxxx | Instr = 0xxxxxxxxx
+[ID] PC = 0xxxxxxxxx | RD1 = 0xxxxxxxxx | RD2 = 0xxxxxxxxx | Imm = 0xxxxxxxxx
+     Branch_taken = x | Jal_taken = x | Jalr_taken = x
+[EX] PC = 0x000000Xx | ALU_A = 0xxxxxxxxx | ALU_B = 0xxxxxxxxx | ALU_Out = 0xxxxxxxxx
+
+================= Time: 225000 =================
+[IF] PC = 0xxxxxxxxx | Instr = 0xxxxxxxxx
+[ID] PC = 0xxxxxxxxx | RD1 = 0xxxxxxxxx | RD2 = 0xxxxxxxxx | Imm = 0xxxxxxxxx
+     Branch_taken = x | Jal_taken = x | Jalr_taken = x
+[EX] PC = 0x000000Xx | ALU_A = 0xxxxxxxxx | ALU_B = 0xxxxxxxxx | ALU_Out = 0xxxxxxxxx
+
+================= Time: 235000 =================
+[IF] PC = 0xxxxxxxxx | Instr = 0xxxxxxxxx
+[ID] PC = 0xxxxxxxxx | RD1 = 0xxxxxxxxx | RD2 = 0xxxxxxxxx | Imm = 0xxxxxxxxx
+     Branch_taken = x | Jal_taken = x | Jalr_taken = x
+[EX] PC = 0x000000Xx | ALU_A = 0xxxxxxxxx | ALU_B = 0xxxxxxxxx | ALU_Out = 0xxxxxxxxx
+
+================= Time: 245000 =================
+[IF] PC = 0xxxxxxxxx | Instr = 0xxxxxxxxx
+[ID] PC = 0xxxxxxxxx | RD1 = 0xxxxxxxxx | RD2 = 0xxxxxxxxx | Imm = 0xxxxxxxxx
+     Branch_taken = x | Jal_taken = x | Jalr_taken = x
+[EX] PC = 0x000000Xx | ALU_A = 0xxxxxxxxx | ALU_B = 0xxxxxxxxx | ALU_Out = 0xxxxxxxxx
+
+================= Time: 255000 =================
+[IF] PC = 0xxxxxxxxx | Instr = 0xxxxxxxxx
+[ID] PC = 0xxxxxxxxx | RD1 = 0xxxxxxxxx | RD2 = 0xxxxxxxxx | Imm = 0xxxxxxxxx
+     Branch_taken = x | Jal_taken = x | Jalr_taken = x
+[EX] PC = 0x000000Xx | ALU_A = 0xxxxxxxxx | ALU_B = 0xxxxxxxxx | ALU_Out = 0xxxxxxxxx
+
+================= Time: 265000 =================
+[IF] PC = 0xxxxxxxxx | Instr = 0xxxxxxxxx
+[ID] PC = 0xxxxxxxxx | RD1 = 0xxxxxxxxx | RD2 = 0xxxxxxxxx | Imm = 0xxxxxxxxx
+     Branch_taken = x | Jal_taken = x | Jalr_taken = x
+[EX] PC = 0x000000Xx | ALU_A = 0xxxxxxxxx | ALU_B = 0xxxxxxxxx | ALU_Out = 0xxxxxxxxx
+
+================= Time: 275000 =================
+[IF] PC = 0xxxxxxxxx | Instr = 0xxxxxxxxx
+[ID] PC = 0xxxxxxxxx | RD1 = 0xxxxxxxxx | RD2 = 0xxxxxxxxx | Imm = 0xxxxxxxxx
+     Branch_taken = x | Jal_taken = x | Jalr_taken = x
+[EX] PC = 0x000000Xx | ALU_A = 0xxxxxxxxx | ALU_B = 0xxxxxxxxx | ALU_Out = 0xxxxxxxxx
+
+================= Time: 285000 =================
+[IF] PC = 0xxxxxxxxx | Instr = 0xxxxxxxxx
+[ID] PC = 0xxxxxxxxx | RD1 = 0xxxxxxxxx | RD2 = 0xxxxxxxxx | Imm = 0xxxxxxxxx
+     Branch_taken = x | Jal_taken = x | Jalr_taken = x
+[EX] PC = 0x000000Xx | ALU_A = 0xxxxxxxxx | ALU_B = 0xxxxxxxxx | ALU_Out = 0xxxxxxxxx
+
+================= Time: 295000 =================
+[IF] PC = 0xxxxxxxxx | Instr = 0xxxxxxxxx
+[ID] PC = 0xxxxxxxxx | RD1 = 0xxxxxxxxx | RD2 = 0xxxxxxxxx | Imm = 0xxxxxxxxx
+     Branch_taken = x | Jal_taken = x | Jalr_taken = x
+[EX] PC = 0x000000Xx | ALU_A = 0xxxxxxxxx | ALU_B = 0xxxxxxxxx | ALU_Out = 0xxxxxxxxx
+
+================= Time: 305000 =================
+[IF] PC = 0xxxxxxxxx | Instr = 0xxxxxxxxx
+[ID] PC = 0xxxxxxxxx | RD1 = 0xxxxxxxxx | RD2 = 0xxxxxxxxx | Imm = 0xxxxxxxxx
+     Branch_taken = x | Jal_taken = x | Jalr_taken = x
+[EX] PC = 0x000000Xx | ALU_A = 0xxxxxxxxx | ALU_B = 0xxxxxxxxx | ALU_Out = 0xxxxxxxxx
+
+================= Time: 315000 =================
+[IF] PC = 0xxxxxxxxx | Instr = 0xxxxxxxxx
+[ID] PC = 0xxxxxxxxx | RD1 = 0xxxxxxxxx | RD2 = 0xxxxxxxxx | Imm = 0xxxxxxxxx
+     Branch_taken = x | Jal_taken = x | Jalr_taken = x
+[EX] PC = 0x000000Xx | ALU_A = 0xxxxxxxxx | ALU_B = 0xxxxxxxxx | ALU_Out = 0xxxxxxxxx
+
+================= Time: 325000 =================
+[IF] PC = 0xxxxxxxxx | Instr = 0xxxxxxxxx
+[ID] PC = 0xxxxxxxxx | RD1 = 0xxxxxxxxx | RD2 = 0xxxxxxxxx | Imm = 0xxxxxxxxx
+     Branch_taken = x | Jal_taken = x | Jalr_taken = x
+[EX] PC = 0x000000Xx | ALU_A = 0xxxxxxxxx | ALU_B = 0xxxxxxxxx | ALU_Out = 0xxxxxxxxx
+
+================= Time: 335000 =================
+[IF] PC = 0xxxxxxxxx | Instr = 0xxxxxxxxx
+[ID] PC = 0xxxxxxxxx | RD1 = 0xxxxxxxxx | RD2 = 0xxxxxxxxx | Imm = 0xxxxxxxxx
+     Branch_taken = x | Jal_taken = x | Jalr_taken = x
+[EX] PC = 0x000000Xx | ALU_A = 0xxxxxxxxx | ALU_B = 0xxxxxxxxx | ALU_Out = 0xxxxxxxxx
+
+================= Time: 345000 =================
+[IF] PC = 0xxxxxxxxx | Instr = 0xxxxxxxxx
+[ID] PC = 0xxxxxxxxx | RD1 = 0xxxxxxxxx | RD2 = 0xxxxxxxxx | Imm = 0xxxxxxxxx
+     Branch_taken = x | Jal_taken = x | Jalr_taken = x
+[EX] PC = 0x000000Xx | ALU_A = 0xxxxxxxxx | ALU_B = 0xxxxxxxxx | ALU_Out = 0xxxxxxxxx
+
+================= Time: 355000 =================
+[IF] PC = 0xxxxxxxxx | Instr = 0xxxxxxxxx
+[ID] PC = 0xxxxxxxxx | RD1 = 0xxxxxxxxx | RD2 = 0xxxxxxxxx | Imm = 0xxxxxxxxx
+     Branch_taken = x | Jal_taken = x | Jalr_taken = x
+[EX] PC = 0x000000Xx | ALU_A = 0xxxxxxxxx | ALU_B = 0xxxxxxxxx | ALU_Out = 0xxxxxxxxx
+
+================= Time: 365000 =================
+[IF] PC = 0xxxxxxxxx | Instr = 0xxxxxxxxx
+[ID] PC = 0xxxxxxxxx | RD1 = 0xxxxxxxxx | RD2 = 0xxxxxxxxx | Imm = 0xxxxxxxxx
+     Branch_taken = x | Jal_taken = x | Jalr_taken = x
+[EX] PC = 0x000000Xx | ALU_A = 0xxxxxxxxx | ALU_B = 0xxxxxxxxx | ALU_Out = 0xxxxxxxxx
+
+================= Time: 375000 =================
+[IF] PC = 0xxxxxxxxx | Instr = 0xxxxxxxxx
+[ID] PC = 0xxxxxxxxx | RD1 = 0xxxxxxxxx | RD2 = 0xxxxxxxxx | Imm = 0xxxxxxxxx
+     Branch_taken = x | Jal_taken = x | Jalr_taken = x
+[EX] PC = 0x000000Xx | ALU_A = 0xxxxxxxxx | ALU_B = 0xxxxxxxxx | ALU_Out = 0xxxxxxxxx
+
+================= Time: 385000 =================
+[IF] PC = 0xxxxxxxxx | Instr = 0xxxxxxxxx
+[ID] PC = 0xxxxxxxxx | RD1 = 0xxxxxxxxx | RD2 = 0xxxxxxxxx | Imm = 0xxxxxxxxx
+     Branch_taken = x | Jal_taken = x | Jalr_taken = x
+[EX] PC = 0x000000Xx | ALU_A = 0xxxxxxxxx | ALU_B = 0xxxxxxxxx | ALU_Out = 0xxxxxxxxx
+
+================= Time: 395000 =================
+[IF] PC = 0xxxxxxxxx | Instr = 0xxxxxxxxx
+[ID] PC = 0xxxxxxxxx | RD1 = 0xxxxxxxxx | RD2 = 0xxxxxxxxx | Imm = 0xxxxxxxxx
+     Branch_taken = x | Jal_taken = x | Jalr_taken = x
+[EX] PC = 0x000000Xx | ALU_A = 0xxxxxxxxx | ALU_B = 0xxxxxxxxx | ALU_Out = 0xxxxxxxxx
+
+================= Time: 405000 =================
+[IF] PC = 0xxxxxxxxx | Instr = 0xxxxxxxxx
+[ID] PC = 0xxxxxxxxx | RD1 = 0xxxxxxxxx | RD2 = 0xxxxxxxxx | Imm = 0xxxxxxxxx
+     Branch_taken = x | Jal_taken = x | Jalr_taken = x
+[EX] PC = 0x000000Xx | ALU_A = 0xxxxxxxxx | ALU_B = 0xxxxxxxxx | ALU_Out = 0xxxxxxxxx
+
+================= Time: 415000 =================
+[IF] PC = 0xxxxxxxxx | Instr = 0xxxxxxxxx
+[ID] PC = 0xxxxxxxxx | RD1 = 0xxxxxxxxx | RD2 = 0xxxxxxxxx | Imm = 0xxxxxxxxx
+     Branch_taken = x | Jal_taken = x | Jalr_taken = x
+[EX] PC = 0x000000Xx | ALU_A = 0xxxxxxxxx | ALU_B = 0xxxxxxxxx | ALU_Out = 0xxxxxxxxx
+
+================= Time: 425000 =================
+[IF] PC = 0xxxxxxxxx | Instr = 0xxxxxxxxx
+[ID] PC = 0xxxxxxxxx | RD1 = 0xxxxxxxxx | RD2 = 0xxxxxxxxx | Imm = 0xxxxxxxxx
+     Branch_taken = x | Jal_taken = x | Jalr_taken = x
+[EX] PC = 0x000000Xx | ALU_A = 0xxxxxxxxx | ALU_B = 0xxxxxxxxx | ALU_Out = 0xxxxxxxxx
+
+================= Time: 435000 =================
+[IF] PC = 0xxxxxxxxx | Instr = 0xxxxxxxxx
+[ID] PC = 0xxxxxxxxx | RD1 = 0xxxxxxxxx | RD2 = 0xxxxxxxxx | Imm = 0xxxxxxxxx
+     Branch_taken = x | Jal_taken = x | Jalr_taken = x
+[EX] PC = 0x000000Xx | ALU_A = 0xxxxxxxxx | ALU_B = 0xxxxxxxxx | ALU_Out = 0xxxxxxxxx
+
+================= Time: 445000 =================
+[IF] PC = 0xxxxxxxxx | Instr = 0xxxxxxxxx
+[ID] PC = 0xxxxxxxxx | RD1 = 0xxxxxxxxx | RD2 = 0xxxxxxxxx | Imm = 0xxxxxxxxx
+     Branch_taken = x | Jal_taken = x | Jalr_taken = x
+[EX] PC = 0x000000Xx | ALU_A = 0xxxxxxxxx | ALU_B = 0xxxxxxxxx | ALU_Out = 0xxxxxxxxx
+
+================= Time: 455000 =================
+[IF] PC = 0xxxxxxxxx | Instr = 0xxxxxxxxx
+[ID] PC = 0xxxxxxxxx | RD1 = 0xxxxxxxxx | RD2 = 0xxxxxxxxx | Imm = 0xxxxxxxxx
+     Branch_taken = x | Jal_taken = x | Jalr_taken = x
+[EX] PC = 0x000000Xx | ALU_A = 0xxxxxxxxx | ALU_B = 0xxxxxxxxx | ALU_Out = 0xxxxxxxxx
+
+================= Time: 465000 =================
+[IF] PC = 0xxxxxxxxx | Instr = 0xxxxxxxxx
+[ID] PC = 0xxxxxxxxx | RD1 = 0xxxxxxxxx | RD2 = 0xxxxxxxxx | Imm = 0xxxxxxxxx
+     Branch_taken = x | Jal_taken = x | Jalr_taken = x
+[EX] PC = 0x000000Xx | ALU_A = 0xxxxxxxxx | ALU_B = 0xxxxxxxxx | ALU_Out = 0xxxxxxxxx
+
+================= Time: 475000 =================
+[IF] PC = 0xxxxxxxxx | Instr = 0xxxxxxxxx
+[ID] PC = 0xxxxxxxxx | RD1 = 0xxxxxxxxx | RD2 = 0xxxxxxxxx | Imm = 0xxxxxxxxx
+     Branch_taken = x | Jal_taken = x | Jalr_taken = x
+[EX] PC = 0x000000Xx | ALU_A = 0xxxxxxxxx | ALU_B = 0xxxxxxxxx | ALU_Out = 0xxxxxxxxx
+
+================= Time: 485000 =================
+[IF] PC = 0xxxxxxxxx | Instr = 0xxxxxxxxx
+[ID] PC = 0xxxxxxxxx | RD1 = 0xxxxxxxxx | RD2 = 0xxxxxxxxx | Imm = 0xxxxxxxxx
+     Branch_taken = x | Jal_taken = x | Jalr_taken = x
+[EX] PC = 0x000000Xx | ALU_A = 0xxxxxxxxx | ALU_B = 0xxxxxxxxx | ALU_Out = 0xxxxxxxxx
+
+================= Time: 495000 =================
+[IF] PC = 0xxxxxxxxx | Instr = 0xxxxxxxxx
+[ID] PC = 0xxxxxxxxx | RD1 = 0xxxxxxxxx | RD2 = 0xxxxxxxxx | Imm = 0xxxxxxxxx
+     Branch_taken = x | Jal_taken = x | Jalr_taken = x
+[EX] PC = 0x000000Xx | ALU_A = 0xxxxxxxxx | ALU_B = 0xxxxxxxxx | ALU_Out = 0xxxxxxxxx
+
+================= Time: 505000 =================
+[IF] PC = 0xxxxxxxxx | Instr = 0xxxxxxxxx
+[ID] PC = 0xxxxxxxxx | RD1 = 0xxxxxxxxx | RD2 = 0xxxxxxxxx | Imm = 0xxxxxxxxx
+     Branch_taken = x | Jal_taken = x | Jalr_taken = x
+[EX] PC = 0x000000Xx | ALU_A = 0xxxxxxxxx | ALU_B = 0xxxxxxxxx | ALU_Out = 0xxxxxxxxx
+
+================= Time: 515000 =================
+[IF] PC = 0xxxxxxxxx | Instr = 0xxxxxxxxx
+[ID] PC = 0xxxxxxxxx | RD1 = 0xxxxxxxxx | RD2 = 0xxxxxxxxx | Imm = 0xxxxxxxxx
+     Branch_taken = x | Jal_taken = x | Jalr_taken = x
+[EX] PC = 0x000000Xx | ALU_A = 0xxxxxxxxx | ALU_B = 0xxxxxxxxx | ALU_Out = 0xxxxxxxxx
+
+================= Time: 525000 =================
+[IF] PC = 0xxxxxxxxx | Instr = 0xxxxxxxxx
+[ID] PC = 0xxxxxxxxx | RD1 = 0xxxxxxxxx | RD2 = 0xxxxxxxxx | Imm = 0xxxxxxxxx
+     Branch_taken = x | Jal_taken = x | Jalr_taken = x
+[EX] PC = 0x000000Xx | ALU_A = 0xxxxxxxxx | ALU_B = 0xxxxxxxxx | ALU_Out = 0xxxxxxxxx
+
+================= Time: 535000 =================
+[IF] PC = 0xxxxxxxxx | Instr = 0xxxxxxxxx
+[ID] PC = 0xxxxxxxxx | RD1 = 0xxxxxxxxx | RD2 = 0xxxxxxxxx | Imm = 0xxxxxxxxx
+     Branch_taken = x | Jal_taken = x | Jalr_taken = x
+[EX] PC = 0x000000Xx | ALU_A = 0xxxxxxxxx | ALU_B = 0xxxxxxxxx | ALU_Out = 0xxxxxxxxx
+
+================= Time: 545000 =================
+[IF] PC = 0xxxxxxxxx | Instr = 0xxxxxxxxx
+[ID] PC = 0xxxxxxxxx | RD1 = 0xxxxxxxxx | RD2 = 0xxxxxxxxx | Imm = 0xxxxxxxxx
+     Branch_taken = x | Jal_taken = x | Jalr_taken = x
+[EX] PC = 0x000000Xx | ALU_A = 0xxxxxxxxx | ALU_B = 0xxxxxxxxx | ALU_Out = 0xxxxxxxxx
+
+================= Time: 555000 =================
+[IF] PC = 0xxxxxxxxx | Instr = 0xxxxxxxxx
+[ID] PC = 0xxxxxxxxx | RD1 = 0xxxxxxxxx | RD2 = 0xxxxxxxxx | Imm = 0xxxxxxxxx
+     Branch_taken = x | Jal_taken = x | Jalr_taken = x
+[EX] PC = 0x000000Xx | ALU_A = 0xxxxxxxxx | ALU_B = 0xxxxxxxxx | ALU_Out = 0xxxxxxxxx
+
+================= Time: 565000 =================
+[IF] PC = 0xxxxxxxxx | Instr = 0xxxxxxxxx
+[ID] PC = 0xxxxxxxxx | RD1 = 0xxxxxxxxx | RD2 = 0xxxxxxxxx | Imm = 0xxxxxxxxx
+     Branch_taken = x | Jal_taken = x | Jalr_taken = x
+[EX] PC = 0x000000Xx | ALU_A = 0xxxxxxxxx | ALU_B = 0xxxxxxxxx | ALU_Out = 0xxxxxxxxx
+
+================= Time: 575000 =================
+[IF] PC = 0xxxxxxxxx | Instr = 0xxxxxxxxx
+[ID] PC = 0xxxxxxxxx | RD1 = 0xxxxxxxxx | RD2 = 0xxxxxxxxx | Imm = 0xxxxxxxxx
+     Branch_taken = x | Jal_taken = x | Jalr_taken = x
+[EX] PC = 0x000000Xx | ALU_A = 0xxxxxxxxx | ALU_B = 0xxxxxxxxx | ALU_Out = 0xxxxxxxxx
+
+================= Time: 585000 =================
+[IF] PC = 0xxxxxxxxx | Instr = 0xxxxxxxxx
+[ID] PC = 0xxxxxxxxx | RD1 = 0xxxxxxxxx | RD2 = 0xxxxxxxxx | Imm = 0xxxxxxxxx
+     Branch_taken = x | Jal_taken = x | Jalr_taken = x
+[EX] PC = 0x000000Xx | ALU_A = 0xxxxxxxxx | ALU_B = 0xxxxxxxxx | ALU_Out = 0xxxxxxxxx
+
+================= Time: 595000 =================
+[IF] PC = 0xxxxxxxxx | Instr = 0xxxxxxxxx
+[ID] PC = 0xxxxxxxxx | RD1 = 0xxxxxxxxx | RD2 = 0xxxxxxxxx | Imm = 0xxxxxxxxx
+     Branch_taken = x | Jal_taken = x | Jalr_taken = x
+[EX] PC = 0x000000Xx | ALU_A = 0xxxxxxxxx | ALU_B = 0xxxxxxxxx | ALU_Out = 0xxxxxxxxx
+
+================= Time: 605000 =================
+[IF] PC = 0xxxxxxxxx | Instr = 0xxxxxxxxx
+[ID] PC = 0xxxxxxxxx | RD1 = 0xxxxxxxxx | RD2 = 0xxxxxxxxx | Imm = 0xxxxxxxxx
+     Branch_taken = x | Jal_taken = x | Jalr_taken = x
+[EX] PC = 0x000000Xx | ALU_A = 0xxxxxxxxx | ALU_B = 0xxxxxxxxx | ALU_Out = 0xxxxxxxxx
+
+================= Time: 615000 =================
+[IF] PC = 0xxxxxxxxx | Instr = 0xxxxxxxxx
+[ID] PC = 0xxxxxxxxx | RD1 = 0xxxxxxxxx | RD2 = 0xxxxxxxxx | Imm = 0xxxxxxxxx
+     Branch_taken = x | Jal_taken = x | Jalr_taken = x
+[EX] PC = 0x000000Xx | ALU_A = 0xxxxxxxxx | ALU_B = 0xxxxxxxxx | ALU_Out = 0xxxxxxxxx
+
+================= Time: 625000 =================
+[IF] PC = 0xxxxxxxxx | Instr = 0xxxxxxxxx
+[ID] PC = 0xxxxxxxxx | RD1 = 0xxxxxxxxx | RD2 = 0xxxxxxxxx | Imm = 0xxxxxxxxx
+     Branch_taken = x | Jal_taken = x | Jalr_taken = x
+[EX] PC = 0x000000Xx | ALU_A = 0xxxxxxxxx | ALU_B = 0xxxxxxxxx | ALU_Out = 0xxxxxxxxx
+
+================= Time: 635000 =================
+[IF] PC = 0xxxxxxxxx | Instr = 0xxxxxxxxx
+[ID] PC = 0xxxxxxxxx | RD1 = 0xxxxxxxxx | RD2 = 0xxxxxxxxx | Imm = 0xxxxxxxxx
+     Branch_taken = x | Jal_taken = x | Jalr_taken = x
+[EX] PC = 0x000000Xx | ALU_A = 0xxxxxxxxx | ALU_B = 0xxxxxxxxx | ALU_Out = 0xxxxxxxxx
+
+================= Time: 645000 =================
+[IF] PC = 0xxxxxxxxx | Instr = 0xxxxxxxxx
+[ID] PC = 0xxxxxxxxx | RD1 = 0xxxxxxxxx | RD2 = 0xxxxxxxxx | Imm = 0xxxxxxxxx
+     Branch_taken = x | Jal_taken = x | Jalr_taken = x
+[EX] PC = 0x000000Xx | ALU_A = 0xxxxxxxxx | ALU_B = 0xxxxxxxxx | ALU_Out = 0xxxxxxxxx
+
+================= Time: 655000 =================
+[IF] PC = 0xxxxxxxxx | Instr = 0xxxxxxxxx
+[ID] PC = 0xxxxxxxxx | RD1 = 0xxxxxxxxx | RD2 = 0xxxxxxxxx | Imm = 0xxxxxxxxx
+     Branch_taken = x | Jal_taken = x | Jalr_taken = x
+[EX] PC = 0x000000Xx | ALU_A = 0xxxxxxxxx | ALU_B = 0xxxxxxxxx | ALU_Out = 0xxxxxxxxx
+
+================= Time: 665000 =================
+[IF] PC = 0xxxxxxxxx | Instr = 0xxxxxxxxx
+[ID] PC = 0xxxxxxxxx | RD1 = 0xxxxxxxxx | RD2 = 0xxxxxxxxx | Imm = 0xxxxxxxxx
+     Branch_taken = x | Jal_taken = x | Jalr_taken = x
+[EX] PC = 0x000000Xx | ALU_A = 0xxxxxxxxx | ALU_B = 0xxxxxxxxx | ALU_Out = 0xxxxxxxxx
+
+================= Time: 675000 =================
+[IF] PC = 0xxxxxxxxx | Instr = 0xxxxxxxxx
+[ID] PC = 0xxxxxxxxx | RD1 = 0xxxxxxxxx | RD2 = 0xxxxxxxxx | Imm = 0xxxxxxxxx
+     Branch_taken = x | Jal_taken = x | Jalr_taken = x
+[EX] PC = 0x000000Xx | ALU_A = 0xxxxxxxxx | ALU_B = 0xxxxxxxxx | ALU_Out = 0xxxxxxxxx
+
+================= Time: 685000 =================
+[IF] PC = 0xxxxxxxxx | Instr = 0xxxxxxxxx
+[ID] PC = 0xxxxxxxxx | RD1 = 0xxxxxxxxx | RD2 = 0xxxxxxxxx | Imm = 0xxxxxxxxx
+     Branch_taken = x | Jal_taken = x | Jalr_taken = x
+[EX] PC = 0x000000Xx | ALU_A = 0xxxxxxxxx | ALU_B = 0xxxxxxxxx | ALU_Out = 0xxxxxxxxx
+
+================= Time: 695000 =================
+[IF] PC = 0xxxxxxxxx | Instr = 0xxxxxxxxx
+[ID] PC = 0xxxxxxxxx | RD1 = 0xxxxxxxxx | RD2 = 0xxxxxxxxx | Imm = 0xxxxxxxxx
+     Branch_taken = x | Jal_taken = x | Jalr_taken = x
+[EX] PC = 0x000000Xx | ALU_A = 0xxxxxxxxx | ALU_B = 0xxxxxxxxx | ALU_Out = 0xxxxxxxxx
+
+================= Time: 705000 =================
+[IF] PC = 0xxxxxxxxx | Instr = 0xxxxxxxxx
+[ID] PC = 0xxxxxxxxx | RD1 = 0xxxxxxxxx | RD2 = 0xxxxxxxxx | Imm = 0xxxxxxxxx
+     Branch_taken = x | Jal_taken = x | Jalr_taken = x
+[EX] PC = 0x000000Xx | ALU_A = 0xxxxxxxxx | ALU_B = 0xxxxxxxxx | ALU_Out = 0xxxxxxxxx
+
+================= Time: 715000 =================
+[IF] PC = 0xxxxxxxxx | Instr = 0xxxxxxxxx
+[ID] PC = 0xxxxxxxxx | RD1 = 0xxxxxxxxx | RD2 = 0xxxxxxxxx | Imm = 0xxxxxxxxx
+     Branch_taken = x | Jal_taken = x | Jalr_taken = x
+[EX] PC = 0x000000Xx | ALU_A = 0xxxxxxxxx | ALU_B = 0xxxxxxxxx | ALU_Out = 0xxxxxxxxx
+
+================= Time: 725000 =================
+[IF] PC = 0xxxxxxxxx | Instr = 0xxxxxxxxx
+[ID] PC = 0xxxxxxxxx | RD1 = 0xxxxxxxxx | RD2 = 0xxxxxxxxx | Imm = 0xxxxxxxxx
+     Branch_taken = x | Jal_taken = x | Jalr_taken = x
+[EX] PC = 0x000000Xx | ALU_A = 0xxxxxxxxx | ALU_B = 0xxxxxxxxx | ALU_Out = 0xxxxxxxxx
+
+================= Time: 735000 =================
+[IF] PC = 0xxxxxxxxx | Instr = 0xxxxxxxxx
+[ID] PC = 0xxxxxxxxx | RD1 = 0xxxxxxxxx | RD2 = 0xxxxxxxxx | Imm = 0xxxxxxxxx
+     Branch_taken = x | Jal_taken = x | Jalr_taken = x
+[EX] PC = 0x000000Xx | ALU_A = 0xxxxxxxxx | ALU_B = 0xxxxxxxxx | ALU_Out = 0xxxxxxxxx
+
+================= Time: 745000 =================
+[IF] PC = 0xxxxxxxxx | Instr = 0xxxxxxxxx
+[ID] PC = 0xxxxxxxxx | RD1 = 0xxxxxxxxx | RD2 = 0xxxxxxxxx | Imm = 0xxxxxxxxx
+     Branch_taken = x | Jal_taken = x | Jalr_taken = x
+[EX] PC = 0x000000Xx | ALU_A = 0xxxxxxxxx | ALU_B = 0xxxxxxxxx | ALU_Out = 0xxxxxxxxx
+
+================= Time: 755000 =================
+[IF] PC = 0xxxxxxxxx | Instr = 0xxxxxxxxx
+[ID] PC = 0xxxxxxxxx | RD1 = 0xxxxxxxxx | RD2 = 0xxxxxxxxx | Imm = 0xxxxxxxxx
+     Branch_taken = x | Jal_taken = x | Jalr_taken = x
+[EX] PC = 0x000000Xx | ALU_A = 0xxxxxxxxx | ALU_B = 0xxxxxxxxx | ALU_Out = 0xxxxxxxxx
+
+================= Time: 765000 =================
+[IF] PC = 0xxxxxxxxx | Instr = 0xxxxxxxxx
+[ID] PC = 0xxxxxxxxx | RD1 = 0xxxxxxxxx | RD2 = 0xxxxxxxxx | Imm = 0xxxxxxxxx
+     Branch_taken = x | Jal_taken = x | Jalr_taken = x
+[EX] PC = 0x000000Xx | ALU_A = 0xxxxxxxxx | ALU_B = 0xxxxxxxxx | ALU_Out = 0xxxxxxxxx
+
+================= Time: 775000 =================
+[IF] PC = 0xxxxxxxxx | Instr = 0xxxxxxxxx
+[ID] PC = 0xxxxxxxxx | RD1 = 0xxxxxxxxx | RD2 = 0xxxxxxxxx | Imm = 0xxxxxxxxx
+     Branch_taken = x | Jal_taken = x | Jalr_taken = x
+[EX] PC = 0x000000Xx | ALU_A = 0xxxxxxxxx | ALU_B = 0xxxxxxxxx | ALU_Out = 0xxxxxxxxx
+
+================= Time: 785000 =================
+[IF] PC = 0xxxxxxxxx | Instr = 0xxxxxxxxx
+[ID] PC = 0xxxxxxxxx | RD1 = 0xxxxxxxxx | RD2 = 0xxxxxxxxx | Imm = 0xxxxxxxxx
+     Branch_taken = x | Jal_taken = x | Jalr_taken = x
+[EX] PC = 0x000000Xx | ALU_A = 0xxxxxxxxx | ALU_B = 0xxxxxxxxx | ALU_Out = 0xxxxxxxxx
+
+================= Time: 795000 =================
+[IF] PC = 0xxxxxxxxx | Instr = 0xxxxxxxxx
+[ID] PC = 0xxxxxxxxx | RD1 = 0xxxxxxxxx | RD2 = 0xxxxxxxxx | Imm = 0xxxxxxxxx
+     Branch_taken = x | Jal_taken = x | Jalr_taken = x
+[EX] PC = 0x000000Xx | ALU_A = 0xxxxxxxxx | ALU_B = 0xxxxxxxxx | ALU_Out = 0xxxxxxxxx
+
+================= Time: 805000 =================
+[IF] PC = 0xxxxxxxxx | Instr = 0xxxxxxxxx
+[ID] PC = 0xxxxxxxxx | RD1 = 0xxxxxxxxx | RD2 = 0xxxxxxxxx | Imm = 0xxxxxxxxx
+     Branch_taken = x | Jal_taken = x | Jalr_taken = x
+[EX] PC = 0x000000Xx | ALU_A = 0xxxxxxxxx | ALU_B = 0xxxxxxxxx | ALU_Out = 0xxxxxxxxx
+
+================= Time: 815000 =================
+[IF] PC = 0xxxxxxxxx | Instr = 0xxxxxxxxx
+[ID] PC = 0xxxxxxxxx | RD1 = 0xxxxxxxxx | RD2 = 0xxxxxxxxx | Imm = 0xxxxxxxxx
+     Branch_taken = x | Jal_taken = x | Jalr_taken = x
+[EX] PC = 0x000000Xx | ALU_A = 0xxxxxxxxx | ALU_B = 0xxxxxxxxx | ALU_Out = 0xxxxxxxxx
+
+================= Time: 825000 =================
+[IF] PC = 0xxxxxxxxx | Instr = 0xxxxxxxxx
+[ID] PC = 0xxxxxxxxx | RD1 = 0xxxxxxxxx | RD2 = 0xxxxxxxxx | Imm = 0xxxxxxxxx
+     Branch_taken = x | Jal_taken = x | Jalr_taken = x
+[EX] PC = 0x000000Xx | ALU_A = 0xxxxxxxxx | ALU_B = 0xxxxxxxxx | ALU_Out = 0xxxxxxxxx
+
+================= Time: 835000 =================
+[IF] PC = 0xxxxxxxxx | Instr = 0xxxxxxxxx
+[ID] PC = 0xxxxxxxxx | RD1 = 0xxxxxxxxx | RD2 = 0xxxxxxxxx | Imm = 0xxxxxxxxx
+     Branch_taken = x | Jal_taken = x | Jalr_taken = x
+[EX] PC = 0x000000Xx | ALU_A = 0xxxxxxxxx | ALU_B = 0xxxxxxxxx | ALU_Out = 0xxxxxxxxx
+
+================= Time: 845000 =================
+[IF] PC = 0xxxxxxxxx | Instr = 0xxxxxxxxx
+[ID] PC = 0xxxxxxxxx | RD1 = 0xxxxxxxxx | RD2 = 0xxxxxxxxx | Imm = 0xxxxxxxxx
+     Branch_taken = x | Jal_taken = x | Jalr_taken = x
+[EX] PC = 0x000000Xx | ALU_A = 0xxxxxxxxx | ALU_B = 0xxxxxxxxx | ALU_Out = 0xxxxxxxxx
+
+================= Time: 855000 =================
+[IF] PC = 0xxxxxxxxx | Instr = 0xxxxxxxxx
+[ID] PC = 0xxxxxxxxx | RD1 = 0xxxxxxxxx | RD2 = 0xxxxxxxxx | Imm = 0xxxxxxxxx
+     Branch_taken = x | Jal_taken = x | Jalr_taken = x
+[EX] PC = 0x000000Xx | ALU_A = 0xxxxxxxxx | ALU_B = 0xxxxxxxxx | ALU_Out = 0xxxxxxxxx
+
+================= Time: 865000 =================
+[IF] PC = 0xxxxxxxxx | Instr = 0xxxxxxxxx
+[ID] PC = 0xxxxxxxxx | RD1 = 0xxxxxxxxx | RD2 = 0xxxxxxxxx | Imm = 0xxxxxxxxx
+     Branch_taken = x | Jal_taken = x | Jalr_taken = x
+[EX] PC = 0x000000Xx | ALU_A = 0xxxxxxxxx | ALU_B = 0xxxxxxxxx | ALU_Out = 0xxxxxxxxx
+
+================= Time: 875000 =================
+[IF] PC = 0xxxxxxxxx | Instr = 0xxxxxxxxx
+[ID] PC = 0xxxxxxxxx | RD1 = 0xxxxxxxxx | RD2 = 0xxxxxxxxx | Imm = 0xxxxxxxxx
+     Branch_taken = x | Jal_taken = x | Jalr_taken = x
+[EX] PC = 0x000000Xx | ALU_A = 0xxxxxxxxx | ALU_B = 0xxxxxxxxx | ALU_Out = 0xxxxxxxxx
+
+================= Time: 885000 =================
+[IF] PC = 0xxxxxxxxx | Instr = 0xxxxxxxxx
+[ID] PC = 0xxxxxxxxx | RD1 = 0xxxxxxxxx | RD2 = 0xxxxxxxxx | Imm = 0xxxxxxxxx
+     Branch_taken = x | Jal_taken = x | Jalr_taken = x
+[EX] PC = 0x000000Xx | ALU_A = 0xxxxxxxxx | ALU_B = 0xxxxxxxxx | ALU_Out = 0xxxxxxxxx
+
+================= Time: 895000 =================
+[IF] PC = 0xxxxxxxxx | Instr = 0xxxxxxxxx
+[ID] PC = 0xxxxxxxxx | RD1 = 0xxxxxxxxx | RD2 = 0xxxxxxxxx | Imm = 0xxxxxxxxx
+     Branch_taken = x | Jal_taken = x | Jalr_taken = x
+[EX] PC = 0x000000Xx | ALU_A = 0xxxxxxxxx | ALU_B = 0xxxxxxxxx | ALU_Out = 0xxxxxxxxx
+
+================= Time: 905000 =================
+[IF] PC = 0xxxxxxxxx | Instr = 0xxxxxxxxx
+[ID] PC = 0xxxxxxxxx | RD1 = 0xxxxxxxxx | RD2 = 0xxxxxxxxx | Imm = 0xxxxxxxxx
+     Branch_taken = x | Jal_taken = x | Jalr_taken = x
+[EX] PC = 0x000000Xx | ALU_A = 0xxxxxxxxx | ALU_B = 0xxxxxxxxx | ALU_Out = 0xxxxxxxxx
+
+================= Time: 915000 =================
+[IF] PC = 0xxxxxxxxx | Instr = 0xxxxxxxxx
+[ID] PC = 0xxxxxxxxx | RD1 = 0xxxxxxxxx | RD2 = 0xxxxxxxxx | Imm = 0xxxxxxxxx
+     Branch_taken = x | Jal_taken = x | Jalr_taken = x
+[EX] PC = 0x000000Xx | ALU_A = 0xxxxxxxxx | ALU_B = 0xxxxxxxxx | ALU_Out = 0xxxxxxxxx
+
+================= Time: 925000 =================
+[IF] PC = 0xxxxxxxxx | Instr = 0xxxxxxxxx
+[ID] PC = 0xxxxxxxxx | RD1 = 0xxxxxxxxx | RD2 = 0xxxxxxxxx | Imm = 0xxxxxxxxx
+     Branch_taken = x | Jal_taken = x | Jalr_taken = x
+[EX] PC = 0x000000Xx | ALU_A = 0xxxxxxxxx | ALU_B = 0xxxxxxxxx | ALU_Out = 0xxxxxxxxx
+
+================= Time: 935000 =================
+[IF] PC = 0xxxxxxxxx | Instr = 0xxxxxxxxx
+[ID] PC = 0xxxxxxxxx | RD1 = 0xxxxxxxxx | RD2 = 0xxxxxxxxx | Imm = 0xxxxxxxxx
+     Branch_taken = x | Jal_taken = x | Jalr_taken = x
+[EX] PC = 0x000000Xx | ALU_A = 0xxxxxxxxx | ALU_B = 0xxxxxxxxx | ALU_Out = 0xxxxxxxxx
+
+================= Time: 945000 =================
+[IF] PC = 0xxxxxxxxx | Instr = 0xxxxxxxxx
+[ID] PC = 0xxxxxxxxx | RD1 = 0xxxxxxxxx | RD2 = 0xxxxxxxxx | Imm = 0xxxxxxxxx
+     Branch_taken = x | Jal_taken = x | Jalr_taken = x
+[EX] PC = 0x000000Xx | ALU_A = 0xxxxxxxxx | ALU_B = 0xxxxxxxxx | ALU_Out = 0xxxxxxxxx
+
+================= Time: 955000 =================
+[IF] PC = 0xxxxxxxxx | Instr = 0xxxxxxxxx
+[ID] PC = 0xxxxxxxxx | RD1 = 0xxxxxxxxx | RD2 = 0xxxxxxxxx | Imm = 0xxxxxxxxx
+     Branch_taken = x | Jal_taken = x | Jalr_taken = x
+[EX] PC = 0x000000Xx | ALU_A = 0xxxxxxxxx | ALU_B = 0xxxxxxxxx | ALU_Out = 0xxxxxxxxx
+
+================= Time: 965000 =================
+[IF] PC = 0xxxxxxxxx | Instr = 0xxxxxxxxx
+[ID] PC = 0xxxxxxxxx | RD1 = 0xxxxxxxxx | RD2 = 0xxxxxxxxx | Imm = 0xxxxxxxxx
+     Branch_taken = x | Jal_taken = x | Jalr_taken = x
+[EX] PC = 0x000000Xx | ALU_A = 0xxxxxxxxx | ALU_B = 0xxxxxxxxx | ALU_Out = 0xxxxxxxxx
+
+================= Time: 975000 =================
+[IF] PC = 0xxxxxxxxx | Instr = 0xxxxxxxxx
+[ID] PC = 0xxxxxxxxx | RD1 = 0xxxxxxxxx | RD2 = 0xxxxxxxxx | Imm = 0xxxxxxxxx
+     Branch_taken = x | Jal_taken = x | Jalr_taken = x
+[EX] PC = 0x000000Xx | ALU_A = 0xxxxxxxxx | ALU_B = 0xxxxxxxxx | ALU_Out = 0xxxxxxxxx
+
+================= Time: 985000 =================
+[IF] PC = 0xxxxxxxxx | Instr = 0xxxxxxxxx
+[ID] PC = 0xxxxxxxxx | RD1 = 0xxxxxxxxx | RD2 = 0xxxxxxxxx | Imm = 0xxxxxxxxx
+     Branch_taken = x | Jal_taken = x | Jalr_taken = x
+[EX] PC = 0x000000Xx | ALU_A = 0xxxxxxxxx | ALU_B = 0xxxxxxxxx | ALU_Out = 0xxxxxxxxx
+
+================= Time: 995000 =================
+[IF] PC = 0xxxxxxxxx | Instr = 0xxxxxxxxx
+[ID] PC = 0xxxxxxxxx | RD1 = 0xxxxxxxxx | RD2 = 0xxxxxxxxx | Imm = 0xxxxxxxxx
+     Branch_taken = x | Jal_taken = x | Jalr_taken = x
+[EX] PC = 0x000000Xx | ALU_A = 0xxxxxxxxx | ALU_B = 0xxxxxxxxx | ALU_Out = 0xxxxxxxxx
+
+================= Time: 1005000 =================
+[IF] PC = 0xxxxxxxxx | Instr = 0xxxxxxxxx
+[ID] PC = 0xxxxxxxxx | RD1 = 0xxxxxxxxx | RD2 = 0xxxxxxxxx | Imm = 0xxxxxxxxx
+     Branch_taken = x | Jal_taken = x | Jalr_taken = x
+[EX] PC = 0x000000Xx | ALU_A = 0xxxxxxxxx | ALU_B = 0xxxxxxxxx | ALU_Out = 0xxxxxxxxx
+
+================= Time: 1015000 =================
+[IF] PC = 0xxxxxxxxx | Instr = 0xxxxxxxxx
+[ID] PC = 0xxxxxxxxx | RD1 = 0xxxxxxxxx | RD2 = 0xxxxxxxxx | Imm = 0xxxxxxxxx
+     Branch_taken = x | Jal_taken = x | Jalr_taken = x
+[EX] PC = 0x000000Xx | ALU_A = 0xxxxxxxxx | ALU_B = 0xxxxxxxxx | ALU_Out = 0xxxxxxxxx
+
 ========== Simulation Timeout / Finished ==========
