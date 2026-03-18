@@ -42,15 +42,14 @@ module soc_top_tb();
 
     always @(posedge clk) begin
         if (rstn == 1'b1) begin
-            counter <= counter + 1;
-
-            if (^current_pc !== 1'bx) begin
+            if (^current_instr !== 1'bx) begin
+                counter <= counter + 1;
                 $display("Cycle: %0d | PC: %h | Instr: %h", counter, current_pc, current_instr);
             end
-
-            if (^current_pc === 1'bx) begin
+            else begin
                 if (stop_flag < 4) begin 
                     stop_flag <= stop_flag + 1;
+                    $display("Cycle: %0d | PC: %h | Pipeline Flushing...", counter + stop_flag, current_pc);
                 end
                 else begin
                     $display("--- Instructions Finished. Saving Register Snapshot ---");
