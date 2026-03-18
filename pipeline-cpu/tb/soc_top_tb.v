@@ -22,9 +22,9 @@ module soc_top_tb();
     wire [31:0] current_instr = U_SOC_TOP.U_CPU.instr;  
 
     initial begin
-        $readmemh("sim1_no.txt", U_SOC_TOP.U_IM.ROM); 
+        $readmemh("sim5_no.txt", U_SOC_TOP.U_IM.ROM); 
         
-        foutput = $fopen("sim1_no_result.txt", "w");
+        foutput = $fopen("sim5_no_result.txt", "w");
         if (foutput == 0) begin
             $display("Error: Could not open results.txt");
             $finish;
