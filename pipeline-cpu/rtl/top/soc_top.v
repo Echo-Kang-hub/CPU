@@ -7,7 +7,7 @@
 
 module soc_top(
     input  wire        clk,
-    input  wire        rstn, 
+    input  wire        rstn,
     input  wire [4:0]  reg_sel,
     output wire [31:0] reg_data
 );
@@ -21,7 +21,6 @@ module soc_top(
     wire [2:0]  dm_type;
     wire [31:0] dm_read_data;
        
-    // 2. 实例化你的流水线 CPU
     pipeline_top U_CPU(
         .clk             (clk),
         .reset           (reset),
@@ -38,7 +37,7 @@ module soc_top(
     );
          
     im U_IM ( 
-        .addr            (instr_addr[8:2]), 
+        .addr            (instr_addr[9:2]), 
         .dout            (instr)
     );
          

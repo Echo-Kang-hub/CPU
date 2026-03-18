@@ -1,4 +1,4 @@
-`ifndef __MA_STAGE_V__   
+`ifndef __MA_STAGE_V__  
 `define __MA_STAGE_V__
 `default_nettype none
 `include "definition.vh"
@@ -24,26 +24,23 @@ module MA_stage(
     output wire [31:0] DM_write_data,
     input  wire [31:0] DM_read_data
 );
-
     // receive from EX and store
     reg [`EX_to_MA_BUS_WIDTH-1:0] EX_to_MA_bus_reg;
     reg                           MA_valid;
 
-    wire MA_ready_go = 1'b1; 
-
+    wire MA_ready_go = 1'b1;
     assign MA_allowin = !MA_valid || (MA_ready_go && WB_allowin);
     assign MA_to_WB_valid = MA_valid && MA_ready_go;
 
     always @(posedge clk or posedge reset) begin
-        if (reset) 
+        if (reset)
             MA_valid <= 1'b0;
         else begin
-            if (MA_allowin) 
+            if (MA_allowin)
                 MA_valid <= EX_to_MA_valid;
-            if (MA_allowin && EX_to_MA_valid) 
+            if (MA_allowin && EX_to_MA_valid)
                 EX_to_MA_bus_reg <= EX_to_MA_bus;
         end
-            
     end
 
     wire [31:0] MA_PC_plus_4;
@@ -57,13 +54,13 @@ module MA_stage(
     wire [4:0]  MA_rd;
 
     assign {
-        MA_aluout, DM_write_data, 
+        MA_aluout, DM_write_data,
         MA_PC_plus_4,
         MA_MemWrite, MA_DMType,
         MA_MemtoReg, MA_RegWrite, MA_rd} = EX_to_MA_bus_reg;
 
     assign DMType = MA_DMType;
-    assign DM_write_enable    = MA_MemWrite && MA_valid; 
+    assign DM_write_enable    = MA_MemWrite && MA_valid;
     assign DM_write_addr      = MA_aluout;
 
     assign MA_to_WB_bus = {
