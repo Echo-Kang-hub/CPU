@@ -19,7 +19,6 @@ module soc_top_tb();
     integer foutput;
     integer counter = 0;
     
-    // 定义内部信号的快捷引用路径（避免 always 块内定义 wire 的报错）
     wire [31:0] current_pc    = U_SOC_TOP.U_CPU.instr_addr; 
     wire [31:0] current_instr = U_SOC_TOP.U_CPU.instr;  
 

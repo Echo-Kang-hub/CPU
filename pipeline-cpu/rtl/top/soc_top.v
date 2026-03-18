@@ -5,7 +5,7 @@
 `include "dm.v"
 `include "im.v"
 
-module soctop(
+module soc_top(
     input  wire        clk,
     input  wire        rstn, 
     input  wire [4:0]  reg_sel,
