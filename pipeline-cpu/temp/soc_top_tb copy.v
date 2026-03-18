@@ -2,14 +2,11 @@
 `include "soc_top.v"
 
 module soc_top_tb();
+    
     reg          clk;
     reg          rstn;
     reg  [4:0]   reg_sel;
     wire [31:0]  reg_data;
-    
-    integer foutput;
-    integer counter = 0;
-    integer stop_flag = 0; 
     
     soc_top U_SOC_TOP(
         .clk      (clk), 
@@ -18,47 +15,44 @@ module soc_top_tb();
         .reg_data (reg_data) 
     );
 
+    integer foutput;
+    integer counter = 0;
+    
     wire [31:0] current_pc    = U_SOC_TOP.U_CPU.instr_addr; 
     wire [31:0] current_instr = U_SOC_TOP.U_CPU.instr;  
 
     initial begin
-        $readmemh("sim1_no.txt", U_SOC_TOP.U_IM.ROM); 
+        // 加载指令，确保文件名和路径正确
+        $readmemh("inst.txt", U_SOC_TOP.U_IM.ROM); 
         
-        foutput = $fopen("sim1_no_result.txt", "w");
-        if (foutput == 0) begin
-            $display("Error: Could not open results.txt");
-            $finish;
-        end
-
+        foutput = $fopen("results.txt", "w"); 
         clk = 1;
         rstn = 1;
-        #5  rstn = 0;
-        #20 rstn = 1;
+        #5  rstn = 0; // 复位
+        #20 rstn = 1; // 释放
         
-        reg_sel = 7; 
+        reg_sel = 7;
     end
     
-    always #50 clk = ~clk;
+    // 时钟产生
+    always begin
+        #(50) clk = ~clk;
+        
+        if (clk == 1'b1) begin
 
-    always @(posedge clk) begin
-        if (rstn == 1'b1) begin
-            counter <= counter + 1;
-
-            if (^current_pc !== 1'bx) begin
-                $display("Cycle: %0d | PC: %h | Instr: %h", counter, current_pc, current_instr);
+            if ((counter >= 2000) || (^current_pc === 1'bx)) begin
+                $display("--- Simulation Stop: PC is Unknown or Timeout ---");
+                $fflush(foutput); 
+                $fclose(foutput);
+                $stop;
             end
-
-            if (^current_pc === 1'bx) begin
-                if (stop_flag < 4) begin 
-                    stop_flag <= stop_flag + 1;
-                end
-                else begin
-                    $display("--- Instructions Finished. Saving Register Snapshot ---");
+            else begin
+                if (current_pc == 32'hFFFFFFFC) begin 
+                    counter = counter + 1;
+                    $fdisplay(foutput, "pc:\t %h", current_pc);
+                    $fdisplay(foutput, "instr:\t\t %h", current_instr);
                     
-                    $fdisplay(foutput, "Final PC (Invalid): %h", current_pc);
-                    $fdisplay(foutput, "Total execution cycles: %0d", counter);
-                    
-                    $fdisplay(foutput, "rf00-03:\t %h %h %h %h", 32'h0, 
+                    $fdisplay(foutput, "rf00-03:\t %h %h %h %h", 0, 
                         U_SOC_TOP.U_CPU.u_ID_stage.U_RF.regfile[1], 
                         U_SOC_TOP.U_CPU.u_ID_stage.U_RF.regfile[2], 
                         U_SOC_TOP.U_CPU.u_ID_stage.U_RF.regfile[3]);
@@ -97,14 +91,16 @@ module soc_top_tb();
                         U_SOC_TOP.U_CPU.u_ID_stage.U_RF.regfile[29], 
                         U_SOC_TOP.U_CPU.u_ID_stage.U_RF.regfile[30], 
                         U_SOC_TOP.U_CPU.u_ID_stage.U_RF.regfile[31]);
-
-                    $fflush(foutput);
+                    
                     $fclose(foutput);
-                    $display("--- write results.txt ---");
-                    $finish; 
+                    $stop;
+                end
+                else begin
+                    counter = counter + 1;
+                    $display("Cycle: %0d | pc: %h | instr: %h", counter, current_pc, current_instr);
                 end
             end
         end
-    end
+    end 
 
 endmodule

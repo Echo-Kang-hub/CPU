@@ -46,7 +46,7 @@ module dm (
         end
     end
 
-    // 2. 异步读 (Load)
+    // 异步读 (Load)
     wire [31:0] raw_word = RAM[word_addr]; 
     reg  [31:0] read_data;
 

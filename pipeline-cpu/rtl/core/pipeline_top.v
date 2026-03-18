@@ -132,6 +132,7 @@ module pipeline_top(
         .MA_to_WB_valid     (MA_to_WB_valid),
         .MA_to_WB_bus       (MA_to_WB_bus),
         
+        .DMType            (DM_Type),
         .DM_write_addr      (DM_write_addr),
         .DM_write_data      (DM_write_data),
         .DM_write_enable    (DM_write_enable),
