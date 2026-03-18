@@ -1,3 +1,5 @@
+`ifndef __IM_V__   
+`define __IM_V__
 `timescale 1ns / 1ps
 
 module im ( 
@@ -13,3 +15,4 @@ module im (
 
     assign dout = ROM[addr];
 endmodule
+`endif

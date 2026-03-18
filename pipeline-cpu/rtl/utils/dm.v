@@ -1,3 +1,5 @@
+`ifndef __DM_V__   
+`define __DM_V__
 `timescale 1ns / 1ps
 `include "definition.vh" // 引入你的 DM_BYTE 等宏定义
 
@@ -88,3 +90,4 @@ module dm (
     assign dout = read_data;
 
 endmodule
+`endif
