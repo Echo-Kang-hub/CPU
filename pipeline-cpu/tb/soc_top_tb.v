@@ -52,7 +52,7 @@ module soc_top_tb();
                 $stop;
             end
             else begin
-                if (current_pc == 32'h00000048) begin
+                if (current_pc == 32'h00000088) begin
                     counter = counter + 1;
                     $fdisplay(foutput, "Final PC: %h", current_pc);
                     $fdisplay(foutput, "Final Instr: %h", current_instr);
