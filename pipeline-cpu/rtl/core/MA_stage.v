@@ -1,5 +1,6 @@
 `ifndef __MA_STAGE_V__   
 `define __MA_STAGE_V__
+`default_nettype none
 `include "definition.vh"
 
 module MA_stage(
@@ -60,15 +61,14 @@ module MA_stage(
         MA_MemWrite, MA_DMType,
         MA_MemtoReg, MA_RegWrite, MA_rd} = EX_to_MA_bus_reg;
 
-    // 极其关键：必须是寄存器里有真实有效的指令，且这是一条写内存指令，才能拉高 DM_write_enable
     assign DM_write_enable    = MA_MemWrite && MA_valid; 
     assign DM_write_addr      = MA_aluout;
 
     assign MA_to_WB_bus = {
-        MA_aluout, 
-        DM_read_data, 
-        MA_PC_plus_4,
-        MA_MemtoReg, MA_RegWrite, MA_rd}; 
+        MA_aluout, // 32
+        DM_read_data,  // 32
+        MA_PC_plus_4, // 32
+        MA_MemtoReg, MA_RegWrite, MA_rd};  // 2 + 1 + 5 = 8
 
 endmodule
 `endif

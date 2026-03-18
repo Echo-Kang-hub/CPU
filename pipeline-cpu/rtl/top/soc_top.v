@@ -1,0 +1,52 @@
+`timescale 1ns / 1ps
+`include "pipeline_top.v"
+`include "dm.v"
+`include "im.v"
+
+module soctop(
+    input  wire        clk,
+    input  wire        rstn, 
+    input  wire [4:0]  reg_sel,
+    output wire [31:0] reg_data
+);
+    wire reset = ~rstn; 
+    
+    wire [31:0] instr_addr;
+    wire [31:0] instr;
+    wire [31:0] dm_write_addr;
+    wire [31:0] dm_write_data;
+    wire        dm_write_enable;
+    wire [2:0]  dm_type;
+    wire [31:0] dm_read_data;
+       
+    // 2. 实例化你的流水线 CPU
+    pipeline_top U_CPU(
+        .clk             (clk),
+        .reset           (reset),
+        .instr_addr      (instr_addr),
+        .instr           (instr),
+        .DM_write_addr   (dm_write_addr),
+        .DM_write_data   (dm_write_data),
+        .DM_write_enable (dm_write_enable),
+        .DM_Type         (dm_type),
+        .DM_read_data    (dm_read_data),
+        
+        .reg_sel         (reg_sel),
+        .reg_data        (reg_data)
+    );
+         
+    im U_IM ( 
+        .addr            (instr_addr[8:2]), 
+        .dout            (instr)
+    );
+         
+    dm U_DM(
+        .clk             (clk),
+        .DMWr            (dm_write_enable),
+        .DMType          (dm_type),
+        .addr            (dm_write_addr), 
+        .din             (dm_write_data),
+        .dout            (dm_read_data)
+    );
+        
+endmodule

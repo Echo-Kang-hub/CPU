@@ -1,5 +1,6 @@
 `ifndef __ID_STAGE_V__   
 `define __ID_STAGE_V__
+`default_nettype none
 `include "definition.vh"
 
 module ID_stage(
@@ -28,7 +29,10 @@ module ID_stage(
     output wire        Jal_taken,
     output wire [31:0] Jal_target_addr,
     output wire        Jalr_taken,
-    output wire [31:0] Jalr_target_addr
+    output wire [31:0] Jalr_target_addr,
+
+    input  wire [4:0]  reg_sel,
+    output wire [31:0] reg_data
 );
     // receive from IF and store
     reg [`IF_to_ID_BUS_WIDTH-1:0] IF_to_ID_bus_reg;
@@ -47,7 +51,7 @@ module ID_stage(
         else begin
             if (ID_allowin) 
                 ID_valid <= IF_to_ID_valid;
-            else if(ID_allowin && IF_to_ID_valid)
+            if(ID_allowin && IF_to_ID_valid)
                 IF_to_ID_bus_reg <= IF_to_ID_bus;
         end 
     end
@@ -146,13 +150,15 @@ module ID_stage(
     wire [31:0] PC_plus_4 = PC_addr + 4;
 
     assign ID_to_EX_bus = {
-        PC_addr, 
-        PC_plus_4,
-        RD1, RD2, 
-        immout,
-        ALUOp, ALUSrc1, ALUSrc2,
-        MemWrite, DMType,
-        MemtoReg, RegWrite, rd};
+        PC_addr, // 32
+        PC_plus_4, // 32
+        RD1, RD2, // 32 + 32 = 64
+        immout, // 32
+        ALUOp, ALUSrc1, ALUSrc2, // 4 + 1 + 1 = 6
+        MemWrite, DMType, // 1 + 3 = 4
+        MemtoReg, RegWrite, rd}; // 2 + 1 + 5 =8
+    
+    assign reg_data = (reg_sel == 0)? 32'b0 : U_RF.regfile[reg_sel]; 
 
 endmodule
 `endif

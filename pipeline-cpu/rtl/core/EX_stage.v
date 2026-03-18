@@ -1,11 +1,12 @@
 `ifndef __EX_STAGE_V__   
 `define __EX_STAGE_V__
+`default_nettype none
 `include "definition.vh"
 
 module EX_stage(
     input  wire        clk,
     input  wire        reset,
-    input  wire        FLUSH_IDEX, // 处理 Load-Use 冒险时冲刷本级
+    input  wire        FLUSH_IDEX, // 处理 Load-Use 冒险时冲刷
 
     // from ID
     input  wire        ID_to_EX_valid,
@@ -48,7 +49,7 @@ module EX_stage(
     wire EX_MemWrite;
     wire [2:0]  EX_DMType;
     // WB
-    wire [1:0]  EX_WDSel;
+    wire [1:0]  EX_MemtoReg;
     wire [4:0]  EX_rd;
     wire EX_RegWrite;
 
@@ -78,10 +79,10 @@ module EX_stage(
     );
 
     assign EX_to_MA_bus = {
-        aluout, RD2, // data
-        EX_PC_plus_4,
-        EX_MemWrite, EX_DMType, // MA 
-        EX_MemtoReg, EX_RegWrite, EX_rd}; // WB
+        aluout, RD2, // data 32+32=64
+        EX_PC_plus_4, // 32
+        EX_MemWrite, EX_DMType, // MA 1+3=4
+        EX_MemtoReg, EX_RegWrite, EX_rd}; // WB 2+1+5=8
 
 endmodule
 `endif

@@ -18,7 +18,7 @@ module dm(
         if (DMWr) RAM[addr] <= din;
     end
 
-    // 异步读（组合逻辑，单周期CPU需要）
+    // 异步读
     always @(*) begin
         dout = RAM[addr];
     end

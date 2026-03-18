@@ -2,9 +2,9 @@
 
 // IF/ID, ID/EX, EX/MA, MA/WB 流水线寄存器宽度
 `define IF_to_ID_BUS_WIDTH  64  
-`define ID_to_EX_BUS_WIDTH  150 
-`define EX_to_MA_BUS_WIDTH 100
-`define MA_to_WB_BUS_WIDTH 70
+`define ID_to_EX_BUS_WIDTH  178 
+`define EX_to_MA_BUS_WIDTH 108
+`define MA_to_WB_BUS_WIDTH 104
 
 // EXTOp
 `define EXT_SHAMT  3'b000

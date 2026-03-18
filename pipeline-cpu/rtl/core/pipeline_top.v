@@ -10,16 +10,17 @@ module pipeline_top(
     input  wire        clk,
     input  wire        reset,
 
-    // Instruction Memory (IMEM) Interface
     output wire [31:0] instr_addr,
     input  wire [31:0] instr,
 
-    // Data Memory (DMEM) Interface
     output wire [31:0] DM_write_addr,
     output wire [31:0] DM_write_data,
     output wire        DM_write_enable,
-    // output wire [2:0]  DM_Type, // 如果你的内存模块支持 Byte/Half 操作，就把这个引脚加上
-    input  wire [31:0] DM_read_data
+    output wire [2:0]  DM_Type, 
+    input  wire [31:0] DM_read_data,
+
+    input wire [4:0]  reg_sel,
+    output wire [31:0] reg_data
 );
 
 
@@ -53,7 +54,6 @@ module pipeline_top(
     wire [31:0] Jalr_target_addr;
 
     // 控制冲刷
-    // 但如果有跳转发生，必须冲刷掉 IF 阶段刚好取进来的错误指令！
     wire Flush_IFID = Branch_taken || Jal_taken || Jalr_taken;
     wire Flush_IDEX = 1'b0; // 暂不处理 load-use 冒险
 
@@ -100,7 +100,10 @@ module pipeline_top(
         .Jal_taken          (Jal_taken),
         .Jal_target_addr    (Jal_target_addr),
         .Jalr_taken         (Jalr_taken),
-        .Jalr_target_addr   (Jalr_target_addr)
+        .Jalr_target_addr   (Jalr_target_addr),
+
+        .reg_sel            (reg_sel),
+        .reg_data           (reg_data)
     );
 
     EX_stage u_EX_stage(

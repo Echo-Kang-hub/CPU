@@ -160,7 +160,7 @@ module SCPU(
                 endcase
             end
             `DM_HALF: begin // SH
-                case(aluout[1]) // 半字必须按 2 字节对齐，所以只看 aluout[1]
+                case(aluout[1]) 
                     1'b0: store_data = {Data_in[31:16], RD2[15:0]};
                     1'b1: store_data = {RD2[15:0], Data_in[15:0]};
                 endcase

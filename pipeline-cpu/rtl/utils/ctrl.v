@@ -103,12 +103,12 @@ module ctrl(
     always @(*) begin
         
         EXTOp_reg  = `EXT_ITYPE; // 默认 I 型扩展
-        BranchOp_reg = `Branch_NONE; // 默认不比较，直接过
-        ALUSrc1_reg = 1'b0;      // 默认 ALU A口 来自寄存器
-        ALUSrc2_reg = 1'b0;      // 默认 ALU B口 来自寄存器
-        ALUOp_reg  = `ALUOp_add;   // 默认 ALU 做加法 (算地址常用)
-        DMType_reg = `DM_WORD;   // 默认 32位 访存
-        MemtoReg_reg  = `MemtoReg_ALU;    // 默认 写回 ALU 结果
+        BranchOp_reg = `Branch_NONE; // 默认不比较
+        ALUSrc1_reg = 1'b0;  // 默认 ALU A来自寄存器
+        ALUSrc2_reg = 1'b0; // 默认 ALU B来自寄存器
+        ALUOp_reg  = `ALUOp_add; // 默认ALU做加法
+        DMType_reg = `DM_WORD; // 默认32位访存
+        MemtoReg_reg  = `MemtoReg_ALU; // 默认写回ALU结果
         
         // EXTOp
         if      (itype_shamt) EXTOp_reg = `EXT_SHAMT;
@@ -130,9 +130,8 @@ module ctrl(
 
 
         // ALUSrc
-        // 只有 R型运算 和 Branch分支 比较的是两个寄存器 (1'b0)，其余大多需要立即数参与计算
         if (i_auipc) ALUSrc1_reg = 1'b1;
-        if (itype_r | load | store) ALUSrc2_reg = 1'b1;
+        if (itype_r | load | store | utype) ALUSrc2_reg = 1'b1;
 
         // ALUOp
         if      (i_sub)                 ALUOp_reg = `ALUOp_sub;
