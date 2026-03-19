@@ -141,6 +141,7 @@ module ID_stage(
     );
 
     wire is_branch_type = (instr[6:0] == 7'b1100011);
+    wire is_jalr = (instr[6:0] == 7'b1100111);
 
     // hazard detection
     wire [4:0]  IFID_rs1 = rs1;
@@ -183,6 +184,12 @@ module ID_stage(
                 ForwardB_reg <= `Forward_EXMA;
             else if (MAWB_RegWrite && (MAWB_rd != 5'b0) && (MAWB_rd == rs2)) 
                 ForwardB_reg <= `Forward_MAWB;
+        end
+        else if(is_jalr) begin
+            if (EXMA_RegWrite && (EXMA_rd != 5'b0) && (EXMA_rd == rs1)) 
+                ForwardA_reg <= `Forward_EXMA;
+            else if (MAWB_RegWrite && (MAWB_rd != 5'b0) && (MAWB_rd == rs1)) 
+                ForwardA_reg <= `Forward_MAWB;
         end
     end
 
