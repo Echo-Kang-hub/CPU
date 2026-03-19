@@ -22,7 +22,11 @@ module MA_stage(
     output wire [2:0]  DMType,
     output wire [31:0] DM_write_addr,
     output wire [31:0] DM_write_data,
-    input  wire [31:0] DM_read_data
+    input  wire [31:0] DM_read_data,
+
+    output wire        EXMA_RegWrite,
+    output wire [4:0]  EXMA_rd,
+    output wire [31:0] EXMA_aluout
 );
     // receive from EX and store
     reg [`EX_to_MA_BUS_WIDTH-1:0] EX_to_MA_bus_reg;
@@ -62,6 +66,11 @@ module MA_stage(
     assign DMType = MA_DMType;
     assign DM_write_enable    = MA_MemWrite && MA_valid;
     assign DM_write_addr      = MA_aluout;
+
+    // forwarding
+    assign EXMA_RegWrite = MA_RegWrite;
+    assign EXMA_rd = MA_rd;
+    assign EXMA_aluout = MA_aluout;
 
     assign MA_to_WB_bus = {
         MA_aluout, // 32

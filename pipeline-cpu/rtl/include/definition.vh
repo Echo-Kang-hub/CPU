@@ -51,3 +51,8 @@
 `define MemtoReg_ALU     2'b00 // auipc, lui, R-type, I-type (except load)
 `define MemtoReg_MEM     2'b01 // load
 `define MemtoReg_PC4     2'b10 // jal, jalr
+
+// Forwarding
+`define Forward_NONE 2'b00
+`define Forward_EXMA 2'b01
+`define Forward_MAWB 2'b10

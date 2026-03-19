@@ -6,8 +6,6 @@
 module ID_stage(
     input  wire        clk,
     input  wire        reset,
-    input  wire        FLUSH_IFID,
-
     // from IF
     input  wire        IF_to_ID_valid, 
     input  wire [`IF_to_ID_BUS_WIDTH-1:0] IF_to_ID_bus,
@@ -31,6 +29,22 @@ module ID_stage(
     output wire        Jalr_taken,
     output wire [31:0] Jalr_target_addr,
 
+    // forwarding
+    input  wire        EXMA_RegWrite,
+    input  wire [4:0]  EXMA_rd,
+    input  wire [31:0] EXMA_aluout,
+    
+    input  wire        MAWB_RegWrite,
+    input  wire [4:0]  MAWB_rd,
+    input  wire [31:0] MAWB_aluout,
+
+    // hazard detection
+    input  wire        IDEX_MemRead,
+    input  wire [4:0]  IDEX_rd,
+
+    output wire        FLUSH_IFID,
+
+    // display
     input  wire [4:0]  reg_sel,
     output wire [31:0] reg_data
 );
@@ -73,6 +87,8 @@ module ID_stage(
     wire [11:0] bimm      = {instr[31],instr[7],instr[30:25],instr[11:8]};
     wire [19:0] uimm      = instr[31:12]; // lui, auipc
     wire [19:0] jimm      = {instr[31],instr[19:12],instr[20],instr[30:21]}; // jal
+
+    
 
     // Control
     wire RegWrite, ALUSrc1, ALUSrc2, MemWrite;
@@ -123,15 +139,68 @@ module ID_stage(
         .EXTOp(EXTOp),
         .immout(immout)
     );
-    // Branch calculation
-    wire branch_eq = (RD1 == RD2);
-    wire branch_ne = (RD1 != RD2);
-    wire branch_lt = ($signed(RD1) < $signed(RD2));
-    wire branch_ge = ($signed(RD1) >= $signed(RD2));
-    wire branch_ltu = ($unsigned(RD1) < $unsigned(RD2));
-    wire branch_geu = ($unsigned(RD1) >= $unsigned(RD2));
 
     wire is_branch_type = (instr[6:0] == 7'b1100011);
+
+    // hazard detection
+    wire [4:0]  IFID_rs1 = rs1;
+    wire [4:0]  IFID_rs2 = rs2;
+
+    wire IFID_is_branch = is_branch_type;
+    wire stall;
+
+    
+    hazard_detect u_hazard_detect(
+        .IFID_rs1(IFID_rs1),
+        .IFID_rs2(IFID_rs2),
+        .IFID_is_branch(IFID_is_branch),
+        .IDEX_MemRead(IDEX_MemRead),
+        .IDEX_RegWrite(RegWrite),
+        .IDEX_rd(IDEX_rd),
+        .EXMA_MemRead(EXMA_MemRead),
+        .EXMA_rd(EXMA_rd),
+        .Branch_taken(Branch_taken),
+        .Jal_taken(Jal_taken),
+        .Jalr_taken(Jalr_taken),
+        .stall(stall),
+        .FLUSH_IFID(FLUSH_IFID)
+    );
+    
+    // forwarding
+    reg [1:0] ForwardA_reg;
+    reg [1:0] ForwardB_reg;
+
+    always @(*) begin
+        ForwardA_reg <= `Forward_NONE;
+        ForwardB_reg <= `Forward_NONE;
+        if(is_branch_type) begin
+            if (EXMA_RegWrite && (EXMA_rd != 5'b0) && (EXMA_rd == rs1)) 
+                ForwardA_reg <= `Forward_EXMA;
+            else if (MAWB_RegWrite && (MAWB_rd != 5'b0) && (MAWB_rd == rs1)) 
+                ForwardA_reg <= `Forward_MAWB;
+
+            if (EXMA_RegWrite && (EXMA_rd != 5'b0) && (EXMA_rd == rs2)) 
+                ForwardB_reg <= `Forward_EXMA;
+            else if (MAWB_RegWrite && (MAWB_rd != 5'b0) && (MAWB_rd == rs2)) 
+                ForwardB_reg <= `Forward_MAWB;
+        end
+    end
+
+    wire [31:0] forward_RD1, forward_RD2;
+    assign forward_RD1 = (ForwardA_reg == `Forward_EXMA)? EXMA_aluout :
+                         (ForwardA_reg == `Forward_MAWB)? MAWB_aluout : RD1;
+    assign forward_RD2 = (ForwardB_reg == `Forward_EXMA)? EXMA_aluout :
+                         (ForwardB_reg == `Forward_MAWB)? MAWB_aluout : RD2;
+
+
+    // Branch calculation
+    wire branch_eq = (forward_RD1 == forward_RD2);
+    wire branch_ne = (forward_RD1 != forward_RD2);
+    wire branch_lt = ($signed(forward_RD1) < $signed(forward_RD2));
+    wire branch_ge = ($signed(forward_RD1) >= $signed(forward_RD2));
+    wire branch_ltu = ($unsigned(forward_RD1) < $unsigned(forward_RD2));
+    wire branch_geu = ($unsigned(forward_RD1) >= $unsigned(forward_RD2));
+
     assign Branch_taken = ID_valid && is_branch_type && (
                           (BranchOp == `Branch_BEQ)  ? branch_eq  :
                           (BranchOp == `Branch_BNE)  ? branch_ne  :

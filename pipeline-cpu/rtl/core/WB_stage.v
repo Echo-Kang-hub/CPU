@@ -15,7 +15,11 @@ module WB_stage(
     // to RF
     output wire        RF_write_enable_out,
     output wire [4:0]  RF_write_addr_out,
-    output wire [31:0] RF_write_data_out
+    output wire [31:0] RF_write_data_out,
+
+    output wire        MAWB_RegWrite,
+    output wire [4:0]  MAWB_rd,
+    output wire [31:0] MAWB_aluout
 );
     reg [`MA_to_WB_BUS_WIDTH-1:0] MA_to_WB_bus_reg;
     reg                           WB_valid;
@@ -51,7 +55,13 @@ module WB_stage(
     assign RF_write_enable_out    = WB_RegWrite && WB_valid; 
     assign RF_write_addr_out = WB_rd;
 
+    // forwarding 
+    assign MAWB_RegWrite = WB_RegWrite && WB_valid;
+    assign MAWB_rd = WB_rd;
+    assign MAWB_aluout = WB_aluout;
+
     assign RF_write_data_out = (WB_MemtoReg == `MemtoReg_MEM) ? WB_DM_read_data : 
                                (WB_MemtoReg == `MemtoReg_PC4) ? WB_PC_plus_4 : WB_aluout;
+
 endmodule
 `endif

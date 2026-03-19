@@ -22,15 +22,18 @@ module IF_stage(
 
     // to ID
     output wire        IF_to_ID_valid,
-    output wire [`IF_to_ID_BUS_WIDTH-1:0] IF_to_ID_bus
+    output wire [`IF_to_ID_BUS_WIDTH-1:0] IF_to_ID_bus,
+
+    // hazard detection
+    input  wire        stall
 );
     wire [31:0] PC_addr;
     wire [31:0] NPC_addr;
 
-    wire IF_ready_go = 1'b1;
+    wire IF_ready_go = ~stall; 
 
     // PC 的更新条件：本级准备好，且下一级的 IF/ID 寄存器允许写入
-    wire PCWrite = IF_ready_go && ID_allowin;
+    wire PCWrite = IF_ready_go && ID_allowin; // ID阻塞了，IF就不更新PC，即IF阻塞
 
     PC U_PC (
         .clk        (clk), 

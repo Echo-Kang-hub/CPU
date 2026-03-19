@@ -6,7 +6,6 @@
 module EX_stage(
     input  wire        clk,
     input  wire        reset,
-    input  wire        FLUSH_IDEX, // 处理 Load-Use 冒险时冲刷
 
     // from ID
     input  wire        ID_to_EX_valid,
@@ -16,7 +15,20 @@ module EX_stage(
     // to MA
     input  wire        MA_allowin,
     output wire        EX_to_MA_valid,
-    output wire [`EX_to_MA_BUS_WIDTH-1:0] EX_to_MA_bus
+    output wire [`EX_to_MA_BUS_WIDTH-1:0] EX_to_MA_bus,
+
+    // forwarding
+    input  wire        EXMA_RegWrite,
+    input  wire [4:0]  EXMA_rd,
+    input  wire [31:0] EXMA_aluout,
+    
+    input  wire        MAWB_RegWrite,
+    input  wire [4:0]  MAWB_rd,
+    input  wire [31:0] MAWB_aluout,
+
+    // hazard detection for load-use
+    output wire        IDEX_MemRead,
+    output wire [4:0]  IDEX_rd
 );
     // receive from ID and store
     reg [`ID_to_EX_BUS_WIDTH-1:0] ID_to_EX_bus_reg;
@@ -30,8 +42,6 @@ module EX_stage(
     always @(posedge clk or posedge reset) begin
         if (reset) 
             EX_valid <= 1'b0;
-        else if (FLUSH_IDEX)
-            EX_valid <= 1'b0;
         else begin
             if (EX_allowin) 
                 EX_valid <= ID_to_EX_valid;
@@ -41,7 +51,10 @@ module EX_stage(
     end
 
     wire [31:0] PC_addr;
+    wire [31:0] EX_PC_plus_4;
+    wire [4:0]  EX_rs1, EX_rs2;
     wire [31:0] RD1, RD2;
+    wire [31:0] EX_immout;
     // EX
     wire [3:0]  ALUOp;
     wire ALUSrc1, ALUSrc2;
@@ -53,23 +66,49 @@ module EX_stage(
     wire [4:0]  EX_rd;
     wire EX_RegWrite;
 
-    wire [31:0] EX_immout;
-    wire [31:0] EX_PC_plus_4;
-    
-
     assign {
         PC_addr, 
         EX_PC_plus_4,
+        EX_rs1, EX_rs2,
         RD1, RD2, 
         EX_immout,
         ALUOp, ALUSrc1, ALUSrc2,
         EX_MemWrite, EX_DMType,
         EX_MemtoReg, EX_RegWrite, EX_rd} = ID_to_EX_bus_reg;
 
+    // hazard detection for load-use
+    assign IDEX_MemRead = (EX_MemtoReg == `MemtoReg_MEM);
+    assign IDEX_rd = EX_rd;
+
+
+    wire [1:0] ForwardA, ForwardB;
+    
+    forwarding U_forwarding(
+        .clk(clk),
+        .reset(reset),
+        .EX_rs1(EX_rs1),
+        .EX_rs2(EX_rs2),
+        .EXMA_RegWrite(EXMA_RegWrite), 
+        .EXMA_rd(EXMA_rd), 
+        .MAWB_RegWrite(MAWB_RegWrite), 
+        .MAWB_rd(MAWB_rd), 
+        .ForwardA(ForwardA), 
+        .ForwardB(ForwardB)  
+    );
+
     wire [31:0] A, B;
     wire [31:0] aluout;
-    assign A = (ALUSrc1 == 1'b0)? RD1 : PC_addr;
-    assign B = (ALUSrc2 == 1'b0)? RD2 : EX_immout;
+
+    wire [31:0] forward_RD1, forward_RD2;
+
+    assign forward_RD1 = (ForwardA == `Forward_EXMA)? EXMA_aluout :
+                         (ForwardA == `Forward_MAWB)? MAWB_aluout : RD1;
+
+    assign forward_RD2 = (ForwardB == `Forward_EXMA)? EXMA_aluout :
+                         (ForwardB == `Forward_MAWB)? MAWB_aluout : RD2;
+
+    assign A = (ALUSrc1 == 1'b0)? forward_RD1 : PC_addr;
+    assign B = (ALUSrc2 == 1'b0)? forward_RD2 : EX_immout;
 
     alu ALU(
         .A(A),

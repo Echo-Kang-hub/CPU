@@ -53,9 +53,19 @@ module pipeline_top(
     wire        Jalr_taken;
     wire [31:0] Jalr_target_addr;
 
-    // 控制冲刷
-    wire Flush_IFID = Branch_taken || Jal_taken || Jalr_taken;
-    wire Flush_IDEX = 1'b0; // 暂不处理 load-use 冒险
+    // forwarding
+    wire EXMA_RegWrite;
+    wire [4:0]  EXMA_rd;
+    wire [31:0] EXMA_aluout;
+
+    wire MAWB_RegWrite;
+    wire [4:0]  MAWB_rd;
+    wire [31:0] MAWB_aluout;
+
+    // hazard detection
+    wire IDEX_MemRead; 
+    wire [4:0] IDEX_rd;
+    wire Flush_IFID;
 
 
     IF_stage u_IF_stage(
@@ -81,7 +91,6 @@ module pipeline_top(
     ID_stage u_ID_stage(
         .clk                (clk),
         .reset              (reset),
-        .FLUSH_IFID         (Flush_IFID),
         
         .IF_to_ID_valid     (IF_to_ID_valid),
         .IF_to_ID_bus       (IF_to_ID_bus),
@@ -102,6 +111,18 @@ module pipeline_top(
         .Jalr_taken         (Jalr_taken),
         .Jalr_target_addr   (Jalr_target_addr),
 
+        .EXMA_RegWrite      (EXMA_RegWrite),
+        .EXMA_rd            (EXMA_rd),
+        .EXMA_aluout        (EXMA_aluout),
+
+        .MAWB_RegWrite      (MAWB_RegWrite),
+        .MAWB_rd            (MAWB_rd),
+        .MAWB_aluout        (MAWB_aluout),
+
+        .IDEX_MemRead       (IDEX_MemRead),
+        .IDEX_rd            (IDEX_rd),
+        .FLUSH_IFID         (Flush_IFID),
+
         .reg_sel            (reg_sel),
         .reg_data           (reg_data)
     );
@@ -109,7 +130,6 @@ module pipeline_top(
     EX_stage u_EX_stage(
         .clk                (clk),
         .reset              (reset),
-        .FLUSH_IDEX         (Flush_IDEX),
         
         .ID_to_EX_valid     (ID_to_EX_valid),
         .ID_to_EX_bus       (ID_to_EX_bus),
@@ -117,7 +137,18 @@ module pipeline_top(
         
         .MA_allowin         (MA_allowin),
         .EX_to_MA_valid     (EX_to_MA_valid),
-        .EX_to_MA_bus       (EX_to_MA_bus)
+        .EX_to_MA_bus       (EX_to_MA_bus),
+
+        .EXMA_RegWrite     (EXMA_RegWrite),
+        .EXMA_rd            (EXMA_rd),
+        .EXMA_aluout        (EXMA_aluout),
+
+        .MAWB_RegWrite     (MAWB_RegWrite),
+        .MAWB_rd            (MAWB_rd),
+        .MAWB_aluout        (MAWB_aluout),
+
+        .IDEX_MemRead       (IDEX_MemRead),
+        .IDEX_rd            (IDEX_rd)
     );
 
     MA_stage u_MA_stage(
@@ -136,7 +167,11 @@ module pipeline_top(
         .DM_write_addr      (DM_write_addr),
         .DM_write_data      (DM_write_data),
         .DM_write_enable    (DM_write_enable),
-        .DM_read_data       (DM_read_data)
+        .DM_read_data       (DM_read_data),
+
+        .EXMA_RegWrite     (EXMA_RegWrite),
+        .EXMA_rd            (EXMA_rd),
+        .EXMA_aluout        (EXMA_aluout)
     );
 
     WB_stage u_WB_stage(
@@ -149,7 +184,11 @@ module pipeline_top(
         
         .RF_write_enable_out(RF_write_enable),
         .RF_write_addr_out  (RF_write_addr),
-        .RF_write_data_out  (RF_write_data)
+        .RF_write_data_out  (RF_write_data),
+
+        .MAWB_RegWrite     (MAWB_RegWrite),
+        .MAWB_rd            (MAWB_rd),
+        .MAWB_aluout        (MAWB_aluout)
     );
 
 endmodule
