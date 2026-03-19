@@ -36,11 +36,15 @@ module ID_stage(
     
     input  wire        MAWB_RegWrite,
     input  wire [4:0]  MAWB_rd,
-    input  wire [31:0] MAWB_aluout,
+    input  wire [31:0] MAWB_RF_write_data,
 
     // hazard detection
     input  wire        IDEX_MemRead,
+    input  wire        IDEX_RegWrite,
     input  wire [4:0]  IDEX_rd,
+
+    input  wire        EXMA_MemRead,
+    // 还有上面的EXMA_rd
 
     output wire        FLUSH_IFID,
 
@@ -52,7 +56,7 @@ module ID_stage(
     reg [`IF_to_ID_BUS_WIDTH-1:0] IF_to_ID_bus_reg;
     reg                           ID_valid;
 
-    wire ID_ready_go = 1'b1; 
+    wire ID_ready_go = ~stall; 
 
     assign ID_allowin = !ID_valid || (ID_ready_go && EX_allowin);
     assign ID_to_EX_valid = ID_valid && ID_ready_go;
@@ -144,19 +148,19 @@ module ID_stage(
     wire is_jalr = (instr[6:0] == 7'b1100111);
 
     // hazard detection
-    wire [4:0]  IFID_rs1 = rs1;
-    wire [4:0]  IFID_rs2 = rs2;
+    wire [4:0]  IFID_rs1 = ID_valid ? rs1 : 5'b0;
+    wire [4:0]  IFID_rs2 = ID_valid ? rs2 : 5'b0;
 
-    wire IFID_is_branch = is_branch_type;
+    wire IFID_is_branch_jalr = is_branch_type || is_jalr;
     wire stall;
 
     
     hazard_detect u_hazard_detect(
         .IFID_rs1(IFID_rs1),
         .IFID_rs2(IFID_rs2),
-        .IFID_is_branch(IFID_is_branch),
+        .IFID_is_branch_jalr(IFID_is_branch_jalr),
         .IDEX_MemRead(IDEX_MemRead),
-        .IDEX_RegWrite(RegWrite),
+        .IDEX_RegWrite(IDEX_RegWrite),
         .IDEX_rd(IDEX_rd),
         .EXMA_MemRead(EXMA_MemRead),
         .EXMA_rd(EXMA_rd),
@@ -195,9 +199,9 @@ module ID_stage(
 
     wire [31:0] forward_RD1, forward_RD2;
     assign forward_RD1 = (ForwardA_reg == `Forward_EXMA)? EXMA_aluout :
-                         (ForwardA_reg == `Forward_MAWB)? MAWB_aluout : RD1;
+                         (ForwardA_reg == `Forward_MAWB)? MAWB_RF_write_data : RD1;
     assign forward_RD2 = (ForwardB_reg == `Forward_EXMA)? EXMA_aluout :
-                         (ForwardB_reg == `Forward_MAWB)? MAWB_aluout : RD2;
+                         (ForwardB_reg == `Forward_MAWB)? MAWB_RF_write_data : RD2;
 
 
     // Branch calculation
@@ -222,12 +226,13 @@ module ID_stage(
     assign Jal_taken  = ID_valid && (opcode == 7'b1101111); // jal
     assign Jal_target_addr = PC_addr + immout; // immout换成jimm也行
     assign Jalr_taken = ID_valid && (opcode == 7'b1100111); // jalr
-    assign Jalr_target_addr = (RD1 + immout) & 32'hfffffffe; // clear the least significant bit，immout换成iimm也行
+    assign Jalr_target_addr = (forward_RD1 + immout) & 32'hfffffffe; // clear the least significant bit，immout换成iimm也行
     wire [31:0] PC_plus_4 = PC_addr + 4;
 
     assign ID_to_EX_bus = {
         PC_addr, // 32
         PC_plus_4, // 32
+        rs1, rs2, // 5 + 5 = 10
         RD1, RD2, // 32 + 32 = 64
         immout, // 32
         ALUOp, ALUSrc1, ALUSrc2, // 4 + 1 + 1 = 6

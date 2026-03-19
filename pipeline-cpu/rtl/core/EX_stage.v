@@ -24,10 +24,11 @@ module EX_stage(
     
     input  wire        MAWB_RegWrite,
     input  wire [4:0]  MAWB_rd,
-    input  wire [31:0] MAWB_aluout,
+    input  wire [31:0] MAWB_RF_write_data,
 
-    // hazard detection for load-use
+    // hazard detection
     output wire        IDEX_MemRead,
+    output wire        IDEX_RegWrite,
     output wire [4:0]  IDEX_rd
 );
     // receive from ID and store
@@ -77,9 +78,9 @@ module EX_stage(
         EX_MemtoReg, EX_RegWrite, EX_rd} = ID_to_EX_bus_reg;
 
     // hazard detection for load-use
-    assign IDEX_MemRead = (EX_MemtoReg == `MemtoReg_MEM);
+    assign IDEX_MemRead = EX_valid &&(EX_MemtoReg == `MemtoReg_MEM);
     assign IDEX_rd = EX_rd;
-
+    assign IDEX_RegWrite = EX_valid && EX_RegWrite;
 
     wire [1:0] ForwardA, ForwardB;
     
@@ -102,10 +103,10 @@ module EX_stage(
     wire [31:0] forward_RD1, forward_RD2;
 
     assign forward_RD1 = (ForwardA == `Forward_EXMA)? EXMA_aluout :
-                         (ForwardA == `Forward_MAWB)? MAWB_aluout : RD1;
+                         (ForwardA == `Forward_MAWB)? MAWB_RF_write_data : RD1;
 
     assign forward_RD2 = (ForwardB == `Forward_EXMA)? EXMA_aluout :
-                         (ForwardB == `Forward_MAWB)? MAWB_aluout : RD2;
+                         (ForwardB == `Forward_MAWB)? MAWB_RF_write_data : RD2;
 
     assign A = (ALUSrc1 == 1'b0)? forward_RD1 : PC_addr;
     assign B = (ALUSrc2 == 1'b0)? forward_RD2 : EX_immout;
@@ -118,7 +119,7 @@ module EX_stage(
     );
 
     assign EX_to_MA_bus = {
-        aluout, RD2, // data 32+32=64
+        aluout, forward_RD2, // data 32+32=64
         EX_PC_plus_4, // 32
         EX_MemWrite, EX_DMType, // MA 1+3=4
         EX_MemtoReg, EX_RegWrite, EX_rd}; // WB 2+1+5=8

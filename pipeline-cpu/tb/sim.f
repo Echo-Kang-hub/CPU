@@ -2,6 +2,7 @@
 +incdir+../rtl/core
 +incdir+../rtl/top
 +incdir+../rtl/utils
++incdir+../rtl/hazard
 
 soc_top_tb.v
 
@@ -12,6 +13,8 @@ soc_top_tb.v
 ../rtl/core/WB_stage.v
 ../rtl/core/pipeline_top.v
 ../rtl/top/soc_top.v
+../rtl/hazard/forwarding.v
+../rtl/hazard/hazard_detect.v
 
 ../rtl/utils/PC.v
 ../rtl/utils/NPC.v

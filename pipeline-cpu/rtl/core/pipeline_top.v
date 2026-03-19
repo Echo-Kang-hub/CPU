@@ -60,12 +60,15 @@ module pipeline_top(
 
     wire MAWB_RegWrite;
     wire [4:0]  MAWB_rd;
-    wire [31:0] MAWB_aluout;
+    wire [31:0] MAWB_RF_write_data;
 
     // hazard detection
     wire IDEX_MemRead; 
+    wire IDEX_RegWrite;
     wire [4:0] IDEX_rd;
+    wire EXMA_MemRead;
     wire Flush_IFID;
+    wire stall;
 
 
     IF_stage u_IF_stage(
@@ -117,10 +120,14 @@ module pipeline_top(
 
         .MAWB_RegWrite      (MAWB_RegWrite),
         .MAWB_rd            (MAWB_rd),
-        .MAWB_aluout        (MAWB_aluout),
+        .MAWB_RF_write_data (MAWB_RF_write_data),
 
         .IDEX_MemRead       (IDEX_MemRead),
+        .IDEX_RegWrite      (IDEX_RegWrite),
         .IDEX_rd            (IDEX_rd),
+
+        .EXMA_MemRead       (EXMA_MemRead),
+
         .FLUSH_IFID         (Flush_IFID),
 
         .reg_sel            (reg_sel),
@@ -145,9 +152,10 @@ module pipeline_top(
 
         .MAWB_RegWrite     (MAWB_RegWrite),
         .MAWB_rd            (MAWB_rd),
-        .MAWB_aluout        (MAWB_aluout),
+        .MAWB_RF_write_data (MAWB_RF_write_data),
 
         .IDEX_MemRead       (IDEX_MemRead),
+        .IDEX_RegWrite      (IDEX_RegWrite),
         .IDEX_rd            (IDEX_rd)
     );
 
@@ -171,7 +179,9 @@ module pipeline_top(
 
         .EXMA_RegWrite     (EXMA_RegWrite),
         .EXMA_rd            (EXMA_rd),
-        .EXMA_aluout        (EXMA_aluout)
+        .EXMA_aluout        (EXMA_aluout),
+
+        .EXMA_MemRead       (EXMA_MemRead)
     );
 
     WB_stage u_WB_stage(
@@ -188,7 +198,7 @@ module pipeline_top(
 
         .MAWB_RegWrite     (MAWB_RegWrite),
         .MAWB_rd            (MAWB_rd),
-        .MAWB_aluout        (MAWB_aluout)
+        .MAWB_RF_write_data (MAWB_RF_write_data)
     );
 
 endmodule
