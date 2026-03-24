@@ -4,7 +4,7 @@
 `ifndef SYNTHESIS
     `include "pipeline_top.v"
     `include "dm.v"
-    `include "im.v"
+    `include "imem.v"
 `endif
 
 module soc_top(

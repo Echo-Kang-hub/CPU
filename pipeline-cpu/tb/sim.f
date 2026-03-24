@@ -23,6 +23,6 @@ soc_top_tb.v
 ../rtl/utils/EXT.v
 ../rtl/utils/ctrl.v
 ../rtl/utils/dm.v
-../rtl/utils/im.v
+../rtl/utils/imem.v
 
 // iverilog -o sim.out -c sim.f
