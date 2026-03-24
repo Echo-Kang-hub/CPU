@@ -38,9 +38,9 @@ module soc_top(
         .reg_data        (reg_data)
     );
          
-    im U_IM ( 
-        .addr            (instr_addr[9:2]), 
-        .dout            (instr)
+    imem U_IM ( 
+        .a               (instr_addr[8:2]), 
+        .spo             (instr)
     );
          
     dm U_DM(
