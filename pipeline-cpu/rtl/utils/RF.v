@@ -1,10 +1,10 @@
 module RF(
-    input clk,
-    input reset,
-    input RFWrite,
-    input [4:0] rs1,rs2,rd,
-    input [31:0] WriteData,
-    output [31:0] RD1,RD2
+    input wire clk,
+    input wire reset,
+    input wire RFWrite,
+    input wire [4:0] rs1,rs2,rd,
+    input wire [31:0] WriteData,
+    output wire [31:0] RD1,RD2
 );
 reg [31:0] regfile[31:0]; // reg [31:0]为数据类型，rf[31:0]为数组，32位宽，32个寄存器
 

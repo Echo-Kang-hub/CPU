@@ -4,8 +4,8 @@
 // I1: JALR/BEQ/BNE/BLT/BGE/BLTU/BGEU 8
 
 module alu(
-    input signed [31:0] A,B,
-    input [3:0] ALUOp,
+    input wire signed [31:0] A,B,
+    input wire [3:0] ALUOp,
     output reg signed [31:0] C
 );
 always @(*) begin

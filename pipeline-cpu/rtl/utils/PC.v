@@ -1,8 +1,8 @@
 module PC(
-    input clk,
-    input reset,
-    input PCWrite,
-    input [31:0] NPC_addr,
+    input wire clk,
+    input wire reset,
+    input wire PCWrite,
+    input wire [31:0] NPC_addr,
     output reg [31:0] PC_addr
 );
 

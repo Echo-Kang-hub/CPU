@@ -1,16 +1,16 @@
 `include "definition.vh"
 
 module NPC(
-    input [31:0]       PC_addr,
+    input wire [31:0]       PC_addr,
 
-    input              Branch_taken,
-    input [31:0]       Branch_target_addr,
+    input wire              Branch_taken,
+    input wire [31:0]       Branch_target_addr,
 
-    input              Jal_taken,
-    input [31:0]       Jal_target_addr,
+    input wire              Jal_taken,
+    input wire [31:0]       Jal_target_addr,
 
-    input              Jalr_taken,
-    input [31:0]       Jalr_target_addr,
+    input wire              Jalr_taken,
+    input wire [31:0]       Jalr_target_addr,
     
     output wire [31:0] NPC_addr
 );

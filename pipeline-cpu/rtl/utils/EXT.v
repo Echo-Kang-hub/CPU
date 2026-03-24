@@ -1,12 +1,12 @@
 `include "definition.vh"
 module EXT(
-    input [4:0] iimm_shamt,
-    input [11:0] iimm,
-    input [11:0] simm,
-    input [11:0] bimm,
-    input [19:0] uimm,
-    input [19:0] jimm,
-    input [2:0] EXTOp,
+    input wire [4:0] iimm_shamt,
+    input wire [11:0] iimm,
+    input wire [11:0] simm,
+    input wire [11:0] bimm,
+    input wire [19:0] uimm,
+    input wire [19:0] jimm,
+    input wire [2:0] EXTOp,
     output reg [31:0] immout
 );
 always @(*) begin

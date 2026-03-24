@@ -1,17 +1,17 @@
 `include "definition.vh"
 module ctrl(
-    input [6:0] Op,
-    input [6:0] Funct7,
-    input [2:0] Funct3,
-    output RegWrite,
-    output ALUSrc1,
-    output ALUSrc2,
-    output MemWrite,
-    output [2:0] EXTOp,
-    output [2:0] BranchOp,
-    output [3:0] ALUOp,
-    output [2:0] DMType,
-    output [1:0] MemtoReg 
+    input wire [6:0] Op,
+    input wire [6:0] Funct7,
+    input wire [2:0] Funct3,
+    output wire RegWrite,
+    output wire ALUSrc1,
+    output wire ALUSrc2,
+    output wire MemWrite,
+    output wire [2:0] EXTOp,
+    output wire [2:0] BranchOp,
+    output wire [3:0] ALUOp,
+    output wire [2:0] DMType,
+    output wire [1:0] MemtoReg 
 );
     // R_type 10条
     // I4: ADD/SUB/SLL/SLT/SLTU/XOR/SRL/SRA/OR/AND 10
