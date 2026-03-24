@@ -20,6 +20,12 @@ module IF_stage(
     input  wire        Jalr_taken,
     input  wire [31:0] Jalr_target_addr,
 
+    // Interrupt interface
+    input  wire        int_taken,       // Interrupt is being taken
+    input  wire [31:0] mtvec_addr,      // Trap vector address
+    input  wire        mret_taken,      // MRET instruction
+    input  wire [31:0] mepc_addr,       // Return address from trap
+
     // to ID
     output wire        IF_to_ID_valid,
     output wire [`IF_to_ID_BUS_WIDTH-1:0] IF_to_ID_bus
@@ -48,6 +54,10 @@ module IF_stage(
         .Jal_target_addr    (Jal_target_addr),
         .Jalr_taken         (Jalr_taken),
         .Jalr_target_addr   (Jalr_target_addr),
+        .int_taken          (int_taken),
+        .mtvec_addr         (mtvec_addr),
+        .mret_taken         (mret_taken),
+        .mepc_addr          (mepc_addr),
         .NPC_addr           (NPC_addr)
     );
 

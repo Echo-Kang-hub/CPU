@@ -29,6 +29,12 @@ module ID_stage(
     output wire        Jalr_taken,
     output wire [31:0] Jalr_target_addr,
 
+    // Interrupt interface
+    input  wire        int_taken,       // Interrupt is being taken
+    output wire        is_mret,         // MRET instruction detected
+    output wire        is_ecall,        // ECALL instruction detected
+    output wire        is_ebreak,       // EBREAK instruction detected
+
     // forwarding
     input  wire        EXMA_RegWrite,
     input  wire [4:0]  EXMA_rd,
@@ -104,6 +110,8 @@ module ID_stage(
     wire [3:0] ALUOp;
     wire [2:0] DMType;
     wire [1:0] MemtoReg;
+    wire [2:0] CSROp;
+    wire [1:0] SysOp;
 
     ctrl u_ctrl(
         .Op(opcode),
@@ -117,7 +125,9 @@ module ID_stage(
         .BranchOp(BranchOp),
         .ALUOp(ALUOp),
         .DMType(DMType),
-        .MemtoReg(MemtoReg)
+        .MemtoReg(MemtoReg),
+        .CSROp(CSROp),
+        .SysOp(SysOp)
     );
 
     // Register File
@@ -149,6 +159,18 @@ module ID_stage(
 
     wire is_branch_type = (instr[6:0] == 7'b1100011);
     wire is_jalr = (instr[6:0] == 7'b1100111);
+    wire is_system = (instr[6:0] == 7'b1110011);  // System instructions opcode
+
+    // System instruction detection
+    assign is_mret  = ID_valid && is_system && (SysOp == `SYS_MRET);
+    assign is_ecall = ID_valid && is_system && (SysOp == `SYS_ECALL);
+    assign is_ebreak = ID_valid && is_system && (SysOp == `SYS_EBREAK);
+
+    // CSR instruction detection
+    wire is_csr = ID_valid && is_system && (CSROp != `CSR_NONE);
+    
+    // CSR address
+    wire [11:0] csr_addr = instr[31:20];
 
     // hazard detection
     wire [4:0]  IFID_rs1 = ID_valid ? rs1 : 5'b0;
@@ -168,6 +190,7 @@ module ID_stage(
         .Branch_taken(Branch_taken),
         .Jal_taken(Jal_taken),
         .Jalr_taken(Jalr_taken),
+        .int_taken(int_taken),
         .stall(stall),
         .FLUSH_IFID(FLUSH_IFID)
     );
@@ -238,7 +261,8 @@ module ID_stage(
         immout, // 32
         ALUOp, ALUSrc1, ALUSrc2, // 4 + 1 + 1 = 6
         MemWrite, DMType, // 1 + 3 = 4
-        MemtoReg, RegWrite, rd}; // 2 + 1 + 5 =8
+        MemtoReg, RegWrite, rd, // 2 + 1 + 5 = 8
+        CSROp, csr_addr, is_csr}; // 3 + 12 + 1 = 16
     
     assign reg_data = (reg_sel == 0)? 32'b0 : U_RF.regfile[reg_sel]; 
 

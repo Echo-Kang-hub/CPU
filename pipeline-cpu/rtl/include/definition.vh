@@ -56,3 +56,41 @@
 `define Forward_NONE 2'b00
 `define Forward_EXMA 2'b01
 `define Forward_MAWB 2'b10
+
+// ==================== CSR Definitions ====================
+
+// CSR Addresses
+`define CSR_MSTATUS   12'h300
+`define CSR_MIE       12'h304
+`define CSR_MTVEC     12'h305
+`define CSR_MEPC      12'h341
+`define CSR_MCAUSE    12'h342
+`define CSR_MTVAL     12'h343
+`define CSR_MIP       12'h344
+
+// CSR Operations (for ctrl)
+`define CSR_NONE   3'b000
+`define CSR_CSRRW  3'b001
+`define CSR_CSRRS  3'b010
+`define CSR_CSRRC  3'b011
+`define CSR_CSRRWI 3'b100
+`define CSR_CSRRSI 3'b101
+`define CSR_CSRRCI 3'b110
+
+// System Instructions
+`define SYS_NONE   2'b00
+`define SYS_ECALL  2'b01
+`define SYS_EBREAK 2'b10
+`define SYS_MRET   2'b11
+
+// Interrupt Cause Codes
+`define MCAUSE_MACHINE_EXTERNAL_INT 32'h8000000B
+
+// Memory Mapped I/O Addresses
+`define IO_KEYBOARD_STATUS 32'hFFFF0000
+`define IO_KEYBOARD_DATA   32'hFFFF0004
+
+// Update pipeline bus widths to include CSR signals
+`define ID_to_EX_BUS_WIDTH 224  // Added: CSR addr(12) + CSR op(3) + SYS op(2) + rs1(5) + imm(14)
+`define EX_to_MA_BUS_WIDTH 140  // Added: CSR data(32)
+`define MA_to_WB_BUS_WIDTH 136  // Added: CSR data(32)

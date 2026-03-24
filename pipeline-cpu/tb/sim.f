@@ -3,6 +3,7 @@
 +incdir+../rtl/top
 +incdir+../rtl/utils
 +incdir+../rtl/hazard
++incdir+../rtl/periph
 
 soc_top_tb.v
 
@@ -12,6 +13,8 @@ soc_top_tb.v
 ../rtl/core/MA_stage.v
 ../rtl/core/WB_stage.v
 ../rtl/core/pipeline_top.v
+../rtl/core/csr.v
+../rtl/core/interrupt_ctrl.v
 ../rtl/top/soc_top.v
 ../rtl/hazard/forwarding.v
 ../rtl/hazard/hazard_detect.v
@@ -23,6 +26,7 @@ soc_top_tb.v
 ../rtl/utils/EXT.v
 ../rtl/utils/ctrl.v
 ../rtl/utils/dm.v
-../rtl/utils/im.v
+../rtl/utils/imem.v
+../rtl/periph/ps2_ctrl.v
 
 // iverilog -o sim.out -c sim.f

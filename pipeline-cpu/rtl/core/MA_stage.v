@@ -24,6 +24,12 @@ module MA_stage(
     output wire [31:0] DM_write_data,
     input  wire [31:0] DM_read_data,
 
+    // I/O interface
+    input  wire [31:0] io_rdata,
+    output wire        io_rd_en,
+    output wire        io_wr_en,
+    output wire [31:0] io_addr,
+
     output wire        EXMA_RegWrite,
     output wire [4:0]  EXMA_rd,
     output wire [31:0] EXMA_aluout,
@@ -58,16 +64,34 @@ module MA_stage(
     wire [1:0] MA_MemtoReg;
     wire MA_RegWrite;
     wire [4:0]  MA_rd;
+    // CSR
+    wire [2:0]  MA_CSROp;
+    wire [11:0] MA_CSR_addr;
+    wire [31:0] MA_CSR_wdata;
+    wire        MA_is_csr;
 
     assign {
         MA_aluout, DM_write_data,
         MA_PC_plus_4,
         MA_MemWrite, MA_DMType,
-        MA_MemtoReg, MA_RegWrite, MA_rd} = EX_to_MA_bus_reg;
+        MA_MemtoReg, MA_RegWrite, MA_rd,
+        MA_CSROp, MA_CSR_addr, MA_CSR_wdata, MA_is_csr} = EX_to_MA_bus_reg;
+
+    // Memory mapped I/O address decoding
+    wire is_io_addr = (MA_aluout[31:16] == 16'hFFFF);  // 0xFFFF0000 - 0xFFFF00FF
+    wire is_io_read = is_io_addr && MA_valid && (MA_MemtoReg == `MemtoReg_MEM);
+    wire is_io_write = is_io_addr && MA_valid && MA_MemWrite;
+
+    assign io_rd_en = is_io_read;
+    assign io_wr_en = is_io_write;
+    assign io_addr = MA_aluout;
 
     assign DMType = MA_DMType;
-    assign DM_write_enable    = MA_MemWrite && MA_valid;
-    assign DM_write_addr      = MA_aluout;
+    assign DM_write_enable = MA_MemWrite && MA_valid && !is_io_addr;
+    assign DM_write_addr = MA_aluout;
+
+    // Mux between DM and I/O for read data
+    wire [31:0] mem_read_data = is_io_addr ? io_rdata : DM_read_data;
 
     // forwarding
     assign EXMA_RegWrite = MA_valid && MA_RegWrite;
@@ -79,9 +103,10 @@ module MA_stage(
 
     assign MA_to_WB_bus = {
         MA_aluout, // 32
-        DM_read_data,  // 32
+        mem_read_data,  // 32 (from DM or I/O)
         MA_PC_plus_4, // 32
-        MA_MemtoReg, MA_RegWrite, MA_rd};  // 2 + 1 + 5 = 8
+        MA_MemtoReg, MA_RegWrite, MA_rd,  // 2 + 1 + 5 = 8
+        MA_CSROp, MA_CSR_addr, MA_CSR_wdata, MA_is_csr};  // CSR 3+12+32+1=48
 
 endmodule
 `endif

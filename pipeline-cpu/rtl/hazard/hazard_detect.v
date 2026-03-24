@@ -20,6 +20,7 @@ module hazard_detect(
     input wire       Branch_taken,
     input wire       Jal_taken,
     input wire       Jalr_taken,
+    input wire       int_taken,   // Interrupt taken
 
     output wire      stall,
     output wire      FLUSH_IFID
@@ -36,9 +37,9 @@ module hazard_detect(
 
     assign stall = load_use_stall || alu_branch_stall || load_branch_stall;
                    
-    // 跳转发生，冲刷IF/ID
+    // 跳转发生或中断发生，冲刷IF/ID
     // 如果stall，说明数据旧，跳转信号不可信；如果不stall，说明数据可行，跳转信号可信
-    assign FLUSH_IFID = !stall && (Branch_taken || Jal_taken || Jalr_taken);
+    assign FLUSH_IFID = (!stall && (Branch_taken || Jal_taken || Jalr_taken)) || int_taken;
 
 endmodule
 `endif

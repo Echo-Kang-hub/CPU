@@ -11,7 +11,9 @@ module ctrl(
     output wire [2:0] BranchOp,
     output wire [3:0] ALUOp,
     output wire [2:0] DMType,
-    output wire [1:0] MemtoReg 
+    output wire [1:0] MemtoReg,
+    output wire [2:0] CSROp,    // CSR operation
+    output wire [1:0] SysOp     // System operation (ECALL, EBREAK, MRET)
 );
     // R_type 10条
     // I4: ADD/SUB/SLL/SLT/SLTU/XOR/SRL/SRA/OR/AND 10
@@ -81,7 +83,21 @@ module ctrl(
     wire i_lui = utype & Op[5]; // lui 0110111
     wire i_auipc = utype & ~Op[5]; // auipc 0010111
 
-    assign RegWrite = rtype | itype_r | load | i_jal | i_jalr | i_lui | i_auipc; 
+    // System instructions (CSR, ECALL, EBREAK, MRET)
+    wire system = Op[6] & Op[5] & Op[4] & ~Op[3] & ~Op[2] & Op[1] & Op[0]; //1110011
+    wire i_csrrw  = system & ~Funct3[2] & ~Funct3[1] & Funct3[0];  // CSRRW  001
+    wire i_csrrs  = system & ~Funct3[2] & Funct3[1] & ~Funct3[0];  // CSRRS  010
+    wire i_csrrc  = system & ~Funct3[2] & Funct3[1] & Funct3[0];   // CSRRC  011
+    wire i_csrrwi = system & Funct3[2] & ~Funct3[1] & Funct3[0];   // CSRRWI 101
+    wire i_csrrsi = system & Funct3[2] & Funct3[1] & ~Funct3[0];   // CSRRSI 110
+    wire i_csrrci = system & Funct3[2] & Funct3[1] & Funct3[0];    // CSRRCI 111
+    wire csr_type = i_csrrw | i_csrrs | i_csrrc | i_csrrwi | i_csrrsi | i_csrrci;
+    
+    wire i_ecall  = system & ~Funct3[2] & ~Funct3[1] & ~Funct3[0] & ~Funct7[0];  // ECALL  000, funct7=0000000
+    wire i_ebreak = system & ~Funct3[2] & ~Funct3[1] & ~Funct3[0] & Funct7[0];   // EBREAK 000, funct7=0000001
+    wire i_mret   = system & ~Funct3[2] & ~Funct3[1] & ~Funct3[0] & (Funct7 == 7'b0011000); // MRET funct7=0011000
+
+    assign RegWrite = rtype | itype_r | load | i_jal | i_jalr | i_lui | i_auipc | csr_type; 
     assign MemWrite = store; 
 
     reg [2:0] EXTOp_reg;
@@ -91,6 +107,8 @@ module ctrl(
     reg [3:0] ALUOp_reg;
     reg [2:0] DMType_reg;
     reg [1:0] MemtoReg_reg;
+    reg [2:0] CSROp_reg;
+    reg [1:0] SysOp_reg;
 
     assign EXTOp  = EXTOp_reg;
     assign BranchOp = BranchOp_reg;
@@ -99,6 +117,8 @@ module ctrl(
     assign ALUOp  = ALUOp_reg;
     assign DMType = DMType_reg;
     assign MemtoReg  = MemtoReg_reg;
+    assign CSROp = CSROp_reg;
+    assign SysOp = SysOp_reg;
 
     always @(*) begin
         
@@ -109,6 +129,8 @@ module ctrl(
         ALUOp_reg  = `ALUOp_add; // 默认ALU做加法
         DMType_reg = `DM_WORD; // 默认32位访存
         MemtoReg_reg  = `MemtoReg_ALU; // 默认写回ALU结果
+        CSROp_reg = `CSR_NONE; // 默认无CSR操作
+        SysOp_reg = `SYS_NONE; // 默认无系统操作
         
         // EXTOp
         if      (itype_shamt) EXTOp_reg = `EXT_SHAMT;
@@ -158,6 +180,19 @@ module ctrl(
         if      (load)           MemtoReg_reg = `MemtoReg_MEM;
         else if (i_jal | i_jalr) MemtoReg_reg = `MemtoReg_PC4;
         // 其余默认 MemtoReg_ALU
+
+        // CSROp
+        if      (i_csrrw)  CSROp_reg = `CSR_CSRRW;
+        else if (i_csrrs)  CSROp_reg = `CSR_CSRRS;
+        else if (i_csrrc)  CSROp_reg = `CSR_CSRRC;
+        else if (i_csrrwi) CSROp_reg = `CSR_CSRRWI;
+        else if (i_csrrsi) CSROp_reg = `CSR_CSRRSI;
+        else if (i_csrrci) CSROp_reg = `CSR_CSRRCI;
+
+        // SysOp
+        if      (i_ecall)  SysOp_reg = `SYS_ECALL;
+        else if (i_ebreak) SysOp_reg = `SYS_EBREAK;
+        else if (i_mret)   SysOp_reg = `SYS_MRET;
     end
 
 endmodule

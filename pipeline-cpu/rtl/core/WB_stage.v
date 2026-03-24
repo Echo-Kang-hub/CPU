@@ -17,6 +17,13 @@ module WB_stage(
     output wire [4:0]  RF_write_addr_out,
     output wire [31:0] RF_write_data_out,
 
+    // CSR interface
+    output wire        CSR_we_out,
+    output wire [2:0]  CSR_op_out,
+    output wire [11:0] CSR_addr_out,
+    output wire [31:0] CSR_wdata_out,
+    output wire        is_csr_out,
+
     output wire        MAWB_RegWrite,
     output wire [4:0]  MAWB_rd,
     output wire [31:0] MAWB_RF_write_data
@@ -45,16 +52,32 @@ module WB_stage(
     wire [1:0]  WB_MemtoReg; 
     wire        WB_RegWrite;
     wire [4:0]  WB_rd;
+    // CSR
+    wire [2:0]  WB_CSROp;
+    wire [11:0] WB_CSR_addr;
+    wire [31:0] WB_CSR_wdata;
+    wire        WB_is_csr;
     
     assign {
         WB_aluout, 
         WB_DM_read_data, 
         WB_PC_plus_4,
-        WB_MemtoReg, WB_RegWrite, WB_rd} = MA_to_WB_bus_reg;
+        WB_MemtoReg, WB_RegWrite, WB_rd,
+        WB_CSROp, WB_CSR_addr, WB_CSR_wdata, WB_is_csr} = MA_to_WB_bus_reg;
 
-    assign RF_write_enable_out    = WB_valid && WB_RegWrite; 
+    // CSR write enable (any CSR instruction that is valid)
+    wire csr_we = WB_valid && (WB_CSROp != `CSR_NONE);
+    
+    assign CSR_we_out = csr_we;
+    assign CSR_op_out = WB_CSROp;
+    assign CSR_addr_out = WB_CSR_addr;
+    assign CSR_wdata_out = WB_CSR_wdata;
+    assign is_csr_out = WB_is_csr;
+
+    assign RF_write_enable_out = WB_valid && WB_RegWrite; 
     assign RF_write_addr_out = WB_rd;
 
+    // For CSR instructions, write CSR read value to RF
     assign RF_write_data_out = (WB_MemtoReg == `MemtoReg_MEM) ? WB_DM_read_data : 
                                (WB_MemtoReg == `MemtoReg_PC4) ? WB_PC_plus_4 : WB_aluout;
 

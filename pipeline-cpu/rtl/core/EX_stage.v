@@ -66,6 +66,10 @@ module EX_stage(
     wire [1:0]  EX_MemtoReg;
     wire [4:0]  EX_rd;
     wire EX_RegWrite;
+    // CSR
+    wire [2:0]  EX_CSROp;
+    wire [11:0] EX_CSR_addr;
+    wire        EX_is_csr;
 
     assign {
         PC_addr, 
@@ -75,7 +79,8 @@ module EX_stage(
         EX_immout,
         ALUOp, ALUSrc1, ALUSrc2,
         EX_MemWrite, EX_DMType,
-        EX_MemtoReg, EX_RegWrite, EX_rd} = ID_to_EX_bus_reg;
+        EX_MemtoReg, EX_RegWrite, EX_rd,
+        EX_CSROp, EX_CSR_addr, EX_is_csr} = ID_to_EX_bus_reg;
 
     // hazard detection for load-use
     assign IDEX_MemRead = EX_valid &&(EX_MemtoReg == `MemtoReg_MEM);
@@ -118,11 +123,17 @@ module EX_stage(
         .C(aluout)
     );
 
+    // CSR write data calculation
+    wire [31:0] csr_wdata;
+    wire [31:0] csr_imm = {27'b0, EX_rs1};  // For CSR immediate instructions
+    assign csr_wdata = (EX_CSROp >= `CSR_CSRRWI) ? csr_imm : forward_RD1;
+
     assign EX_to_MA_bus = {
         aluout, forward_RD2, // data 32+32=64
         EX_PC_plus_4, // 32
         EX_MemWrite, EX_DMType, // MA 1+3=4
-        EX_MemtoReg, EX_RegWrite, EX_rd}; // WB 2+1+5=8
+        EX_MemtoReg, EX_RegWrite, EX_rd, // WB 2+1+5=8
+        EX_CSROp, EX_CSR_addr, csr_wdata, EX_is_csr}; // CSR 3+12+32+1=48
 
 endmodule
 `endif
