@@ -64,13 +64,15 @@ module ID_stage(
     always @(posedge clk or posedge reset) begin
         if (reset) 
             ID_valid <= 1'b0;
-        else if (FLUSH_IFID)
-            ID_valid <= 1'b0;
         else begin
-            if (ID_allowin) 
-                ID_valid <= IF_to_ID_valid;
-            if(ID_allowin && IF_to_ID_valid)
-                IF_to_ID_bus_reg <= IF_to_ID_bus;
+            if(FLUSH_IFID)
+                ID_valid <= 1'b0;
+            else begin
+                if (ID_allowin) 
+                    ID_valid <= IF_to_ID_valid;
+                if(ID_allowin && IF_to_ID_valid)
+                    IF_to_ID_bus_reg <= IF_to_ID_bus;
+            end
         end 
     end
 

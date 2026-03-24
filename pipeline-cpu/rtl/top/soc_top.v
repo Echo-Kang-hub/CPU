@@ -1,9 +1,11 @@
 `ifndef __SOC_TOP_V__   
 `define __SOC_TOP_V__
 `timescale 1ns / 1ps
-`include "pipeline_top.v"
-`include "dm.v"
-`include "im.v"
+`ifndef SYNTHESIS
+    `include "pipeline_top.v"
+    `include "dm.v"
+    `include "im.v"
+`endif
 
 module soc_top(
     input  wire        clk,
