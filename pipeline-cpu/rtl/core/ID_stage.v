@@ -56,24 +56,25 @@ module ID_stage(
     reg [`IF_to_ID_BUS_WIDTH-1:0] IF_to_ID_bus_reg;
     reg                           ID_valid;
 
+    wire stall;
     wire ID_ready_go = ~stall; 
 
     assign ID_allowin = !ID_valid || (ID_ready_go && EX_allowin);
     assign ID_to_EX_valid = ID_valid && ID_ready_go;
 
     always @(posedge clk or posedge reset) begin
-        if (reset) 
+        if (reset) begin
             ID_valid <= 1'b0;
-        else begin
-            if(FLUSH_IFID)
-                ID_valid <= 1'b0;
-            else begin
-                if (ID_allowin) 
-                    ID_valid <= IF_to_ID_valid;
-                if(ID_allowin && IF_to_ID_valid)
-                    IF_to_ID_bus_reg <= IF_to_ID_bus;
-            end
+            IF_to_ID_bus_reg <= 0;
         end 
+        else if(FLUSH_IFID)
+            ID_valid <= 1'b0;
+        else if (ID_allowin) begin
+                ID_valid <= IF_to_ID_valid;
+                if(IF_to_ID_valid) begin
+                    IF_to_ID_bus_reg <= IF_to_ID_bus;
+                end
+        end
     end
 
     wire [31:0] PC_addr;
@@ -154,8 +155,6 @@ module ID_stage(
     wire [4:0]  IFID_rs2 = ID_valid ? rs2 : 5'b0;
 
     wire IFID_is_branch_jalr = is_branch_type || is_jalr;
-    wire stall;
-
     
     hazard_detect u_hazard_detect(
         .IFID_rs1(IFID_rs1),
