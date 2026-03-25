@@ -39,11 +39,11 @@ module soc_top(
     );
          
     imem U_IM ( 
-        .a               (instr_addr[9:2]), 
+        .a               (instr_addr[8:2]), 
         .spo             (instr)
     );
          
-    dm U_DM(
+    dmem U_DM(
         .clk             (clk),
         .DMWr            (dm_write_enable),
         .DMType          (dm_type),

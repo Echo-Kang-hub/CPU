@@ -3,7 +3,7 @@
 `timescale 1ns / 1ps
 `include "definition.vh"
 
-module dm (
+module dmem (
     input  wire        clk,
     input  wire        DMWr,
     input  wire [2:0]  DMType, 
