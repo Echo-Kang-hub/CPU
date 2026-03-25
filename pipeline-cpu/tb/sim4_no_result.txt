@@ -1,4 +1,4 @@
-Final PC (Invalid): xxxxxxxx
+Final PC (Invalid): 00000030
 Total execution cycles: 11
 rf00-03:	 00000000 00000001 00000002 00000003
 rf04-07:	 00000004 fffff000 ffffe000 00000000

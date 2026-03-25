@@ -3,7 +3,7 @@
 `timescale 1ns / 1ps
 
 module imem ( 
-    input  wire [6:0]  a,
+    input  wire [7:0]  a,
     output wire [31:0] spo 
 );
     reg [31:0] ROM [0:255];
