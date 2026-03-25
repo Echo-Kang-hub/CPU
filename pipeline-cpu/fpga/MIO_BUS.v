@@ -1,3 +1,5 @@
+`ifndef __MIO_BUS_V__
+`define __MIO_BUS_V__
 `timescale 1ns / 1ps
 
 // memory IO bus
@@ -49,3 +51,4 @@ module MIO_BUS(
   end
 
 endmodule
+`endif

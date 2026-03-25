@@ -3,7 +3,7 @@
 `timescale 1ns / 1ps
 `ifndef SYNTHESIS
     `include "pipeline_top.v"
-    `include "dm.v"
+    `include "dmem.v"
     `include "imem.v"
 `endif
 

@@ -56,7 +56,7 @@ module pipeline_top(
     // forwarding
     wire EXMA_RegWrite;
     wire [4:0]  EXMA_rd;
-    wire [31:0] EXMA_aluout;
+    wire [31:0] EXMA_load_data;
 
     wire MAWB_RegWrite;
     wire [4:0]  MAWB_rd;
@@ -116,7 +116,7 @@ module pipeline_top(
 
         .EXMA_RegWrite      (EXMA_RegWrite),
         .EXMA_rd            (EXMA_rd),
-        .EXMA_aluout        (EXMA_aluout),
+        .EXMA_load_data     (EXMA_load_data),
 
         .MAWB_RegWrite      (MAWB_RegWrite),
         .MAWB_rd            (MAWB_rd),
@@ -148,7 +148,7 @@ module pipeline_top(
 
         .EXMA_RegWrite     (EXMA_RegWrite),
         .EXMA_rd            (EXMA_rd),
-        .EXMA_aluout        (EXMA_aluout),
+        .EXMA_load_data     (EXMA_load_data),
 
         .MAWB_RegWrite     (MAWB_RegWrite),
         .MAWB_rd            (MAWB_rd),
@@ -179,7 +179,7 @@ module pipeline_top(
 
         .EXMA_RegWrite     (EXMA_RegWrite),
         .EXMA_rd            (EXMA_rd),
-        .EXMA_aluout        (EXMA_aluout),
+        .EXMA_load_data     (EXMA_load_data),
 
         .EXMA_MemRead       (EXMA_MemRead)
     );

@@ -1,3 +1,5 @@
+`ifndef __MULTI_CH32_V__
+`define __MULTI_CH32_V__
 `timescale 1ns / 1ps
 
 module 		MULTI_CH32(
@@ -48,3 +50,4 @@ module 		MULTI_CH32(
 
 
 endmodule
+`endif

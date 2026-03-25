@@ -1,4 +1,7 @@
+`ifndef __CLK_DIV_V__
+`define __CLK_DIV_V__
 `timescale 1ns / 1ps
+
 module CLK_DIV( input wire clk,
                 input wire rst,
                 input wire SW15,
@@ -15,3 +18,4 @@ module CLK_DIV( input wire clk,
   assign Clk_CPU=(SW15)? clkdiv[25] : clkdiv[2];  // SW15 to select slow cpu clock or fast cpu clk
 
 endmodule
+`endif

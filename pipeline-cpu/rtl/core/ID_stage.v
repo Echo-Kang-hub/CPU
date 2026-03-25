@@ -32,7 +32,7 @@ module ID_stage(
     // forwarding
     input  wire        EXMA_RegWrite,
     input  wire [4:0]  EXMA_rd,
-    input  wire [31:0] EXMA_aluout,
+    input  wire [31:0] EXMA_load_data,
     
     input  wire        MAWB_RegWrite,
     input  wire [4:0]  MAWB_rd,
@@ -199,9 +199,9 @@ module ID_stage(
     end
 
     wire [31:0] forward_RD1, forward_RD2;
-    assign forward_RD1 = (ForwardA_reg == `Forward_EXMA)? EXMA_aluout :
+    assign forward_RD1 = (ForwardA_reg == `Forward_EXMA)? EXMA_load_data :
                          (ForwardA_reg == `Forward_MAWB)? MAWB_RF_write_data : RD1;
-    assign forward_RD2 = (ForwardB_reg == `Forward_EXMA)? EXMA_aluout :
+    assign forward_RD2 = (ForwardB_reg == `Forward_EXMA)? EXMA_load_data :
                          (ForwardB_reg == `Forward_MAWB)? MAWB_RF_write_data : RD2;
 
 

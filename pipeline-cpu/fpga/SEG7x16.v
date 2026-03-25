@@ -1,4 +1,7 @@
+`ifndef __SEG7x16_V__
+`define __SEG7x16_V__
 `timescale 1ns / 1ps
+
 module SEG7x16(
   input wire clk,
   input wire rst,
@@ -88,3 +91,4 @@ module SEG7x16(
   assign o_seg = o_seg_r;
 
 endmodule
+`endif
