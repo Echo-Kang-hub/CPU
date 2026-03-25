@@ -80,19 +80,7 @@ module IP2SOC_Top(
     .data7({ram_addr, 2'b00}),
     .reg_data(reg_data),
     .seg7_data(seg7_data)
-    );
-
-   xgriscv  U_xgriscv(
-    .clk(Clk_CPU), 
-    .reset(rst), 
-    .pcF(PC), 
-    .instr(instr), 
-    .memwrite(MemWrite), 
-    .amp(cpu_data_amp), 
-    .daddr(cpu_data_addr), 
-    .writedata(cpu_data_out), 
-    .readdata(cpu_data_in)
-    );         
+    );      
          
   SEG7x16 U_7SEG(
     .clk(clk), 
