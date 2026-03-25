@@ -70,6 +70,8 @@ module pipeline_top(
     wire Flush_IFID;
     wire stall;
 
+    wire [31:0] EXMA_load_data;
+
 
     IF_stage u_IF_stage(
         .clk                (clk),
@@ -117,6 +119,7 @@ module pipeline_top(
         .EXMA_RegWrite      (EXMA_RegWrite),
         .EXMA_rd            (EXMA_rd),
         .EXMA_aluout        (EXMA_aluout),
+        .EXMA_load_data     (EXMA_load_data),
 
         .MAWB_RegWrite      (MAWB_RegWrite),
         .MAWB_rd            (MAWB_rd),
@@ -148,7 +151,7 @@ module pipeline_top(
 
         .EXMA_RegWrite     (EXMA_RegWrite),
         .EXMA_rd            (EXMA_rd),
-        .EXMA_aluout        (EXMA_aluout),
+        .EXMA_load_data     (EXMA_load_data),
 
         .MAWB_RegWrite     (MAWB_RegWrite),
         .MAWB_rd            (MAWB_rd),
@@ -179,7 +182,7 @@ module pipeline_top(
 
         .EXMA_RegWrite     (EXMA_RegWrite),
         .EXMA_rd            (EXMA_rd),
-        .EXMA_aluout        (EXMA_aluout),
+        .EXMA_load_data     (EXMA_load_data),
 
         .EXMA_MemRead       (EXMA_MemRead)
     );

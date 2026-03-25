@@ -26,7 +26,7 @@ module MA_stage(
 
     output wire        EXMA_RegWrite,
     output wire [4:0]  EXMA_rd,
-    output wire [31:0] EXMA_aluout,
+    output wire [31:0] EXMA_load_data,
 
     output wire        EXMA_MemRead
 );
@@ -72,10 +72,14 @@ module MA_stage(
     // forwarding
     assign EXMA_RegWrite = MA_valid && MA_RegWrite;
     assign EXMA_rd = MA_rd;
-    assign EXMA_aluout = MA_aluout;
 
     // hazard detection
     assign EXMA_MemRead = MA_valid && (MA_MemtoReg == `MemtoReg_MEM);
+
+    // forwarding data: select correct write-back value for EXMA forwarding
+    assign EXMA_load_data = (MA_MemtoReg == `MemtoReg_MEM) ? DM_read_data :
+                            (MA_MemtoReg == `MemtoReg_PC4) ? MA_PC_plus_4 :
+                            MA_aluout;
 
     assign MA_to_WB_bus = {
         MA_aluout, // 32
