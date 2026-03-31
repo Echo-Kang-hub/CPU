@@ -8,9 +8,9 @@ module ps2_keyboard(
     input  wire ps2_clk,
     input  wire ps2_data,
     
+    input  wire       key_read_acknowledge,
     output reg  [7:0] key_code,
-    output reg        key_ready,
-    input  wire       key_read_ack
+    output reg        key_ready
 );
     // PS/2 clock edge detection
     reg [2:0] ps2_clk_sync;
@@ -33,7 +33,7 @@ module ps2_keyboard(
         end
         else begin
             // Handle key read acknowledgment
-            if (key_ready && key_read_ack) begin
+            if (key_ready && key_read_acknowledge) begin
                 key_ready <= 1'b0;
             end
             

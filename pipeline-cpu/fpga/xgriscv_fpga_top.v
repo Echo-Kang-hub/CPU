@@ -25,8 +25,8 @@ module IP2SOC_Top(
     output wire [3:0] vga_r,
     output wire [3:0] vga_g,
     output wire [3:0] vga_b,
-    output wire        vga_hsync,
-    output wire        vga_vsync
+    output wire       vga_hsync,
+    output wire       vga_vsync
 );
    
     wire          Clk_CPU;          
@@ -98,7 +98,7 @@ module IP2SOC_Top(
         .key_ready       (key_ready),
         .key_read        (key_read),
         .vga_addr        (vga_addr),
-        .vga_wdata       (vga_wdata),
+        .vga_write_data  (vga_write_data),
         .vga_we          (vga_we),
         .cpu_data_in     (cpu_data_in),
         .ram_data_in     (dm_din),
@@ -111,13 +111,13 @@ module IP2SOC_Top(
 
     // Keyboard controller
     ps2_keyboard U_KBD(
-        .clk           (clk),
-        .reset         (rst),
-        .ps2_clk       (ps2_clk),
-        .ps2_data      (ps2_data),
-        .key_code      (key_code),
-        .key_ready     (key_ready),
-        .key_read_ack  (key_read)
+        .clk                   (clk),
+        .reset                 (rst),
+        .ps2_clk               (ps2_clk),
+        .ps2_data              (ps2_data),
+        .key_read_acknowledge  (key_read)
+        .key_code              (key_code),
+        .key_ready             (key_ready)
     );
 
     // VGA display module
@@ -125,7 +125,7 @@ module IP2SOC_Top(
         .clk           (clk),
         .reset         (rst),
         .cpu_addr      (vga_addr),
-        .cpu_char      (vga_wdata),
+        .cpu_char      (vga_write_data),
         .cpu_we        (vga_we),
         .vga_r         (vga_r),
         .vga_g         (vga_g),

@@ -14,21 +14,21 @@ module MIO_BUS(
     
     // Keyboard interface
     input wire [7:0]  key_code,           // keyboard data
-    input wire        key_ready,           // key pressed flag
-    output wire       key_read,            // CPU read acknowledge
+    input wire        key_ready,          // key pressed flag
+    output reg        key_read,           // CPU read acknowledge
     
     // VGA interface
-    output wire [12:0] vga_addr,           // VGA char memory address
-    output wire [7:0]  vga_wdata,          // VGA char write data
-    output wire       vga_we,              // VGA char write enable
+    output reg  [12:0] vga_addr,          // VGA char memory address
+    output reg  [7:0]  vga_write_data,         // VGA char write data
+    output reg         vga_we,            // VGA char write enable
     
-    output reg  [31:0] cpu_data_in,        // data to CPU
-    output reg  [31:0] ram_data_in,        // data to data memory
-    output reg  [6:0]  ram_addr,           // address for data memory
-    output reg  [31:0] cpuseg7_data,       // cpu seg7 data (from sw instruction)
-    output reg         ram_we,             // signal to write data memory
-    output reg  [2:0]  ram_amp,            // access pattern for data memory
-    output reg         seg7_we             // signal to write seg7 display 
+    output reg  [31:0] cpu_data_in,       // data to CPU
+    output reg  [31:0] ram_data_in,       // data to data memory
+    output reg  [6:0]  ram_addr,          // address for data memory
+    output reg  [31:0] cpuseg7_data,      // cpu seg7 data (from sw instruction)
+    output reg         ram_we,            // signal to write data memory
+    output reg  [2:0]  ram_amp,           // access pattern for data memory
+    output reg         seg7_we            // signal to write seg7 display 
 );
 
     // RAM & IO decode signals
@@ -42,6 +42,8 @@ module MIO_BUS(
         ram_amp = 3'b0;
         key_read = 0;
         vga_we = 0;
+        vga_addr = 13'h0;
+        vga_write_data = 8'h0;
         
         case(cpu_data_addr[31:0])
             32'hffff_0004: begin  // switch
@@ -65,7 +67,7 @@ module MIO_BUS(
             32'hffff_0020: begin  // VGA char memory
                 vga_we = mem_w;
                 vga_addr = cpu_data_addr[14:2];
-                vga_wdata = cpu_data_out[7:0];
+                vga_write_data = cpu_data_out[7:0];
             end
             
             default: begin  // data memory

@@ -12,9 +12,9 @@ module vga_display(
     input  wire        cpu_we,
     
     // VGA output
-    output wire [3:0] vga_r,
-    output wire [3:0] vga_g,
-    output wire [3:0] vga_b,
+    output wire [3:0]  vga_r,
+    output wire [3:0]  vga_g,
+    output wire [3:0]  vga_b,
     output wire        vga_hsync,
     output wire        vga_vsync
 );
