@@ -64,9 +64,9 @@ module MIO_BUS(
                 cpu_data_in = {31'h0, key_ready};
             end
             
-            32'hffff_0020: begin  // VGA char memory
+            32'hffff_0020: begin  // VGA char memory (2400 bytes: 30x80)
                 vga_we = mem_w;
-                vga_addr = cpu_data_addr[14:2];
+                vga_addr = cpu_data_addr[12:2];  // 2400需要12位
                 vga_write_data = cpu_data_out[7:0];
             end
             

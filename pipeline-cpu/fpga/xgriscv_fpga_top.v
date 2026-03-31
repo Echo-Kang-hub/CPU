@@ -115,7 +115,7 @@ module IP2SOC_Top(
         .reset                 (rst),
         .ps2_clk               (ps2_clk),
         .ps2_data              (ps2_data),
-        .key_read_acknowledge  (key_read)
+        .key_read_acknowledge  (key_read),
         .key_code              (key_code),
         .key_ready             (key_ready)
     );

@@ -48,8 +48,8 @@ module vga_display(
     wire [3:0] char_row_pixel;
     wire [3:0] char_col_pixel;
     
-    // Character memory (30 rows x 70 cols = 2100 bytes)
-    reg [7:0] chr_mem [0:2099];
+    // Character memory (30 rows x 80 cols = 2400 bytes)
+    reg [7:0] chr_mem [0:2399];
     
     // Horizontal counter
     always @(posedge clk or posedge reset) begin
@@ -85,14 +85,14 @@ module vga_display(
     assign h_pixel = h_valid ? (h_cnt - H_BACK) : 10'd0;
     assign v_pixel = v_valid ? (v_cnt - V_BACK) : 10'd0;
     
-    // Character position (16 rows per char, 9 cols per char)
-    assign char_row = v_pixel / 16;      // 0-29
-    assign char_col = h_pixel / 9;       // 0-69
-    assign char_row_pixel = v_pixel % 16;
-    assign char_col_pixel = h_pixel % 9;
+    // Character position (16 rows per char, 8 cols per char)
+    assign char_row = v_pixel[9:4];           // / 16
+    assign char_col = h_pixel[9:3];           // / 8
+    assign char_row_pixel = v_pixel[3:0];     // % 16
+    assign char_col_pixel = h_pixel[2:0];     // % 8
     
-    // Character memory address
-    wire [12:0] char_addr = {char_row} * 70 + {char_col};
+    // Character memory address (30 rows x 80 cols = 2400)
+    wire [11:0] char_addr = {char_row} * 80 + {char_col};
     
     // Read character from memory
     wire [7:0] char_code;
@@ -104,9 +104,8 @@ module vga_display(
             chr_mem[cpu_addr] <= cpu_char;
     end
     
-    // Font ROM (simplified - just for demo)
-    // In real implementation, use a .coe file to initialize
-    wire [8:0] font_data;
+    // Font ROM - initialized from font_data.mem
+    wire [7:0] font_data;
     font_rom u_font_rom(
         .ascii(char_code),
         .row(char_row_pixel),
@@ -114,7 +113,7 @@ module vga_display(
     );
     
     // Get pixel color
-    wire pixel_on = font_data[char_col_pixel];
+    wire pixel_on = font_data[7 - char_col_pixel];
     
     // Output color (white on black)
     assign vga_r = valid ? (pixel_on ? 4'hF : 4'h0) : 4'h0;
@@ -124,15 +123,25 @@ module vga_display(
 endmodule
 
 
-// Simplified font ROM
+// Font ROM - initialized from font_data.mem
 module font_rom(
     input  wire [7:0] ascii,
     input  wire [3:0] row,
-    output wire [8:0] font_data
+    output wire [7:0] font_data
 );
-    // Simplified: return all 1s (white) for demo
-    // In real implementation, use .coe file
-    assign font_data = 9'h1FF;
+    // 256 characters x 16 rows = 4096 bytes total
+    // But file only has 94 characters, so 94*16 = 1504 rows
+    reg [7:0] font_mem [0:1503];
+    
+    initial begin
+        $readmemh("font_data.mem", font_mem);
+    end
+    
+    // ASCII偏移 (从!开始, ASCII 33)
+    wire [11:0] font_addr = (ascii >= 8'd33) ? (ascii - 8'd33) * 16 + row : 12'd0;
+    
+    // 组合逻辑
+    assign font_data = (font_addr < 1504) ? font_mem[font_addr] : 8'h00;
 
 endmodule
 `endif
