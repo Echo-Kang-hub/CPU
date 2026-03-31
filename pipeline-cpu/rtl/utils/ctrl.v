@@ -81,7 +81,9 @@ module ctrl(
     wire i_lui = utype & Op[5]; // lui 0110111
     wire i_auipc = utype & ~Op[5]; // auipc 0010111
 
-    assign RegWrite = rtype | itype_r | load | i_jal | i_jalr | i_lui | i_auipc; 
+    wire is_csr = (Op == 7'b1110011) && (Funct3 != 3'b000);
+
+    assign RegWrite = rtype | itype_r | load | i_jal | i_jalr | i_lui | i_auipc | is_csr; 
     assign MemWrite = store; 
 
     reg [2:0] EXTOp_reg;

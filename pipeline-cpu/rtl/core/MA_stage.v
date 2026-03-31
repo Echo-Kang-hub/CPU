@@ -1,6 +1,5 @@
 `ifndef __MA_STAGE_V__  
 `define __MA_STAGE_V__
-`default_nettype none
 `include "definition.vh"
 
 module MA_stage(
@@ -28,7 +27,12 @@ module MA_stage(
     output wire [4:0]  EXMA_rd,
     output wire [31:0] EXMA_load_data,
 
-    output wire        EXMA_MemRead
+    output wire        EXMA_MemRead,
+    
+    // to CSR
+    output wire        MA_csr_we,
+    output wire [11:0] MA_csr_addr,
+    output wire [31:0] MA_csr_write_data
 );
     // receive from EX and store
     reg [`EX_to_MA_BUS_WIDTH-1:0] EX_to_MA_bus_reg;
@@ -58,15 +62,21 @@ module MA_stage(
     wire [1:0] MA_MemtoReg;
     wire MA_RegWrite;
     wire [4:0]  MA_rd;
-
+    
+    // 解包总线
     assign {
-        MA_aluout, DM_write_data,
-        MA_PC_plus_4,
-        MA_MemWrite, MA_DMType,
-        MA_MemtoReg, MA_RegWrite, MA_rd} = EX_to_MA_bus_reg;
+        MA_aluout, DM_write_data,  // 32+32
+        MA_PC_plus_4,            // 32
+        MA_MemWrite, MA_DMType,  // 1+3
+        MA_MemtoReg, MA_RegWrite, MA_rd, // 2+1+5
+        MA_csr_we, MA_csr_addr, MA_csr_write_data} = EX_to_MA_bus_reg;
 
+    // CSR access detection: CSR地址高4位为F
+    wire is_csr_access = MA_valid && MA_csr_we && (MA_csr_addr[11:8] == 4'hF);
+    
     assign DMType = MA_DMType;
-    assign DM_write_enable    = MA_MemWrite && MA_valid;
+    // DM write only for non-CSR access
+    assign DM_write_enable    = MA_MemWrite && MA_valid && !is_csr_access;
     assign DM_write_addr      = MA_aluout;
 
     // forwarding

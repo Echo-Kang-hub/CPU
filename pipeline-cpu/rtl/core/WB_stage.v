@@ -1,6 +1,5 @@
 `ifndef __WB_STAGE_V__   
 `define __WB_STAGE_V__
-`default_nettype none
 `include "definition.vh"
 
 module WB_stage(

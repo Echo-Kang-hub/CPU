@@ -1,6 +1,5 @@
 `ifndef __ID_STAGE_V__   
 `define __ID_STAGE_V__
-`default_nettype none
 `include "definition.vh"
 
 module ID_stage(
@@ -46,7 +45,18 @@ module ID_stage(
     input  wire        EXMA_MemRead,
     // 还有上面的EXMA_rd
 
+    // read data from CSR
+    input wire [31:0] csr_read_data,
+
     output wire        FLUSH_IFID,
+
+    output wire [11:0] csr_addr,
+
+    output wire        mret_taken,
+    output wire [31:0] mret_target_addr,
+
+    // interrupt
+    input wire         interrupt_taken,
 
     // display
     input  wire [4:0]  reg_sel,
@@ -94,8 +104,6 @@ module ID_stage(
     wire [11:0] bimm      = {instr[31],instr[7],instr[30:25],instr[11:8]};
     wire [19:0] uimm      = instr[31:12]; // lui, auipc
     wire [19:0] jimm      = {instr[31],instr[19:12],instr[20],instr[30:21]}; // jal
-
-    
 
     // Control
     wire RegWrite, ALUSrc1, ALUSrc2, MemWrite;
@@ -168,6 +176,8 @@ module ID_stage(
         .Branch_taken(Branch_taken),
         .Jal_taken(Jal_taken),
         .Jalr_taken(Jalr_taken),
+        .mret_taken(mret_taken),
+        .interrupt_taken(interrupt_taken),
         .stall(stall),
         .FLUSH_IFID(FLUSH_IFID)
     );
@@ -230,6 +240,21 @@ module ID_stage(
     assign Jalr_target_addr = (forward_RD1 + immout) & 32'hfffffffe; // clear the least significant bit，immout换成iimm也行
     wire [31:0] PC_plus_4 = PC_addr + 4;
 
+    wire is_csr = (opcode == 7'b1110011) && (funct3 != 3'b000);
+    wire is_mret = (opcode == 7'b1110011) && (funct3 == 3'b000) && (instr[31:20] == 12'h302);
+    wire csr_we = is_csr && RegWrite;
+    assign csr_addr = instr[31:20];  // CSR地址直接放到总线传递
+    
+    // CSR指令类型: csrrw/csrrs/csrrc
+    wire [2:0] CSRType;
+    assign CSRType = funct3;
+    
+    // 计算实际写入CSR的数据
+    wire [31:0] csr_write_data;
+    assign csr_write_data = (CSRType == `CSRType_RS) ? (csr_read_data | RD1) :   // csrrs: CSR | rs1
+                            (CSRType == `CSRType_RC) ? (csr_read_data & ~RD1) :  // csrrc: CSR & ~rs1  
+                            RD1;                                        // csrrw: rs1
+    
     assign ID_to_EX_bus = {
         PC_addr, // 32
         PC_plus_4, // 32
@@ -238,9 +263,14 @@ module ID_stage(
         immout, // 32
         ALUOp, ALUSrc1, ALUSrc2, // 4 + 1 + 1 = 6
         MemWrite, DMType, // 1 + 3 = 4
-        MemtoReg, RegWrite, rd}; // 2 + 1 + 5 =8
+        MemtoReg, RegWrite, rd, // 2 + 1 + 5 =8
+        csr_we, csr_addr, csr_write_data}; // 1 + 12 + 32 = 45
     
     assign reg_data = (reg_sel == 0)? 32'b0 : U_RF.regfile[reg_sel]; 
+
+    // mret signal
+    assign mret_taken = ID_valid && is_mret;
+    assign mret_target_addr = csr_read_data;  // mepc value
 
 endmodule
 `endif

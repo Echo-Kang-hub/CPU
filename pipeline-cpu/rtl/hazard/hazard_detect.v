@@ -1,6 +1,5 @@
 `ifndef __HAZARD_DETECT_V__
 `define __HAZARD_DETECT_V__
-`default_nettype none
 module hazard_detect(
     input wire [4:0] IFID_rs1,
     input wire [4:0] IFID_rs2,
@@ -20,6 +19,8 @@ module hazard_detect(
     input wire       Branch_taken,
     input wire       Jal_taken,
     input wire       Jalr_taken,
+    input wire       mret_taken,
+    input wire       interrupt_taken,
 
     output wire      stall,
     output wire      FLUSH_IFID
@@ -38,7 +39,7 @@ module hazard_detect(
                    
     // 跳转发生，冲刷IF/ID
     // 如果stall，说明数据旧，跳转信号不可信；如果不stall，说明数据可行，跳转信号可信
-    assign FLUSH_IFID = !stall && (Branch_taken || Jal_taken || Jalr_taken);
+    assign FLUSH_IFID = !stall && (Branch_taken || Jal_taken || Jalr_taken || mret_taken || interrupt_taken);
 
 endmodule
 `endif

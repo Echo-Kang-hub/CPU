@@ -1,6 +1,5 @@
 `ifndef __EX_STAGE_V__   
 `define __EX_STAGE_V__
-`default_nettype none
 `include "definition.vh"
 
 module EX_stage(
@@ -66,6 +65,10 @@ module EX_stage(
     wire [1:0]  EX_MemtoReg;
     wire [4:0]  EX_rd;
     wire EX_RegWrite;
+    // CSR
+    wire        EX_csr_we;
+    wire [11:0] EX_csr_addr;
+    wire [31:0] EX_csr_write_data;
 
     assign {
         PC_addr, 
@@ -75,7 +78,8 @@ module EX_stage(
         EX_immout,
         ALUOp, ALUSrc1, ALUSrc2,
         EX_MemWrite, EX_DMType,
-        EX_MemtoReg, EX_RegWrite, EX_rd} = ID_to_EX_bus_reg;
+        EX_MemtoReg, EX_RegWrite, EX_rd,
+        EX_csr_we, EX_csr_addr, EX_csr_write_data} = ID_to_EX_bus_reg;
 
     // hazard detection for load-use
     assign IDEX_MemRead = EX_valid &&(EX_MemtoReg == `MemtoReg_MEM);
@@ -122,7 +126,8 @@ module EX_stage(
         aluout, forward_RD2, // data 32+32=64
         EX_PC_plus_4, // 32
         EX_MemWrite, EX_DMType, // MA 1+3=4
-        EX_MemtoReg, EX_RegWrite, EX_rd}; // WB 2+1+5=8
+        EX_MemtoReg, EX_RegWrite, EX_rd, // WB 2+1+5=8
+        EX_csr_we, EX_csr_addr, EX_csr_write_data}; // CSR 1+12+32=45
 
 endmodule
 `endif

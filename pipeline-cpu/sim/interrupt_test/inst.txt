@@ -1,0 +1,43 @@
+// Interrupt Test Program
+// 主程序 @ word 0x00 (byte 0x00)
+// mtvec = 0x100 (byte), 即 word index = 0x40
+
+// 设置 mtvec = 0x100 (字节地址)
+// 0x00: lui t0, 0x1         ; t0 = 0x1000
+000012b7
+// 0x04: addi t0, t0, 0x800  ; t0 = 0x1000 + (-2048) = 0x800 (MIE bit)
+80028293
+// 0x08: csrw mie, t0        ; mie[11] = 1
+30429073
+// 设置 mtvec = 0x100 (字节地址)
+// 0x0C: lui t0, 0x0         ; t0 = 0x0
+000002b7
+// 0x10: addi t0, t0, 0x100  ; t0 = 0x100 (字节地址)
+10028293
+// 0x14: csrw mtvec, t0      ; mtvec = 0x100
+30529073
+// 0x18: addi t0, x0, 0x8    ; t0 = 0x8 (MIE in mstatus)
+00800293
+// 0x1C: csrw mstatus, t0    ; mstatus[3] = 1 (enable global interrupt)
+30029073
+// 0x20: addi t1, t1, 1      ; t1++ (counter before interrupt)
+00130313
+// 0x24: addi t1, t1, 1      ; t1++
+00130313
+// 0x28: addi t1, t1, 1      ; t1++
+00130313
+// 0x2C: addi t1, t1, 1      ; t1++
+00130313
+// 0x30: addi t1, t1, 1      ; t1++
+00130313
+// 0x34: nop                 ; wait for interrupt
+00000013
+// 0x38: nop
+00000013
+// 0x3C: nop
+00000013
+// 中断处理程序 @ word 0x40 (byte 0x100)
+// 0x40: addi t2, t2, 1      ; t2++ (interrupt handler counter)
+00138393
+// 0x44: mret                ; return from interrupt
+30200073

@@ -1,10 +1,12 @@
 `timescale 1ns / 1ps
-`include "CLK_DIV.v"
-`include "MIO_BUS.v"
-`include "SEG7x16.v"
-`include "imem.v"
-`include "dmem.v"
-`include "pipeline_top.v"
+`ifndef SYNTHESIS
+  `include "CLK_DIV.v"
+  `include "MIO_BUS.v"
+  `include "SEG7x16.v"
+  `include "imem.v"
+  `include "dmem.v"
+  `include "pipeline_top.v"
+`endif
 
 module IP2SOC_Top(
     input wire    clk,              
@@ -45,8 +47,8 @@ module IP2SOC_Top(
         .DM_write_addr   (cpu_data_addr),
         .DM_write_data   (cpu_data_out),
         .DM_write_enable (MemWrite),
-        // 这里的位宽匹配：将 CPU 的 3 位 DM_Type 扩展到 MIO 的 4 位，或直接连接
-        .DM_Type         (cpu_data_amp[2:0]), 
+        // 这里的位宽匹配：CPU 输出 3 位 DM_Type 扩展为 MIO 的 4 位，或直接连接
+        .DM_Type         (cpu_data_amp), 
         .DM_read_data    (cpu_data_in),
         
         // 调试接口：通过拨码开关 sw_i[10:6] 查看 32 个寄存器
@@ -72,16 +74,16 @@ module IP2SOC_Top(
     MIO_BUS U_MIO (
         .sw_i            (sw_i),             // 拨码开关输入
         .mem_w           (MemWrite),         // CPU 写请求
-        .cpu_data_amp    (cpu_data_amp),     // 这里如果你 CPU 输出是 3 位，需赋给 cpu_data_amp[2:0]
+        .cpu_data_amp    (cpu_data_amp),     // 如果是 CPU 输出 3 位，赋给 cpu_data_amp[2:0]
         .cpu_data_addr   (cpu_data_addr),    // 访问地址
         .cpu_data_out    (cpu_data_out),     // CPU 写出的数据
         .ram_data_out    (dm_dout),          // 从 RAM 读到的数据
         
-        .cpu_data_in     (cpu_data_in),      // 选通后返回给 CPU 的数据
+        .cpu_data_in     (cpu_data_in),      // 选中后返回给 CPU 的数据
         .ram_data_in     (dm_din),           // 送往 RAM 的数据
         .ram_addr        (ram_addr),         // 转换后的 RAM 地址
-        .cpuseg7_data    (cpuseg7_data),     // CPU 写入数码管的值
-        .ram_we          (ram_we),           // 最终 RAM 写使能
+        .cpuseg7_data    (cpuseg7_data),     // CPU 写入数码管的数据
+        .ram_we          (ram_we),           // 控制 RAM 写使能
         .ram_amp         (ram_amp),
         .seg7_we         (seg7_we)           // 是否写数码管控制寄存器
     );
@@ -92,7 +94,7 @@ module IP2SOC_Top(
         .clk             (clk),
         .rst             (rst),
         .EN              (seg7_we),
-        .ctrl            (sw_i[5:0]),        // sw[5:0] 决定显示 PC/指令/寄存器/内存等
+        .ctrl            (sw_i[5:0]),        // sw[5:0] 决定显示 PC/指令/寄存器/内存数据
         .Data0           (cpuseg7_data),
         .data1           ({2'b0, PC[31:2]}),
         .data2           (PC),
@@ -101,7 +103,7 @@ module IP2SOC_Top(
         .data5           (cpu_data_out),
         .data6           (dm_dout),
         .data7           ({23'b0, ram_addr, 2'b00}),
-        .reg_data        (reg_data),         // 核心：将 CPU 寄存器数据送入显示器
+        .reg_data        (reg_data),         // 核心：将 CPU 寄存器数据输入显示模块
         .seg7_data       (seg7_data)
     );
 
@@ -117,7 +119,7 @@ module IP2SOC_Top(
     CLK_DIV U_CLKDIV( 
         .clk             (clk),
         .rst             (rst),
-        .SW15            (sw_i[15]),         // 开关 15 控制 CPU 时钟频率
+        .SW15            (sw_i[15]),         // 开关 SW15 控制 CPU 时钟频率
         .Clk_CPU         (Clk_CPU)
     );
 

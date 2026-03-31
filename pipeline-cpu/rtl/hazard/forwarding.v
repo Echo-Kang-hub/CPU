@@ -1,6 +1,5 @@
 `ifndef __FOWARDING_V__
 `define __FOWARDING_V__
-`default_nettype none
 `include "definition.vh"
 module forwarding(
     input  wire        clk,
