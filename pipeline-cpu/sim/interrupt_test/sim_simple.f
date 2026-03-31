@@ -33,4 +33,4 @@ D:/FileDownload/Projects/CPU/pipeline-cpu/rtl/hazard/hazard_detect.v
 D:/FileDownload/Projects/CPU/pipeline-cpu/rtl/top/soc_top.v
 
 // 测试平台
-D:/FileDownload/Projects/CPU/pipeline-cpu/sim/interrupt_test/interrupt_full_tb.v
+D:/FileDownload/Projects/CPU/pipeline-cpu/sim/interrupt_test/interrupt_tb.v

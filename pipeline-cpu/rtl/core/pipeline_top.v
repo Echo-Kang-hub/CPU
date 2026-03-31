@@ -71,7 +71,6 @@ module pipeline_top(
     wire        IDEX_RegWrite;
     wire [4:0]  IDEX_rd;
     wire        EXMA_MemRead;
-    wire        Flush_IFID;
     wire        stall;
 
     // Interrupt
@@ -79,8 +78,8 @@ module pipeline_top(
     wire [31:0] current_PC;
 
     // CSR registers
-    wire [31:0] mstatus, mie, mip, mepc, mcause;
-    wire        global_interrupt_enable = mstatus[3];  // MIE bit
+    wire [31:0] mstatus, mie, mip, mtvec, mepc, mcause;
+    wire        global_interrupt_enable = mstatus[`MSTATUS_MIE];  // MIE bit
     
     // External interrupt (暂时为0，后面外设会给)
     wire        ext_interrupt = 1'b0;
@@ -96,26 +95,24 @@ module pipeline_top(
     
     // CSR read data to ID
     wire [31:0] csr_read_data;
-    
-    // CSR csr_addr from ID/EX bus
-    wire [11:0] csr_addr;
 
     // CSR module
     csr_regs U_CSR(
         .clk                (clk),
         .reset              (reset),
+        .ext_interrupt      (ext_interrupt),
         .csr_we             (MA_csr_we),
-        .csr_addr           (MA_csr_addr),    // 使用 MA 阶段的地址！
+        .csr_addr           (MA_csr_addr),
         .csr_write_data     (MA_csr_write_data),
         .interrupt_taken    (interrupt_taken),
         .current_PC         (current_PC),
         .mret_taken         (mret_taken),
-        .ext_interrupt      (ext_interrupt),
-        .mstatus            (mstatus),
+        .mtvec              (mtvec),
         .mie                (mie),
         .mip                (mip),
-        .mepc               (mepc),
+        .mstatus            (mstatus),
         .mcause             (mcause),
+        .mepc               (mepc),
         .csr_read_data      (csr_read_data)
     );
 
@@ -135,7 +132,7 @@ module pipeline_top(
         .global_interrupt_enable  (global_interrupt_enable),
         .mie                      (mie),
         .mip                      (mip),
-        .mtvec                    (`MTVEC_BASE),
+        .mtvec                    (mtvec),
         .mret_taken               (mret_taken),
         .mret_target_addr         (mret_target_addr),
         .IF_to_ID_valid           (IF_to_ID_valid),
@@ -173,13 +170,11 @@ module pipeline_top(
         .IDEX_RegWrite          (IDEX_RegWrite),
         .IDEX_rd                (IDEX_rd),
         .EXMA_MemRead           (EXMA_MemRead),
+        .interrupt_taken        (interrupt_taken),
         .csr_read_data          (csr_read_data),
         .mepc                   (mepc),
-        .FLUSH_IFID             (Flush_IFID),
-        .csr_addr               (csr_addr),
         .mret_taken             (mret_taken),
         .mret_target_addr       (mret_target_addr),
-        .interrupt_taken        (interrupt_taken),
         .reg_sel                (reg_sel),
         .reg_data               (reg_data)
     );

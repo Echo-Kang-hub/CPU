@@ -13,11 +13,11 @@ module IF_stage(
 
     // 跳转信息 from ID
     input  wire        Branch_taken,
-    input wire [31:0] Branch_target_addr,
-    input wire        Jal_taken,
-    input wire [31:0] Jal_target_addr,
-    input wire        Jalr_taken,
-    input wire [31:0] Jalr_target_addr,
+    input wire  [31:0] Branch_target_addr,
+    input wire         Jal_taken,
+    input wire  [31:0] Jal_target_addr,
+    input wire         Jalr_taken,
+    input wire  [31:0] Jalr_target_addr,
 
     // interrupt
     input wire         global_interrupt_enable,
@@ -25,7 +25,7 @@ module IF_stage(
     input wire  [31:0] mip,
     input wire  [31:0] mtvec,
     input wire         mret_taken,
-    input wire [31:0]  mret_target_addr,
+    input wire  [31:0] mret_target_addr,
 
     // to ID
     output wire        IF_to_ID_valid,
@@ -33,7 +33,7 @@ module IF_stage(
 
     // internal signals
     output wire        interrupt_taken,
-    output wire [31:0] current_PC
+    output wire  [31:0] current_PC
 );
     wire [31:0] PC_addr;
     wire [31:0] NPC_addr;

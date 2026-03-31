@@ -55,9 +55,8 @@
 `define Forward_EXMA 2'b01
 `define Forward_MAWB 2'b10
 
-// mstatus csr
-`define MSTATUS_MIE 3 // Machine Interrupt Enable
-`define MSTATUS_MPIE 7 // Machine Previous Interrupt Enable
+// MTVEC
+`define MTVEC_BASE  32'h0000_0100
 
 // mie csr: machine interrupt enable
 `define MIE_MEIE 11 // external interrupt
@@ -69,20 +68,25 @@
 `define MIP_MTIP 7 // timer interrupt pending
 `define MIP_MSIP 3 // software interrupt pending
 
+// mstatus csr
+`define MSTATUS_MIE 3 // Machine Interrupt Enable
+`define MSTATUS_MPIE 7 // Machine Previous Interrupt Enable
+
 // mcause
 `define CAUSE_EXTERNAL 11 // external interrupt
 `define CAUSE_TIMER    7  // timer interrupt
 `define CAUSE_SOFTWARE 3  // software interrupt
 
+// MRET instruction funct field (instr[31:20])
+`define MRET_FUNCT  12'h302
+
 // CSR addresses
 `define CSR_MSTATUS 12'h300
 `define CSR_MIE     12'h304
+`define CSR_MTVEC   12'h305
 `define CSR_MIP     12'h344
 `define CSR_MEPC    12'h341
 `define CSR_MCAUSE  12'h342
-
-// MTVEC
-`define MTVEC_BASE  32'h0000_0100
 
 // csrType (funct3)
 `define CSRType_RW 3'b001

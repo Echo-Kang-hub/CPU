@@ -20,8 +20,8 @@ module hazard_detect(
     input wire       Branch_taken,
     input wire       Jal_taken,
     input wire       Jalr_taken,
-    input wire       mret_taken,
     input wire       interrupt_taken,
+    input wire       mret_taken,
 
     output wire      stall,
     output wire      FLUSH_IFID

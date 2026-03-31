@@ -45,21 +45,17 @@ module ID_stage(
     input  wire        EXMA_MemRead,
     // 还有上面的EXMA_rd
 
+    // interrupt
+    input wire         interrupt_taken,
+
     // read data from CSR
-    input wire [31:0] csr_read_data,
+    input wire  [31:0] csr_read_data,
 
     // mepc for mret
-    input wire [31:0] mepc,
-
-    output wire        FLUSH_IFID,
-
-    output wire [11:0] csr_addr,
+    input wire  [31:0] mepc,
 
     output wire        mret_taken,
     output wire [31:0] mret_target_addr,
-
-    // interrupt
-    input wire         interrupt_taken,
 
     // display
     input  wire [4:0]  reg_sel,
@@ -70,6 +66,7 @@ module ID_stage(
     reg                           ID_valid;
 
     wire stall;
+    wire FLUSH_IFID;
     wire ID_ready_go = ~stall; 
 
     assign ID_allowin = !ID_valid || (ID_ready_go && EX_allowin);
@@ -181,8 +178,8 @@ module ID_stage(
         .Branch_taken(Branch_taken),
         .Jal_taken(Jal_taken),
         .Jalr_taken(Jalr_taken),
-        .mret_taken(mret_taken),
         .interrupt_taken(interrupt_taken),
+        .mret_taken(mret_taken),
         .stall(stall),
         .FLUSH_IFID(FLUSH_IFID)
     );
@@ -212,7 +209,6 @@ module ID_stage(
                 ForwardA_reg <= `Forward_MAWB;
         end
         else if(is_csr) begin
-            // CSR指令需要转发rs1的值
             if (EXMA_RegWrite && (EXMA_rd != 5'b0) && (EXMA_rd == rs1)) 
                 ForwardA_reg <= `Forward_EXMA;
             else if (MAWB_RegWrite && (MAWB_rd != 5'b0) && (MAWB_rd == rs1)) 
@@ -255,13 +251,12 @@ module ID_stage(
     wire is_csr = (opcode == 7'b1110011) && (funct3 != 3'b000);
     wire is_mret = (opcode == 7'b1110011) && (funct3 == 3'b000) && (instr[31:20] == 12'h302);
     wire csr_we = is_csr && RegWrite;
-    assign csr_addr = instr[31:20];  // CSR地址直接放到总线传递
+    wire [11:0] csr_addr = instr[31:20];  // CSR地址，用于总线传递
     
     // CSR指令类型: csrrw/csrrs/csrrc
     wire [2:0] CSRType;
     assign CSRType = funct3;
     
-    // 计算实际写入CSR的数据
     wire [31:0] csr_write_data;
     assign csr_write_data = (CSRType == `CSRType_RS) ? (csr_read_data | forward_RD1) :   // csrrs: CSR | rs1
                             (CSRType == `CSRType_RC) ? (csr_read_data & ~forward_RD1) :  // csrrc: CSR & ~rs1  
