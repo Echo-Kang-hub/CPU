@@ -174,6 +174,7 @@ module pipeline_top(
         .IDEX_rd                (IDEX_rd),
         .EXMA_MemRead           (EXMA_MemRead),
         .csr_read_data          (csr_read_data),
+        .mepc                   (mepc),
         .FLUSH_IFID             (Flush_IFID),
         .csr_addr               (csr_addr),
         .mret_taken             (mret_taken),

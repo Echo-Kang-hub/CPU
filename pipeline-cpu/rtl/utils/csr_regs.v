@@ -45,6 +45,15 @@ module csr_regs(
     reg [31:0] mcause_reg;
     assign mcause = mcause_reg;
 
+    // 保存 current_PC 的寄存器，避免竞争条件
+    reg [31:0] current_PC_reg;
+    always @(posedge clk or posedge reset) begin
+        if(reset)
+            current_PC_reg <= 32'b0;
+        else
+            current_PC_reg <= current_PC;
+    end
+
     // csr write
     always @(posedge clk or posedge reset) begin
         if(reset) begin
@@ -67,6 +76,7 @@ module csr_regs(
                 mcause_reg <= 32'h8000000B;       // 外部中断，bit[31]=1表示中断
                 mstatus_reg[7] <= mstatus_reg[3]; // MPIE = MIE
                 mstatus_reg[3] <= 1'b0;           // MIE = 0 (关全局中断)
+                $display("CSR_REGS: Interrupt! current_PC=0x%h mstatus before=0x%h", current_PC, mstatus_reg);
             end
             // mret: 恢复 mstatus (MIE=MPIE, MPIE=1)
             else if(mret_taken) begin
@@ -100,6 +110,7 @@ module csr_regs(
                            (csr_addr == 12'h344) ? mip :
                            (csr_addr == 12'h341) ? mepc :
                            (csr_addr == 12'h342) ? mcause :
+                           (csr_addr == 12'h302) ? mepc :  // mret needs mepc
                            32'b0; 
 
 endmodule

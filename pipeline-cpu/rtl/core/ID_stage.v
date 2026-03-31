@@ -48,6 +48,9 @@ module ID_stage(
     // read data from CSR
     input wire [31:0] csr_read_data,
 
+    // mepc for mret
+    input wire [31:0] mepc,
+
     output wire        FLUSH_IFID,
 
     output wire [11:0] csr_addr,
@@ -163,11 +166,13 @@ module ID_stage(
     wire [4:0]  IFID_rs2 = ID_valid ? rs2 : 5'b0;
 
     wire IFID_is_branch_jalr = is_branch_type || is_jalr;
+    wire IFID_is_csr = ID_valid && is_csr;
     
     hazard_detect u_hazard_detect(
         .IFID_rs1(IFID_rs1),
         .IFID_rs2(IFID_rs2),
         .IFID_is_branch_jalr(IFID_is_branch_jalr),
+        .IFID_is_csr(IFID_is_csr),
         .IDEX_MemRead(IDEX_MemRead),
         .IDEX_RegWrite(IDEX_RegWrite),
         .IDEX_rd(IDEX_rd),
@@ -201,6 +206,13 @@ module ID_stage(
                 ForwardB_reg <= `Forward_MAWB;
         end
         else if(is_jalr) begin
+            if (EXMA_RegWrite && (EXMA_rd != 5'b0) && (EXMA_rd == rs1)) 
+                ForwardA_reg <= `Forward_EXMA;
+            else if (MAWB_RegWrite && (MAWB_rd != 5'b0) && (MAWB_rd == rs1)) 
+                ForwardA_reg <= `Forward_MAWB;
+        end
+        else if(is_csr) begin
+            // CSR指令需要转发rs1的值
             if (EXMA_RegWrite && (EXMA_rd != 5'b0) && (EXMA_rd == rs1)) 
                 ForwardA_reg <= `Forward_EXMA;
             else if (MAWB_RegWrite && (MAWB_rd != 5'b0) && (MAWB_rd == rs1)) 
@@ -251,9 +263,9 @@ module ID_stage(
     
     // 计算实际写入CSR的数据
     wire [31:0] csr_write_data;
-    assign csr_write_data = (CSRType == `CSRType_RS) ? (csr_read_data | RD1) :   // csrrs: CSR | rs1
-                            (CSRType == `CSRType_RC) ? (csr_read_data & ~RD1) :  // csrrc: CSR & ~rs1  
-                            RD1;                                        // csrrw: rs1
+    assign csr_write_data = (CSRType == `CSRType_RS) ? (csr_read_data | forward_RD1) :   // csrrs: CSR | rs1
+                            (CSRType == `CSRType_RC) ? (csr_read_data & ~forward_RD1) :  // csrrc: CSR & ~rs1  
+                            forward_RD1;                                        // csrrw: rs1
     
     assign ID_to_EX_bus = {
         PC_addr, // 32
@@ -270,7 +282,7 @@ module ID_stage(
 
     // mret signal
     assign mret_taken = ID_valid && is_mret;
-    assign mret_target_addr = csr_read_data;  // mepc value
+    assign mret_target_addr = mepc;  // mepc value directly from CSR
 
 endmodule
 `endif
