@@ -10,7 +10,7 @@
   `include "vga_display.v"
 `endif
 
-module IP2SOC_Top(
+module xgriscv_fpga_top(
     input wire    clk,              
     input wire    rstn,             
     input wire [15:0]  sw_i,        
@@ -37,12 +37,12 @@ module IP2SOC_Top(
     wire [31:0]   cpu_data_addr;    
     wire [31:0]   cpu_data_out;     
     wire [31:0]   cpu_data_in;
-    wire [3:0]    cpu_data_amp;
+    wire [2:0]    cpu_data_amp;
 
     wire          rst = ~rstn;      
     wire [31:0]   seg7_data;        
     wire [6:0]    ram_addr;         
-    wire [3:0]    ram_amp;
+    wire [2:0]    ram_amp;
     wire          ram_we;           
     wire          seg7_we;
     wire [31:0]   cpuseg7_data;
@@ -52,10 +52,11 @@ module IP2SOC_Top(
     wire [7:0]   key_code;
     wire         key_ready;
     wire         key_read;
+    wire         key_interrupt;
     
     // VGA signals
     wire [12:0]  vga_addr;
-    wire [7:0]   vga_wdata;
+    wire [7:0]   vga_write_data;
     wire         vga_we;
 
     pipeline_top U_CPU (
@@ -69,7 +70,8 @@ module IP2SOC_Top(
         .DM_Type         (cpu_data_amp),
         .DM_read_data    (cpu_data_in),
         .reg_sel         (sw_i[10:6]),
-        .reg_data        (reg_data)
+        .reg_data        (reg_data),
+        .ext_interrupt   (key_interrupt)
     );
 
     imem U_IM (
@@ -88,6 +90,8 @@ module IP2SOC_Top(
 
     // I/O management (MIO_BUS)
     MIO_BUS U_MIO (
+        .clk           (clk),
+        .rst           (rst),
         .sw_i            (sw_i),
         .mem_w           (MemWrite),
         .cpu_data_amp    (cpu_data_amp),
@@ -97,6 +101,7 @@ module IP2SOC_Top(
         .key_code        (key_code),
         .key_ready       (key_ready),
         .key_read        (key_read),
+        .key_interrupt   (key_interrupt),
         .vga_addr        (vga_addr),
         .vga_write_data  (vga_write_data),
         .vga_we          (vga_we),

@@ -43,8 +43,8 @@ module vga_display(
     // Character position
     wire [9:0] h_pixel;
     wire [9:0] v_pixel;
-    wire [6:0] char_row;    // 0-29
-    wire [6:0] char_col;    // 0-69
+    wire [4:0] char_row;    // 0-29 (5 bits)
+    wire [6:0] char_col;    // 0-79 (7 bits)
     wire [3:0] char_row_pixel;
     wire [3:0] char_col_pixel;
     
@@ -86,13 +86,14 @@ module vga_display(
     assign v_pixel = v_valid ? (v_cnt - V_BACK) : 10'd0;
     
     // Character position (16 rows per char, 8 cols per char)
-    assign char_row = v_pixel[9:4];           // / 16
-    assign char_col = h_pixel[9:3];           // / 8
+    assign char_row = v_pixel[8:4];           // / 16, 5 bits for 0-29
+    assign char_col = h_pixel[9:3];           // / 8, 7 bits for 0-79
     assign char_row_pixel = v_pixel[3:0];     // % 16
     assign char_col_pixel = h_pixel[2:0];     // % 8
     
     // Character memory address (30 rows x 80 cols = 2400)
-    wire [11:0] char_addr = {char_row} * 80 + {char_col};
+    // Use shift-add: row*80 = row*64 + row*16 = (row<<6) + (row<<4)
+    wire [11:0] char_addr = ({1'b0, char_row, 6'b0}) + ({3'b0, char_row, 4'b0}) + {5'b0, char_col};
     
     // Read character from memory
     wire [7:0] char_code;
@@ -124,24 +125,25 @@ endmodule
 
 
 // Font ROM - initialized from font_data.mem
+// 支持完整 ASCII 0-127 (128个字符，每个16行，共2048字节)
 module font_rom(
     input  wire [7:0] ascii,
     input  wire [3:0] row,
     output wire [7:0] font_data
 );
-    // 256 characters x 16 rows = 4096 bytes total
-    // But file only has 94 characters, so 94*16 = 1504 rows
-    reg [7:0] font_mem [0:1503];
+    // 128 characters x 16 rows = 2048 bytes total
+    reg [7:0] font_mem [0:2047];
     
     initial begin
         $readmemh("font_data.mem", font_mem);
     end
     
-    // ASCII偏移 (从!开始, ASCII 33)
-    wire [11:0] font_addr = (ascii >= 8'd33) ? (ascii - 8'd33) * 16 + row : 12'd0;
+    // 地址计算: font_addr = ascii * 16 + row
+    // ASCII 0-127 直接映射到地址 0-2047
+    wire [11:0] font_addr = ascii[6:0] * 16 + row;
     
-    // 组合逻辑
-    assign font_data = (font_addr < 1504) ? font_mem[font_addr] : 8'h00;
+    // 组合逻辑输出
+    assign font_data = font_mem[font_addr];
 
 endmodule
 `endif

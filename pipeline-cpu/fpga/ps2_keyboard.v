@@ -24,14 +24,14 @@ module ps2_keyboard(
     reg break_detected;
     
     always @(posedge clk) begin
-        ps2_clk_sync <= {ps2_clk_sync[1:0], ps2_clk};
-        
         if (reset) begin
+            ps2_clk_sync <= 3'b111;  // 复位时设置为高，避免误检测
             bit_cnt <= 4'd0;
             key_ready <= 1'b0;
             break_detected <= 1'b0;
         end
         else begin
+            ps2_clk_sync <= {ps2_clk_sync[1:0], ps2_clk};
             // Handle key read acknowledgment
             if (key_ready && key_read_acknowledge) begin
                 key_ready <= 1'b0;
@@ -40,12 +40,17 @@ module ps2_keyboard(
             // Receive data
             if (ps2_clk_fall) begin
                 case(bit_cnt)
-                    4'd0: bit_cnt <= bit_cnt + 1;  // start bit
-                    4'd1, 4'd2, 4'd3, 4'd4, 4'd5, 4'd6, 4'd7, 4'd8: begin
-                        shift_reg[bit_cnt - 1] <= ps2_data;
+                    4'd0: begin  // start bit (忽略)
                         bit_cnt <= bit_cnt + 1;
                     end
-                    4'd9: bit_cnt <= bit_cnt + 1;  // parity bit
+                    4'd1, 4'd2, 4'd3, 4'd4, 4'd5, 4'd6, 4'd7, 4'd8: begin  // data bits
+                        shift_reg[bit_cnt] <= ps2_data;  // D0->shift_reg[1], ..., D7->shift_reg[8]
+                        bit_cnt <= bit_cnt + 1;
+                    end
+                    4'd9: begin  // parity bit
+                        shift_reg[9] <= ps2_data;
+                        bit_cnt <= bit_cnt + 1;
+                    end
                     4'd10: begin  // stop bit
                         if (ps2_data && ^shift_reg[9:1]) begin
                             // Check for break code (F0)

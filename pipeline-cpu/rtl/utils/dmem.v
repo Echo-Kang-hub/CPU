@@ -16,6 +16,9 @@ module dmem (
     integer i;
     initial begin
         for (i = 0; i < 128; i = i + 1) RAM[i] = 32'h0;
+`ifdef DMEM_INIT
+        $readmemh("dmem_init.hex", RAM);
+`endif
     end
 
     // 同步写(Store)

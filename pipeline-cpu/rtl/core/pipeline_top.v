@@ -24,7 +24,9 @@ module pipeline_top(
     input  wire [31:0] DM_read_data,
 
     input  wire [4:0]  reg_sel,
-    output wire [31:0] reg_data
+    output wire [31:0] reg_data,
+    
+    input  wire        ext_interrupt   // external interrupt from peripherals
 );
 
     // Pipeline valid signals
@@ -80,9 +82,6 @@ module pipeline_top(
     // CSR registers
     wire [31:0] mstatus, mie, mip, mtvec, mepc, mcause;
     wire        global_interrupt_enable = mstatus[`MSTATUS_MIE];  // MIE bit
-    
-    // External interrupt (暂时为0，后面外设会给)
-    wire        ext_interrupt = 1'b0;
     
     // MRET signals
     wire        mret_taken;
