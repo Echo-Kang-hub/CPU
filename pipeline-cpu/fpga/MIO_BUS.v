@@ -17,7 +17,7 @@ module MIO_BUS(
     // Keyboard interface
     input wire [7:0]  key_code,           // keyboard data
     input wire        key_ready,          // key pressed flag
-    output reg        key_read,           // CPU read acknowledge
+    output wire        key_read,           // CPU read acknowledge
     output wire       key_interrupt,      // keyboard interrupt to CPU
     
     // VGA interface
@@ -41,6 +41,25 @@ module MIO_BUS(
     // Keyboard interrupt: key_ready AND interrupt enable
     assign key_interrupt = key_ready & key_interrupt_enable;
     
+    // Keyboard read acknowledgment - use sequential logic to generate falling edge
+    // This allows ps2_keyboard to reliably detect CPU reading the keyboard
+    reg key_read_reg;
+    
+    always @(posedge clk) begin
+        if (rst) begin
+            key_read_reg <= 1;
+        end
+        else begin
+            if (cpu_data_addr[31:0] == 32'hffff_0010) begin
+                key_read_reg <= 0;   // CPU accesses keyboard port, pull low
+            end
+            else begin
+                key_read_reg <= 1;   // Otherwise keep high
+            end
+        end
+    end
+    assign key_read = key_read_reg;
+    
     // RAM & IO decode signals
     always @* begin
         ram_addr = 7'h0;
@@ -50,7 +69,6 @@ module MIO_BUS(
         seg7_we = 0;
         ram_we = 0;
         ram_amp = 3'b0;
-        key_read = 0;
         vga_we = 0;
         vga_addr = 13'h0;
         vga_write_data = 8'h0;
@@ -68,7 +86,6 @@ module MIO_BUS(
             
             32'hffff_0010: begin  // keyboard data port
                 cpu_data_in = {24'h0, key_code};
-                key_read = ~mem_w;  // read operation triggers acknowledge
             end
             
             32'hffff_0014: begin  // keyboard status/interrupt enable
@@ -81,7 +98,7 @@ module MIO_BUS(
             
             32'hffff_0020: begin  // VGA char memory (2400 bytes: 30x80)
                 vga_we = mem_w;
-                vga_addr = cpu_data_addr[12:0];  // full address
+                vga_addr = cpu_data_addr[12:0];
                 vga_write_data = cpu_data_out[7:0];
             end
             

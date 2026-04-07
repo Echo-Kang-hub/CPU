@@ -26,7 +26,8 @@ module xgriscv_fpga_top(
     output wire [3:0] vga_g,
     output wire [3:0] vga_b,
     output wire       vga_hsync,
-    output wire       vga_vsync
+    output wire       vga_vsync,
+    output wire       usb_vbus_en   // USB VBUS Enable
 );
    
     wire          Clk_CPU;          
@@ -53,11 +54,16 @@ module xgriscv_fpga_top(
     wire         key_ready;
     wire         key_read;
     wire         key_interrupt;
+    wire         overflow;
     
     // VGA signals
     wire [12:0]  vga_addr;
     wire [7:0]   vga_write_data;
     wire         vga_we;
+
+    wire clk_vga;
+
+    assign usb_vbus_en = 1'b1;
 
     pipeline_top U_CPU (
         .clk             (Clk_CPU),
@@ -122,12 +128,13 @@ module xgriscv_fpga_top(
         .ps2_data              (ps2_data),
         .key_read_acknowledge  (key_read),
         .key_code              (key_code),
-        .key_ready             (key_ready)
+        .key_ready             (key_ready),
+        .overflow              (overflow)
     );
 
     // VGA display module
     vga_display U_VGA(
-        .clk           (clk),
+        .clk           (clk_vga),
         .reset         (rst),
         .cpu_addr      (vga_addr),
         .cpu_char      (vga_write_data),
@@ -138,8 +145,11 @@ module xgriscv_fpga_top(
         .vga_hsync     (vga_hsync),
         .vga_vsync     (vga_vsync)
     );
-
+    
     // Seven segment display
+    // 添加键盘调试信息
+    wire [31:0] debug_data = {8'h0, key_code, 7'h0, key_ready, 7'h0, overflow};
+    
     MULTI_CH32 U_Multi (
         .clk           (clk),
         .rst           (rst),
@@ -151,8 +161,8 @@ module xgriscv_fpga_top(
         .data3         (instr),
         .data4         (cpu_data_addr),
         .data5         (cpu_data_out),
-        .data6         (dm_dout),
-        .data7         ({23'b0, ram_addr, 2'b00}),
+        .data6         (debug_data),           // 显示键盘调试信息
+        .data7         ({16'b0, key_code, 7'b0, key_ready}),
         .reg_data      (reg_data),
         .seg7_data     (seg7_data)
     );
@@ -173,5 +183,15 @@ module xgriscv_fpga_top(
         .SW15          (sw_i[15]),
         .Clk_CPU       (Clk_CPU)
     );
+    
+    // VGA 25MHz pixel clock (100MHz / 4)
+    reg [1:0] clk_div_cnt;
+    always @(posedge clk or posedge rst) begin
+        if (rst)
+            clk_div_cnt <= 2'd0;
+        else
+            clk_div_cnt <= clk_div_cnt + 2'd1;
+    end
+    assign clk_vga = clk_div_cnt[1];  // 25MHz
 
 endmodule

@@ -8,69 +8,82 @@ module ps2_keyboard(
     input  wire ps2_clk,
     input  wire ps2_data,
     
-    input  wire       key_read_acknowledge,
-    output reg  [7:0] key_code,
-    output reg        key_ready
+    input  wire       key_read_acknowledge,  // 读取确认（低有效）
+    output wire [7:0] key_code,              // 键盘扫描码
+    output wire       key_ready,             // 数据就绪
+    output wire       overflow               // FIFO溢出
 );
-    // PS/2 clock edge detection
+
+    // PS/2时钟同步和下降沿检测
     reg [2:0] ps2_clk_sync;
-    wire ps2_clk_fall = ps2_clk_sync[2] & ~ps2_clk_sync[1];
+    wire sampling = ps2_clk_sync[2] & ~ps2_clk_sync[1];
     
-    // Receive shift register
-    reg [10:0] shift_reg;
+    // 接收缓冲区
+    reg [9:0] buffer;
     reg [3:0] bit_cnt;
     
-    // Break code detection
-    reg break_detected;
+    // FIFO队列 (8字节)
+    reg [7:0] fifo [7:0];
+    reg [2:0] w_ptr, r_ptr;  // 写指针、读指针
+    
+    // 状态信号
+    reg ready_reg;
+    reg overflow_reg;
+    
+    // 输出赋值
+    assign key_ready = ready_reg;
+    assign key_code = fifo[r_ptr];
+    assign overflow = overflow_reg;
+    
+    // 检测 key_read 下降沿
+    reg key_read_d1;
     
     always @(posedge clk) begin
         if (reset) begin
-            ps2_clk_sync <= 3'b111;  // 复位时设置为高，避免误检测
+            ps2_clk_sync <= 3'b111;
             bit_cnt <= 4'd0;
-            key_ready <= 1'b0;
-            break_detected <= 1'b0;
+            w_ptr <= 3'd0;
+            r_ptr <= 3'd0;
+            ready_reg <= 1'b0;
+            overflow_reg <= 1'b0;
+            key_read_d1 <= 1;
         end
         else begin
+            // 同步PS/2时钟
             ps2_clk_sync <= {ps2_clk_sync[1:0], ps2_clk};
-            // Handle key read acknowledgment
-            if (key_ready && key_read_acknowledge) begin
-                key_ready <= 1'b0;
+            
+            key_read_d1 <= key_read_acknowledge;
+            
+            // 处理读取确认 - 检测下降沿（从1变0）
+            if (ready_reg && key_read_d1 && !key_read_acknowledge) begin
+                if (w_ptr != r_ptr) begin  // FIFO非空
+                    r_ptr <= r_ptr + 3'd1;
+                    if (w_ptr == (r_ptr + 3'd1)) begin  // 读取后FIFO空
+                        ready_reg <= 1'b0;
+                    end
+                end
             end
             
-            // Receive data
-            if (ps2_clk_fall) begin
-                case(bit_cnt)
-                    4'd0: begin  // start bit (忽略)
-                        bit_cnt <= bit_cnt + 1;
-                    end
-                    4'd1, 4'd2, 4'd3, 4'd4, 4'd5, 4'd6, 4'd7, 4'd8: begin  // data bits
-                        shift_reg[bit_cnt] <= ps2_data;  // D0->shift_reg[1], ..., D7->shift_reg[8]
-                        bit_cnt <= bit_cnt + 1;
-                    end
-                    4'd9: begin  // parity bit
-                        shift_reg[9] <= ps2_data;
-                        bit_cnt <= bit_cnt + 1;
-                    end
-                    4'd10: begin  // stop bit
-                        if (ps2_data && ^shift_reg[9:1]) begin
-                            // Check for break code (F0)
-                            if (shift_reg[8:1] == 8'hF0) begin
-                                break_detected <= 1'b1;
-                            end
-                            else if (break_detected) begin
-                                // Key release, ignore
-                                break_detected <= 1'b0;
-                            end
-                            else begin
-                                // Key press
-                                key_code <= shift_reg[8:1];
-                                key_ready <= 1'b1;
-                                break_detected <= 1'b0;
-                            end
+            // 在PS/2时钟下降沿采样数据
+            if (sampling) begin
+                if (bit_cnt == 4'd10) begin  // 收到完整的一帧
+                    if ((buffer[0] == 0) &&      // 起始位
+                        (ps2_data) &&            // 停止位
+                        (^buffer[9:1])) begin    // 奇校验
+                        // 检查溢出：写指针下一位等于读指针
+                        if ((w_ptr + 3'd1) == r_ptr) begin
+                            overflow_reg <= 1'b1;
                         end
-                        bit_cnt <= 4'd0;
+                        fifo[w_ptr] <= buffer[8:1];  // 存储扫描码
+                        w_ptr <= w_ptr + 3'd1;
+                        ready_reg <= 1'b1;
                     end
-                endcase
+                    bit_cnt <= 4'd0;  // 准备接收下一帧
+                end
+                else begin
+                    buffer[bit_cnt] <= ps2_data;  // 存储数据位
+                    bit_cnt <= bit_cnt + 4'd1;
+                end
             end
         end
     end
