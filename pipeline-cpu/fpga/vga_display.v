@@ -3,13 +3,13 @@
 `timescale 1ns / 1ps
 
 module vga_display(
-    input  wire vga_clk,      // 25MHz VGA pixel clock
+    input  wire vga_clk,  // 25MHz VGA pixel clock
     input  wire cpu_clk,  // CPU/MMIO clock for character writes
     input  wire reset,
     
     // CPU write interface (CPU时钟域)
     input  wire        vga_write_enable,
-    input  wire [12:0] vga_addr,
+    input  wire [12:0] vga_write_addr,
     input  wire [7:0]  vga_write_data,
     
     // VGA output
@@ -103,8 +103,8 @@ module vga_display(
     end
     
     always @(posedge cpu_clk) begin
-        if (vga_write_enable && (vga_addr < 13'd2400)) begin
-            chr_mem[vga_addr] <= vga_write_data;
+        if (vga_write_enable && (vga_write_addr < 13'd2400)) begin
+            chr_mem[vga_write_addr] <= vga_write_data;
         end
     end
     

@@ -1,22 +1,22 @@
 `timescale 1ns / 1ps
 `ifndef SYNTHESIS
-  `include "CLK_DIV.v"
-  `include "MIO_BUS.v"
-  `include "SEG7x16.v"
-  `include "imem.v"
-  `include "dmem.v"
-  `include "pipeline_top.v"
-  `include "ps2_keyboard.v"
-  `include "vga_display.v"
+        `include "CLK_DIV.v"
+        `include "MIO_BUS.v"
+        `include "SEG7x16.v"
+        `include "imem.v"
+        `include "dmem.v"
+        `include "pipeline_top.v"
+        `include "ps2_keyboard.v"
+        `include "vga_display.v"
 `endif
-`timescale 1ns / 1ps
+    `timescale 1ns / 1ps
 
 module xgriscv_fpga_top(
-    input wire        clk,
-    input wire        rstn,
-    input wire [15:0] sw_i,
-    output wire [7:0] disp_seg_o,
-    output wire [7:0] disp_an_o,
+        input  wire        clk,
+        input  wire        rstn,
+        input  wire [15:0] sw_i,
+        output wire [7:0]  disp_seg_o,
+        output wire [7:0]  disp_an_o,
     
     // PS/2 keyboard interface
     input wire        ps2_clk,
@@ -30,7 +30,7 @@ module xgriscv_fpga_top(
     output wire        vga_vsync
 );
    
-    wire        Clk_CPU;
+    wire        cpu_clk;
     wire [31:0] instr;
     wire [31:0] PC;
 
@@ -66,13 +66,13 @@ module xgriscv_fpga_top(
     reg       key_ready_sync1;
     
     // VGA signals
-    wire [12:0] vga_addr;
-    wire [7:0]  vga_write_data;
     wire        vga_write_enable;
+    wire [12:0] vga_write_addr;
+    wire [7:0]  vga_write_data;
 
-    wire clk_vga;
+    wire vga_clk;
 
-    always @(posedge Clk_CPU or posedge reset) begin
+    always @(posedge cpu_clk or posedge reset) begin
         if (reset) begin
             key_code_sync0  <= 8'h00;
             key_code_sync1  <= 8'h00;
@@ -87,18 +87,18 @@ module xgriscv_fpga_top(
     end
 
     pipeline_top U_CPU (
-        .clk             (Clk_CPU),
-        .reset           (reset),
-        .instr_addr      (PC),
-        .instr           (instr),
+        .clk              (cpu_clk),
+        .reset            (reset),
+        .instr_addr       (PC),
+        .instr            (instr),
         .bus_write_enable (bus_write_enable),
         .bus_write_addr   (bus_write_addr),
         .bus_write_data   (bus_write_data),
         .bus_DM_Type      (bus_DM_Type),
         .bus_read_data    (bus_read_data),
-        .reg_sel         (sw_i[10:6]),
-        .reg_data        (reg_data),
-        .ext_interrupt   (key_interrupt)
+        .reg_sel          (sw_i[10:6]),
+        .reg_data         (reg_data),
+        .ext_interrupt    (key_interrupt)
     );
 
     imem U_IM (
@@ -107,7 +107,7 @@ module xgriscv_fpga_top(
     );
 
     dmem U_DM (
-        .clk             (Clk_CPU),
+        .clk             (cpu_clk),
         .DM_write_enable (DM_write_enable),
         .DM_Type         (DM_Type),
         .addr            (DM_write_addr),
@@ -117,9 +117,9 @@ module xgriscv_fpga_top(
 
     // I/O management (MIO_BUS)
     MIO_BUS U_MIO (
-        .clk             (Clk_CPU),
+        .clk              (cpu_clk),
         .reset           (reset),
-        .sw_i            (sw_i),
+        .sw_i             (sw_i),
         // from CPU
         .bus_write_enable (bus_write_enable),
         .bus_write_addr   (bus_write_addr),
@@ -133,19 +133,19 @@ module xgriscv_fpga_top(
         .key_read        (key_read),
         .key_interrupt   (key_interrupt),
         // VGA interface
-        .vga_addr        (vga_addr),
-        .vga_write_data  (vga_write_data),
         .vga_write_enable (vga_write_enable),
+        .vga_write_addr   (vga_write_addr),
+        .vga_write_data   (vga_write_data),
 
         // to CPU
-        .bus_read_data    (bus_read_data),
+        .bus_read_data     (bus_read_data),
         // to DM
-        .DM_write_enable  (DM_write_enable),
-        .DM_write_addr        (DM_write_addr),
-        .DM_write_data    (DM_write_data),
-        .DM_Type          (DM_Type),
+        .DM_write_enable   (DM_write_enable),
+        .DM_write_addr     (DM_write_addr),
+        .DM_write_data     (DM_write_data),
+        .DM_Type           (DM_Type),
         // to SEG7x16
-        .cpuseg7_data    (cpuseg7_data),
+        .cpuseg7_data      (cpuseg7_data),
         .seg7_write_enable (seg7_write_enable)
     );
 
@@ -163,22 +163,18 @@ module xgriscv_fpga_top(
 
     // VGA display module
     vga_display U_VGA(
-        .vga_clk           (vga_clk),
-        .cpu_clk       (Clk_CPU),
-        .reset         (reset),
+        .vga_clk          (vga_clk),
+        .cpu_clk          (cpu_clk),
+        .reset            (reset),
         .vga_write_enable        (vga_write_enable),
-        .vga_addr      (vga_addr),
-        .vga_write_data  (vga_write_data),
-        .vga_r         (vga_r),
-        .vga_g         (vga_g),
-        .vga_b         (vga_b),
-        .vga_hsync     (vga_hsync),
-        .vga_vsync     (vga_vsync)
+        .vga_write_addr          (vga_write_addr),
+        .vga_write_data          (vga_write_data),
+        .vga_r                   (vga_r),
+        .vga_g                   (vga_g),
+        .vga_b                   (vga_b),
+        .vga_hsync               (vga_hsync),
+        .vga_vsync               (vga_vsync)
     );
-    
-    // Seven segment display
-    // 添加键盘调试信息
-    wire [31:0] debug_data = {8'h0, key_code, 7'h0, key_ready, 7'h0, overflow};
     
     MULTI_CH32 U_Multi (
         .clk           (clk),
@@ -211,10 +207,10 @@ module xgriscv_fpga_top(
         .clk           (clk),
         .rst           (reset),
         .SW15          (sw_i[15]),
-        .Clk_CPU       (Clk_CPU)
+        .Clk_CPU       (cpu_clk)
     );
     
-    // VGA 25MHz pixel clock (100MHz / 4)
+    // VGA 25MHz pixel clock (100MHz / 4), independent from CPU debug clock.
     reg [1:0] clk_div_cnt;
     always @(posedge clk or posedge reset) begin
         if (reset)

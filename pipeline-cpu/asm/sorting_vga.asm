@@ -35,6 +35,7 @@
 #############################################
 # VGA display version
 # Display both original and sorted student no.
+# VGA word model: each character uses one word address (+4 bytes)
 #############################################
 # mem[0], student no.
 # mem[4], sorted student no

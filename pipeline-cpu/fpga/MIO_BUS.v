@@ -25,9 +25,9 @@ module MIO_BUS(
     output wire       key_interrupt,      // keyboard interrupt to CPU
     
     // VGA interface
-    output reg  [12:0] vga_addr,          // VGA char memory address
-    output reg  [7:0]  vga_write_data,    // VGA char write data
     output reg         vga_write_enable,            // VGA char write enable
+    output reg  [12:0] vga_write_addr,          // VGA char memory address
+    output reg  [7:0]  vga_write_data,    // VGA char write data
     
     // to CPU
     output reg  [31:0] bus_read_data,       // data to CPU
@@ -77,7 +77,7 @@ module MIO_BUS(
         DM_write_enable = 0;
         DM_Type = 3'b0;
         vga_write_enable = 0;
-        vga_addr = 13'h0;
+        vga_write_addr = 13'h0;
         vga_write_data = 8'h0;
         key_interrupt_write_enable = 0;
         
@@ -104,12 +104,13 @@ module MIO_BUS(
             end
             
             default: begin
-                // VGA char memory window: 0xFFFF0020 ~ 0xFFFF097F (2400 bytes)
-                if ((bus_write_addr >= 32'hffff_0020) && (bus_write_addr < 32'hffff_0980)) begin
+                // VGA char memory window (word-addressed):
+                // 2400 chars * 4 bytes = 9600 bytes, address range 0xFFFF0020 ~ 0xFFFF259F.
+                if ((bus_write_addr >= 32'hffff_0020) && (bus_write_addr < 32'hffff_25A0)) begin
                     // VGA text window is write-only from CPU side.
                     // Read from this range returns zero for deterministic behavior.
                     vga_write_enable = bus_write_enable;
-                    vga_addr = bus_write_addr[12:0] - 13'h020;
+                    vga_write_addr = (bus_write_addr - 32'hffff_0020) >> 2;
                     vga_write_data = bus_write_data[7:0];
                     if (!bus_write_enable)
                         bus_read_data = 32'h0000_0000;

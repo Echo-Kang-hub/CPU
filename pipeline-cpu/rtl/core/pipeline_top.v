@@ -1,6 +1,5 @@
 `ifndef __PIPELINE_TOP_V__
 `define __PIPELINE_TOP_V__
-`timescale 1ns / 1ps
 `ifndef SYNTHESIS
     `include "definition.vh"
     `include "IF_stage.v"
@@ -10,6 +9,7 @@
     `include "WB_stage.v"
     `include "csr_regs.v"
 `endif
+`timescale 1ns / 1ps
 
 module pipeline_top(
     input  wire        clk,
