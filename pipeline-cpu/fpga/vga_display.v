@@ -20,6 +20,18 @@ module vga_display(
     output wire        vga_vsync
 );
 
+    // Text rendering configuration
+    parameter TEXT_SCALE    = 2;       // 2x scale: 8x16 font becomes 16x32 on screen
+    parameter TEXT_X_OFFSET = 10'd16;  // left margin in pixels
+    parameter TEXT_Y_OFFSET = 10'd16;  // top margin in pixels
+
+    localparam CHAR_WIDTH   = 10'd8;
+    localparam CHAR_HEIGHT  = 10'd16;
+    localparam TEXT_COLS    = 7'd40;   // 640/(8*2)
+    localparam TEXT_ROWS    = 5'd15;   // 480/(16*2)
+    localparam TEXT_WIDTH   = 10'd640;
+    localparam TEXT_HEIGHT  = 10'd480;
+
     // VGA timing parameters (640x480 @ 60Hz)
     parameter H_TOTAL   = 10'd800;
     parameter H_SYNC    = 10'd96;
@@ -72,15 +84,28 @@ module vga_display(
     assign v_valid = (v_cnt >= V_BACK) && (v_cnt < V_FRONT);
     assign valid = h_valid & v_valid;
     
-    // Pixel coordinates
+    // Pixel coordinates in active area
     wire [9:0] h_pixel = h_valid ? (h_cnt - H_BACK) : 10'd0;
     wire [9:0] v_pixel = v_valid ? (v_cnt - V_BACK) : 10'd0;
-    
-    // Character position (16 rows per char, 8 cols per char)
-    wire [6:0] char_col = h_pixel[9:3];           // / 8, 7 bits for 0-79
-    wire [4:0] char_row = v_pixel[8:4];           // / 16, 5 bits for 0-29
-    wire [3:0] char_row_pixel = v_pixel[3:0];     // % 16
-    wire [2:0] char_col_pixel = h_pixel[2:0];     // % 8
+
+    // Text window with margins (top-left anchored, not touching screen border)
+    wire in_text_h = (h_pixel >= TEXT_X_OFFSET) && (h_pixel < (TEXT_X_OFFSET + (TEXT_COLS * CHAR_WIDTH * TEXT_SCALE)));
+    wire in_text_v = (v_pixel >= TEXT_Y_OFFSET) && (v_pixel < (TEXT_Y_OFFSET + (TEXT_ROWS * CHAR_HEIGHT * TEXT_SCALE)));
+    wire in_text_area = valid && in_text_h && in_text_v;
+
+    // Coordinates inside text window
+    wire [9:0] text_h_pixel = h_pixel - TEXT_X_OFFSET;
+    wire [9:0] text_v_pixel = v_pixel - TEXT_Y_OFFSET;
+
+    // 2x scaling: each font pixel is repeated 2x2 on screen, equivalent to /2 here
+    wire [9:0] font_h_pixel = text_h_pixel >> 1;
+    wire [9:0] font_v_pixel = text_v_pixel >> 1;
+
+    // Character position based on unscaled font grid (still 8x16)
+    wire [6:0] char_col = font_h_pixel[9:3];      // / 8
+    wire [4:0] char_row = font_v_pixel[8:4];      // / 16
+    wire [3:0] char_row_pixel = font_v_pixel[3:0];
+    wire [2:0] char_col_pixel = font_h_pixel[2:0];
     
     // Character memory address calculation (row*80 + col)
     // row*80 = row*64 + row*16 = (row<<6) + (row<<4)
@@ -125,8 +150,8 @@ module vga_display(
         font_data_reg <= font_mem[font_addr];
     end
     
-    // Get pixel color
-    wire pixel_on = font_data_reg[7 - char_col_pixel];
+    // Get pixel color (only draw in text area)
+    wire pixel_on = in_text_area && font_data_reg[7 - char_col_pixel];
     
     // Output color (white on black)
     reg [3:0] vga_r_reg, vga_g_reg, vga_b_reg;
