@@ -90,23 +90,26 @@ module keyboard_vga_direct_tb();
     
     // 模拟CPU读取键盘并写入VGA
     reg [7:0] display_pos;
+    reg       key_ready_d1;
     
     always @(posedge clk) begin
         if (reset) begin
             display_pos <= 0;
-            key_read <= 0;
+            key_read <= 1;
             vga_we <= 0;
             vga_addr <= 0;
             vga_char <= 0;
+            key_ready_d1 <= 0;
         end else begin
             // 默认值
-            key_read <= 0;
+            key_read <= 1;
             vga_we <= 0;
+            key_ready_d1 <= key_ready;
             
-            // 如果有按键
-            if (key_ready && !key_read) begin
-                // 读取扫描码
-                key_read <= 1;
+            // 检测 key_ready 上升沿，只消费一次
+            if (key_ready && !key_ready_d1) begin
+                // 低有效读取确认脉冲
+                key_read <= 0;
                 
                 // 查表转换为ASCII
                 vga_addr <= display_pos;

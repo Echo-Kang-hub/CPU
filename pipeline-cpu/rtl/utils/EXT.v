@@ -1,4 +1,5 @@
 `include "definition.vh"
+`timescale 1ns / 1ps
 module EXT(
     input wire [4:0] iimm_shamt,
     input wire [11:0] iimm,

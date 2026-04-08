@@ -1,5 +1,6 @@
 `ifndef __PIPELINE_TOP_V__
 `define __PIPELINE_TOP_V__
+`timescale 1ns / 1ps
 `ifndef SYNTHESIS
     `include "definition.vh"
     `include "IF_stage.v"
@@ -17,11 +18,11 @@ module pipeline_top(
     output wire [31:0] instr_addr,
     input  wire [31:0] instr,
 
-    output wire [31:0] DM_write_addr,
-    output wire [31:0] DM_write_data,
-    output wire        DM_write_enable,
-    output wire [2:0]  DM_Type,
-    input  wire [31:0] DM_read_data,
+    output wire        bus_write_enable,
+    output wire [31:0] bus_write_addr,
+    output wire [31:0] bus_write_data,
+    output wire [2:0]  bus_DM_Type,
+    input  wire [31:0] bus_read_data,
 
     input  wire [4:0]  reg_sel,
     output wire [31:0] reg_data,
@@ -209,11 +210,11 @@ module pipeline_top(
         .WB_allowin             (WB_allowin),
         .MA_to_WB_valid         (MA_to_WB_valid),
         .MA_to_WB_bus           (MA_to_WB_bus),
-        .DMType                 (DM_Type),
-        .DM_write_addr          (DM_write_addr),
-        .DM_write_data          (DM_write_data),
-        .DM_write_enable        (DM_write_enable),
-        .DM_read_data           (DM_read_data),
+        .DMType                 (bus_DM_Type),
+        .DM_write_addr          (bus_write_addr),
+        .DM_write_data          (bus_write_data),
+        .DM_write_enable        (bus_write_enable),
+        .DM_read_data           (bus_read_data),
         .EXMA_RegWrite          (EXMA_RegWrite),
         .EXMA_rd                (EXMA_rd),
         .EXMA_load_data         (EXMA_load_data),

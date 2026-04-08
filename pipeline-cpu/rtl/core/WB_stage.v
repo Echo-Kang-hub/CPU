@@ -1,6 +1,7 @@
 `ifndef __WB_STAGE_V__   
 `define __WB_STAGE_V__
 `include "definition.vh"
+`timescale 1ns / 1ps
 
 module WB_stage(
     input  wire        clk,

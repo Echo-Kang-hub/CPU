@@ -21,6 +21,10 @@ module keyboard_vga_tb();
     // VGA输出
     wire [3:0]  vga_r, vga_g, vga_b;
     wire        vga_hsync, vga_vsync;
+    integer     cycle_count;
+    reg         prev_key_ready;
+    reg         prev_vga_we;
+    localparam integer MAX_CYCLES = 10_000_000; // 50MHz下约200ms
     
     // 实例化FPGA顶层模块
     xgriscv_fpga_top uut (
@@ -42,6 +46,13 @@ module keyboard_vga_tb();
     initial begin
         clk = 0;
         forever #10 clk = ~clk; // 50MHz
+    end
+
+    // 全局超时保护，防止测试平台异常卡住
+    initial begin
+        #(200_000_000); // 200ms
+        $display("\n[TB-TIMEOUT] Keyboard VGA test exceeded 200ms, force stop.");
+        $finish;
     end
     
     // PS/2时钟生成 (约12.5kHz)
@@ -110,6 +121,9 @@ module keyboard_vga_tb();
         rstn = 1;
         sw_i = 16'h0000;
         ps2_data = 1;
+        cycle_count = 0;
+        prev_key_ready = 0;
+        prev_vga_we = 0;
         
         // 复位
         #100;
@@ -235,17 +249,28 @@ module keyboard_vga_tb();
     
     // 监控键盘读取
     always @(posedge clk) begin
-        if (uut.U_KBD.key_ready) begin
+        if (uut.U_KBD.key_ready && !prev_key_ready) begin
             $display("[%0t] Key Ready: code=0x%h", $time, uut.U_KBD.key_code);
         end
+        prev_key_ready <= uut.U_KBD.key_ready;
     end
     
     // 监控VGA写入
     always @(posedge clk) begin
-        if (uut.U_VGA.cpu_we) begin
+        if (uut.U_VGA.cpu_we && !prev_vga_we) begin
             $display("[%0t] VGA Write: addr=%0d, char=0x%h ('%c')", 
                      $time, uut.U_VGA.cpu_addr, uut.U_VGA.cpu_char, 
                      uut.U_VGA.cpu_char);
+        end
+        prev_vga_we <= uut.U_VGA.cpu_we;
+    end
+
+    // 周期watchdog，防止异常路径无限运行
+    always @(posedge clk) begin
+        cycle_count <= cycle_count + 1;
+        if (cycle_count >= MAX_CYCLES) begin
+            $display("\n[TB-WATCHDOG] Keyboard VGA reached MAX_CYCLES=%0d, force stop.", MAX_CYCLES);
+            $finish;
         end
     end
 

@@ -61,7 +61,7 @@ main:
 	# Display result (max 5 hex digits, but we display as hex)
 	# Convert hex result to 2 hex characters
 	srli	x8, x7, 28
-	and	x8, x8, 0x0F
+	andi	x8, x8, 0x0F
 	addi	x2, x31, 0x0020
 	addi	x3, x8, 0x30
 	slti	x4, x8, 10
@@ -71,7 +71,7 @@ hex1:
 	sw	x3, 28(x2)
 	
 	srli	x8, x7, 24
-	and	x8, x8, 0x0F
+	andi	x8, x8, 0x0F
 	addi	x2, x31, 0x0020
 	addi	x3, x8, 0x30
 	slti	x4, x8, 10
@@ -81,7 +81,7 @@ hex2:
 	sw	x3, 32(x2)
 	
 	srli	x8, x7, 20
-	and	x8, x8, 0x0F
+	andi	x8, x8, 0x0F
 	addi	x2, x31, 0x0020
 	addi	x3, x8, 0x30
 	slti	x4, x8, 10
@@ -91,7 +91,7 @@ hex3:
 	sw	x3, 36(x2)
 	
 	srli	x8, x7, 16
-	and	x8, x8, 0x0F
+	andi	x8, x8, 0x0F
 	addi	x2, x31, 0x0020
 	addi	x3, x8, 0x30
 	slti	x4, x8, 10
@@ -101,7 +101,7 @@ hex4:
 	sw	x3, 40(x2)
 	
 	srli	x8, x7, 12
-	and	x8, x8, 0x0F
+	andi	x8, x8, 0x0F
 	addi	x2, x31, 0x0020
 	addi	x3, x8, 0x30
 	slti	x4, x8, 10
@@ -111,7 +111,7 @@ hex5:
 	sw	x3, 44(x2)
 	
 	srli	x8, x7, 8
-	and	x8, x8, 0x0F
+	andi	x8, x8, 0x0F
 	addi	x2, x31, 0x0020
 	addi	x3, x8, 0x30
 	slti	x4, x8, 10
@@ -121,7 +121,7 @@ hex6:
 	sw	x3, 48(x2)
 	
 	srli	x8, x7, 4
-	and	x8, x8, 0x0F
+	andi	x8, x8, 0x0F
 	addi	x2, x31, 0x0020
 	addi	x3, x8, 0x30
 	slti	x4, x8, 10
@@ -130,7 +130,7 @@ hex6:
 hex7:
 	sw	x3, 52(x2)
 	
-	and	x8, x7, 0x0F
+	andi	x8, x7, 0x0F
 	addi	x2, x31, 0x0020
 	addi	x3, x8, 0x30
 	slti	x4, x8, 10

@@ -64,6 +64,3 @@ set_property -dict { PACKAGE_PIN B12   IOSTANDARD LVCMOS33 } [get_ports { vga_vs
 ## USB HID (PS/2)
 set_property -dict { PACKAGE_PIN F4    IOSTANDARD LVCMOS33 } [get_ports { ps2_clk }];
 set_property -dict { PACKAGE_PIN B2    IOSTANDARD LVCMOS33 } [get_ports { ps2_data }];
-
-## USB HID Host VBUS Enable
-set_property -dict { PACKAGE_PIN E9    IOSTANDARD LVCMOS33 } [get_ports { usb_vbus_en }];

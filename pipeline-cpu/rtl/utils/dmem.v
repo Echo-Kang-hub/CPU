@@ -5,8 +5,8 @@
 
 module dmem (
     input  wire        clk,
-    input  wire        DMWr,
-    input  wire [2:0]  DMType, 
+    input  wire        DM_write_enable,
+    input  wire [2:0]  DM_Type, 
     input  wire [31:0] addr, 
     input  wire [31:0] din,
     output wire [31:0] dout
@@ -25,8 +25,8 @@ module dmem (
     wire [6:0] word_addr = addr[8:2]; 
     
     always @(posedge clk) begin
-        if (DMWr) begin
-            case (DMType)
+        if (DM_write_enable) begin
+            case (DM_Type)
                 `DM_BYTE, `DM_BYTEU: begin 
                     case (addr[1:0])
                         2'b00: RAM[word_addr][7:0]   <= din[7:0];
@@ -54,7 +54,7 @@ module dmem (
     reg  [31:0] read_data;
 
     always @(*) begin
-        case (DMType)
+        case (DM_Type)
             `DM_BYTE: begin
                 case (addr[1:0])
                     2'b00: read_data = {{24{raw_word[7]}},  raw_word[7:0]};

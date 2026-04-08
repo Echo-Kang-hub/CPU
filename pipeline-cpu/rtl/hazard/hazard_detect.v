@@ -1,5 +1,6 @@
 `ifndef __HAZARD_DETECT_V__
 `define __HAZARD_DETECT_V__
+`timescale 1ns / 1ps
 module hazard_detect(
     input wire [4:0] IFID_rs1,
     input wire [4:0] IFID_rs2,

@@ -56,7 +56,8 @@
 # x30, VGA base address 0xFFFF0020
 #############################################
 
-	lui		x30, 0xFFFF2
+	lui		x30, 0xFFFF0
+	addi	x30, x30, 0x0020
 
 	# Set student number
 	addi	x2, x0, 0x16
@@ -113,7 +114,7 @@ result:
 
 	# Display on VGA: row 0 - original, row 1 - sorted
 	# Row 0: "Original: 0x"
-	lui		x2, 0xFFFF2
+	add		x2, x30, x0
 	
 	# 'O'
 	addi	x3, x0, 0x4F
@@ -166,7 +167,7 @@ orig_h1:
 	sw		x3, 0(x2)
 	
 	srli	x9, x8, 24
-	and	x9, x9, 0x0F
+	andi	x9, x9, 0x0F
 	addi	x3, x9, 0x30
 	slti	x4, x9, 10
 	bne	x4, x0, orig_h2
@@ -175,7 +176,7 @@ orig_h2:
 	sw		x3, 4(x2)
 	
 	srli	x9, x8, 20
-	and	x9, x9, 0x0F
+	andi	x9, x9, 0x0F
 	addi	x3, x9, 0x30
 	slti	x4, x9, 10
 	bne	x4, x0, orig_h3
@@ -184,7 +185,7 @@ orig_h3:
 	sw		x3, 8(x2)
 	
 	srli	x9, x8, 16
-	and	x9, x9, 0x0F
+	andi	x9, x9, 0x0F
 	addi	x3, x9, 0x30
 	slti	x4, x9, 10
 	bne	x4, x0, orig_h4
@@ -193,7 +194,7 @@ orig_h4:
 	sw		x3, 12(x2)
 	
 	srli	x9, x8, 12
-	and	x9, x9, 0x0F
+	andi	x9, x9, 0x0F
 	addi	x3, x9, 0x30
 	slti	x4, x9, 10
 	bne	x4, x0, orig_h5
@@ -202,7 +203,7 @@ orig_h5:
 	sw		x3, 16(x2)
 	
 	srli	x9, x8, 8
-	and	x9, x9, 0x0F
+	andi	x9, x9, 0x0F
 	addi	x3, x9, 0x30
 	slti	x4, x9, 10
 	bne	x4, x0, orig_h6
@@ -211,7 +212,7 @@ orig_h6:
 	sw		x3, 20(x2)
 	
 	srli	x9, x8, 4
-	and	x9, x9, 0x0F
+	andi	x9, x9, 0x0F
 	addi	x3, x9, 0x30
 	slti	x4, x9, 10
 	bne	x4, x0, orig_h7
@@ -219,7 +220,7 @@ orig_h6:
 orig_h7:
 	sw		x3, 24(x2)
 	
-	and	x9, x8, 0x0F
+	andi	x9, x8, 0x0F
 	addi	x3, x9, 0x30
 	slti	x4, x9, 10
 	bne	x4, x0, orig_h8
@@ -228,7 +229,7 @@ orig_h8:
 	sw		x3, 28(x2)
 
 	# Row 2: "Sorted: 0x"
-	lui		x2, 0xFFFF2
+	add		x2, x30, x0
 	
 	addi	x3, x0, 0x53		# 'S'
 	sw		x3, 0x0080(x2)
@@ -265,7 +266,7 @@ sorted_h1:
 	sw		x3, 0(x2)
 	
 	srli	x9, x8, 24
-	and	x9, x9, 0x0F
+	andi	x9, x9, 0x0F
 	addi	x3, x9, 0x30
 	slti	x4, x9, 10
 	bne	x4, x0, sorted_h2
@@ -274,7 +275,7 @@ sorted_h2:
 	sw		x3, 4(x2)
 	
 	srli	x9, x8, 20
-	and	x9, x9, 0x0F
+	andi	x9, x9, 0x0F
 	addi	x3, x9, 0x30
 	slti	x4, x9, 10
 	bne	x4, x0, sorted_h3
@@ -283,7 +284,7 @@ sorted_h3:
 	sw		x3, 8(x2)
 	
 	srli	x9, x8, 16
-	and	x9, x9, 0x0F
+	andi	x9, x9, 0x0F
 	addi	x3, x9, 0x30
 	slti	x4, x9, 10
 	bne	x4, x0, sorted_h4
@@ -292,7 +293,7 @@ sorted_h4:
 	sw		x3, 12(x2)
 	
 	srli	x9, x8, 12
-	and	x9, x9, 0x0F
+	andi	x9, x9, 0x0F
 	addi	x3, x9, 0x30
 	slti	x4, x9, 10
 	bne	x4, x0, sorted_h5
@@ -301,7 +302,7 @@ sorted_h5:
 	sw		x3, 16(x2)
 	
 	srli	x9, x8, 8
-	and	x9, x9, 0x0F
+	andi	x9, x9, 0x0F
 	addi	x3, x9, 0x30
 	slti	x4, x9, 10
 	bne	x4, x0, sorted_h6
@@ -310,7 +311,7 @@ sorted_h6:
 	sw		x3, 20(x2)
 	
 	srli	x9, x8, 4
-	and	x9, x9, 0x0F
+	andi	x9, x9, 0x0F
 	addi	x3, x9, 0x30
 	slti	x4, x9, 10
 	bne	x4, x0, sorted_h7
@@ -318,7 +319,7 @@ sorted_h6:
 sorted_h7:
 	sw		x3, 24(x2)
 	
-	and	x9, x8, 0x0F
+	andi	x9, x8, 0x0F
 	addi	x3, x9, 0x30
 	slti	x4, x9, 10
 	bne	x4, x0, sorted_h8

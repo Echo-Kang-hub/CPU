@@ -1,6 +1,7 @@
 `ifndef __EX_STAGE_V__   
 `define __EX_STAGE_V__
 `include "definition.vh"
+`timescale 1ns / 1ps
 
 module EX_stage(
     input  wire        clk,

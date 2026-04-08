@@ -3,13 +3,14 @@
 `timescale 1ns / 1ps
 
 module vga_display(
-    input  wire clk,  // 25MHz VGA pixel clock
+    input  wire vga_clk,      // 25MHz VGA pixel clock
+    input  wire cpu_clk,  // CPU/MMIO clock for character writes
     input  wire reset,
     
     // CPU write interface (CPU时钟域)
-    input  wire [12:0] cpu_addr,
-    input  wire [7:0]  cpu_char,
-    input  wire        cpu_we,
+    input  wire        vga_write_enable,
+    input  wire [12:0] vga_addr,
+    input  wire [7:0]  vga_write_data,
     
     // VGA output
     output wire [3:0]  vga_r,
@@ -18,36 +19,6 @@ module vga_display(
     output wire        vga_hsync,
     output wire        vga_vsync
 );
-
-    // 跨时钟域同步：CPU写入信号 -> VGA时钟域
-    
-    // 在VGA时钟域锁存
-    reg [12:0] cpu_addr_reg;
-    reg [7:0]  cpu_char_reg;
-    reg        cpu_we_reg;
-    
-    always @(posedge clk or posedge reset) begin
-        if (reset) begin
-            cpu_addr_reg <= 13'd0;
-            cpu_char_reg <= 8'd0;
-            cpu_we_reg <= 1'b0;
-        end else begin
-            cpu_addr_reg <= cpu_addr;
-            cpu_char_reg <= cpu_char;
-            cpu_we_reg <= cpu_we;
-        end
-    end
-    
-    // 边沿检测
-    reg cpu_we_d1;
-    always @(posedge clk or posedge reset) begin
-        if (reset)
-            cpu_we_d1 <= 1'b0;
-        else
-            cpu_we_d1 <= cpu_we_reg;
-    end
-    
-    wire cpu_we_rising = cpu_we_reg & ~cpu_we_d1;
 
     // VGA timing parameters (640x480 @ 60Hz)
     parameter H_TOTAL   = 10'd800;
@@ -71,7 +42,7 @@ module vga_display(
     wire valid;
     
     // Horizontal counter
-    always @(posedge clk or posedge reset) begin
+    always @(posedge vga_clk or posedge reset) begin
         if (reset)
             h_cnt <= 10'd0;
         else if (h_cnt == H_TOTAL - 1)
@@ -81,7 +52,7 @@ module vga_display(
     end
     
     // Vertical counter
-    always @(posedge clk or posedge reset) begin
+    always @(posedge vga_clk or posedge reset) begin
         if (reset)
             v_cnt <= 10'd0;
         else if (h_cnt == H_TOTAL - 1) begin
@@ -116,22 +87,25 @@ module vga_display(
     wire [12:0] char_addr = {2'b0, char_row, 6'b0} + {4'b0, char_row, 4'b0} + {6'b0, char_col};
     
     
-    // 显存 - 跨时钟域安全的读写
+    // Character memory: write in CPU clock domain, read in VGA clock domain.
     reg [7:0] chr_mem [0:2399];
     reg [7:0] char_code_reg;
-    
-    // 写优先读：如果当前时钟周期写入同一地址，直接使用写入数据
-    always @(posedge clk) begin
-        if (cpu_we_rising && (cpu_addr_reg == char_addr))
-            char_code_reg <= cpu_char_reg;
-        else
-            char_code_reg <= chr_mem[char_addr];
+
+    integer i;
+    initial begin
+        for (i = 0; i < 2400; i = i + 1) begin
+            chr_mem[i] = 8'h20;
+        end
     end
     
-    // 写入显存（使用同步后的信号）
-    always @(posedge clk) begin
-        if (cpu_we_rising)
-            chr_mem[cpu_addr_reg] <= cpu_char_reg;
+    always @(posedge vga_clk) begin
+        char_code_reg <= chr_mem[char_addr];
+    end
+    
+    always @(posedge cpu_clk) begin
+        if (vga_write_enable && (vga_addr < 13'd2400)) begin
+            chr_mem[vga_addr] <= vga_write_data;
+        end
     end
     
     // Font ROM
@@ -147,7 +121,7 @@ module vga_display(
     wire [10:0] font_addr = {char_code_reg[6:0], 4'b0} + char_row_pixel;
     
     // 读取字体数据（寄存器输出，改善时序）
-    always @(posedge clk) begin
+    always @(posedge vga_clk) begin
         font_data_reg <= font_mem[font_addr];
     end
     
@@ -156,10 +130,8 @@ module vga_display(
     
     // Output color (white on black)
     reg [3:0] vga_r_reg, vga_g_reg, vga_b_reg;
-    reg valid_reg;
     
-    always @(posedge clk) begin
-        valid_reg <= valid;
+    always @(posedge vga_clk) begin
         if (valid) begin
             // 正常模式：显示字符
             vga_r_reg <= pixel_on ? 4'hF : 4'h0;

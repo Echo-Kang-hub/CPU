@@ -1,6 +1,7 @@
 `ifndef __MA_STAGE_V__  
 `define __MA_STAGE_V__
 `include "definition.vh"
+`timescale 1ns / 1ps
 
 module MA_stage(
     input  wire        clk,

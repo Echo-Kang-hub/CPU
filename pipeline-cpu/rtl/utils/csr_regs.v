@@ -1,4 +1,5 @@
 `include "definition.vh"
+`timescale 1ns / 1ps
 
 module csr_regs(
     input wire clk,

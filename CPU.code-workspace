@@ -13,6 +13,7 @@
 	"settings": {
 		"digital-ide.function.lsp.linter.mode": "shutdown",
 		"verilog.linting.iverilog.runAtFileLocation": true,
-        "verilog.linting.iverilog.arguments": "-g2012 -I . -I ../include -I ../rtl/core -I ../core -I ../utils -I ../hazard -I ../rtl/top -I ../rtl/utils -I ../fpga -y . -y ../utils -y ../hazard -y ../rtl/core -y ../core -y ../rtl/top -y ../rtl/utils -y ../fpga"
+		"verilog.linting.iverilog.arguments": "-g2012 -I . -I ../include -I ../rtl/core -I ../core -I ../utils -I ../hazard -I ../rtl/top -I ../rtl/utils -I ../fpga -y . -y ../utils -y ../hazard -y ../rtl/core -y ../core -y ../rtl/top -y ../rtl/utils -y ../fpga",
+		"powershell.cwd": "pipeline-cpu"
 	}
 }

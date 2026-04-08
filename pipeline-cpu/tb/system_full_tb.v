@@ -8,6 +8,13 @@ module system_full_tb();
     reg [15:0] sw_i;
     reg ps2_clk;
     reg ps2_data;
+    integer cycle_count;
+    integer stable_pc_count;
+    reg [31:0] last_pc;
+    integer vga_write_count;
+    integer key_event_count;
+    localparam integer MAX_CYCLES = 900000;
+    localparam integer MAX_STABLE_PC = 200000;
     
     wire [7:0] disp_seg_o, disp_an_o;
     wire [3:0] vga_r, vga_g, vga_b;
@@ -33,6 +40,13 @@ module system_full_tb();
     initial begin
         clk = 0;
         forever #5 clk = ~clk;
+    end
+
+    // 全局超时保护，防止测试平台无限运行
+    initial begin
+        #(20_000_000); // 20ms
+        $display("\n[TB-TIMEOUT] Simulation exceeded 20ms, force stop.");
+        $finish;
     end
     
     // PS/2发送任务
@@ -73,6 +87,11 @@ module system_full_tb();
         $display("========================================");
         $display("System Full Test");
         $display("========================================");
+        cycle_count = 0;
+        stable_pc_count = 0;
+        last_pc = 32'hFFFF_FFFF;
+        vga_write_count = 0;
+        key_event_count = 0;
         
         // 初始化
         $display("[%0t] Starting reset...", $time);
@@ -91,6 +110,7 @@ module system_full_tb();
         $display("\n[%0t] Checking initial state...", $time);
         $display("  PC = 0x%h", uut.PC);
         $display("  Instr = 0x%h", uut.instr);
+        $display("  IMEM signature: %h %h %h %h", uut.U_IM.ROM[0], uut.U_IM.ROM[1], uut.U_IM.ROM[2], uut.U_IM.ROM[3]);
         
         // 等待CPU初始化转换表
         #100000;
@@ -134,6 +154,13 @@ module system_full_tb();
         $display("\n========================================");
         $display("Test Complete!");
         $display("========================================");
+
+        if (key_event_count == 0) begin
+            $display("[TB-FAIL] No keyboard event observed by top-level.");
+        end
+        if (vga_write_count == 0) begin
+            $display("[TB-FAIL] No VGA write observed on U_VGA.cpu_we.");
+        end
         
         $finish;
     end
@@ -155,7 +182,44 @@ module system_full_tb();
     
     // 监控CPU读取
     always @(posedge clk) begin
-        $display("[%0t] rstn=%b, rst=%b, PC=0x%h", $time, rstn, uut.rst, uut.PC);
+        cycle_count = cycle_count + 1;
+
+        if (uut.PC == last_pc) begin
+            stable_pc_count = stable_pc_count + 1;
+        end else begin
+            stable_pc_count = 0;
+            last_pc = uut.PC;
+        end
+
+        if ((cycle_count % 20000) == 0) begin
+            $display("[%0t] cycle=%0d, PC=0x%h, rstn=%b", $time, cycle_count, uut.PC, rstn);
+        end
+
+        if (cycle_count >= MAX_CYCLES) begin
+            $display("\n[TB-WATCHDOG] Reached MAX_CYCLES=%0d, force stop.", MAX_CYCLES);
+            $finish;
+        end
+
+        if (stable_pc_count >= MAX_STABLE_PC) begin
+            $display("\n[TB-WATCHDOG] PC stayed at 0x%h for %0d cycles, force stop.", uut.PC, stable_pc_count);
+            $finish;
+        end
+
+    end
+
+    always @(posedge clk) begin
+        if (uut.key_ready) begin
+            key_event_count = key_event_count + 1;
+        end
+    end
+
+    always @(posedge uut.clk_vga) begin
+        if (uut.U_VGA.cpu_we) begin
+            vga_write_count = vga_write_count + 1;
+            if (vga_write_count <= 8) begin
+                $display("[%0t] VGA write #%0d addr=%0d char=0x%h", $time, vga_write_count, uut.U_VGA.cpu_addr, uut.U_VGA.cpu_char);
+            end
+        end
     end
 
 endmodule

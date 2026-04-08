@@ -1,6 +1,7 @@
 `ifndef __FOWARDING_V__
 `define __FOWARDING_V__
 `include "definition.vh"
+`timescale 1ns / 1ps
 module forwarding(
     input  wire        clk,
     input  wire        reset,

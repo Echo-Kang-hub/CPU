@@ -1,4 +1,5 @@
 `include "definition.vh"
+`timescale 1ns / 1ps
 module ctrl(
     input wire [6:0] Op,
     input wire [6:0] Funct7,

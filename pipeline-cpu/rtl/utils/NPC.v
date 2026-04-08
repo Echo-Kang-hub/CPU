@@ -1,4 +1,5 @@
 `include "definition.vh"
+`timescale 1ns / 1ps
 
 module NPC(
     input wire [31:0]       PC_addr,
