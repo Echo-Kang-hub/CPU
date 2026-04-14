@@ -3,10 +3,10 @@
 `timescale 1ns / 1ps
 
 module imem ( 
-    input  wire [6:0]  a,
+    input  wire [8:0]  a,
     output wire [31:0] spo 
 );
-    reg [31:0] ROM [0:255];
+    reg [31:0] ROM [0:511];
 
     initial begin
         $readmemh("inst.txt", ROM); 

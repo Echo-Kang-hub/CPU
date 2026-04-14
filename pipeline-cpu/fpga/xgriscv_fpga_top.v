@@ -102,7 +102,7 @@ module xgriscv_fpga_top(
     );
 
     imem U_IM (
-        .a               (PC[8:2]),
+        .a               (PC[10:2]),
         .spo             (instr)
     );
 
@@ -130,7 +130,7 @@ module xgriscv_fpga_top(
         // Keyboard interface
         .key_code        (key_code_sync1),
         .key_ready       (key_ready_sync1),
-        .key_read        (key_read),
+        .key_read_enable (key_read_enable),
         .key_interrupt   (key_interrupt),
         // VGA interface
         .vga_write_enable (vga_write_enable),
@@ -155,7 +155,7 @@ module xgriscv_fpga_top(
         .reset                 (reset),
         .ps2_clk               (ps2_clk),
         .ps2_data              (ps2_data),
-        .key_read_acknowledge  (key_read),
+        .key_read_enable  (key_read_enable),
         .key_code              (key_code),
         .key_ready             (key_ready),
         .overflow              (overflow)

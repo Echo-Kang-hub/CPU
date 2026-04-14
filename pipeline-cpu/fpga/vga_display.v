@@ -27,10 +27,18 @@ module vga_display(
 
     localparam CHAR_WIDTH   = 10'd8;
     localparam CHAR_HEIGHT  = 10'd16;
-    localparam TEXT_COLS    = 7'd40;   // 640/(8*2)
-    localparam TEXT_ROWS    = 5'd15;   // 480/(16*2)
-    localparam TEXT_WIDTH   = 10'd640;
-    localparam TEXT_HEIGHT  = 10'd480;
+    localparam CELL_WIDTH   = CHAR_WIDTH * TEXT_SCALE;
+    localparam CELL_HEIGHT  = CHAR_HEIGHT * TEXT_SCALE;
+
+    // Reserve margins on both sides, then center the effective text viewport.
+    localparam AVAIL_WIDTH  = (H_DISPLAY > (TEXT_X_OFFSET << 1)) ? (H_DISPLAY - (TEXT_X_OFFSET << 1)) : 10'd0;
+    localparam AVAIL_HEIGHT = (V_DISPLAY > (TEXT_Y_OFFSET << 1)) ? (V_DISPLAY - (TEXT_Y_OFFSET << 1)) : 10'd0;
+    localparam TEXT_COLS    = AVAIL_WIDTH / CELL_WIDTH;
+    localparam TEXT_ROWS    = AVAIL_HEIGHT / CELL_HEIGHT;
+    localparam TEXT_WIDTH   = TEXT_COLS * CELL_WIDTH;
+    localparam TEXT_HEIGHT  = TEXT_ROWS * CELL_HEIGHT;
+    localparam TEXT_X_START = TEXT_X_OFFSET + ((AVAIL_WIDTH - TEXT_WIDTH) >> 1);
+    localparam TEXT_Y_START = TEXT_Y_OFFSET + ((AVAIL_HEIGHT - TEXT_HEIGHT) >> 1);
 
     // VGA timing parameters (640x480 @ 60Hz)
     parameter H_TOTAL   = 10'd800;
@@ -43,7 +51,7 @@ module vga_display(
     parameter V_SYNC    = 10'd2;
     parameter V_BACK    = 10'd35;
     parameter V_DISPLAY = 10'd480;
-    parameter V_FRONT   = 10'd514;
+    parameter V_FRONT   = 10'd515;
 
     // Pixel counters
     reg [9:0] h_cnt;
@@ -52,7 +60,11 @@ module vga_display(
     // VGA signals
     wire h_valid, v_valid;
     wire valid;
-    
+
+
+
+
+    // Pixel counter
     // Horizontal counter
     always @(posedge vga_clk or posedge reset) begin
         if (reset)
@@ -75,43 +87,41 @@ module vga_display(
         end
     end
     
-    // Sync signals (active low)
+
+
+
+    // define Window 
     assign vga_hsync = (h_cnt >= H_SYNC);
     assign vga_vsync = (v_cnt >= V_SYNC);
     
-    // Valid signals
     assign h_valid = (h_cnt >= H_BACK) && (h_cnt < H_FRONT);
     assign v_valid = (v_cnt >= V_BACK) && (v_cnt < V_FRONT);
     assign valid = h_valid & v_valid;
     
-    // Pixel coordinates in active area
     wire [9:0] h_pixel = h_valid ? (h_cnt - H_BACK) : 10'd0;
     wire [9:0] v_pixel = v_valid ? (v_cnt - V_BACK) : 10'd0;
 
-    // Text window with margins (top-left anchored, not touching screen border)
-    wire in_text_h = (h_pixel >= TEXT_X_OFFSET) && (h_pixel < (TEXT_X_OFFSET + (TEXT_COLS * CHAR_WIDTH * TEXT_SCALE)));
-    wire in_text_v = (v_pixel >= TEXT_Y_OFFSET) && (v_pixel < (TEXT_Y_OFFSET + (TEXT_ROWS * CHAR_HEIGHT * TEXT_SCALE)));
+    wire in_text_h = (h_pixel >= TEXT_X_START) && (h_pixel < (TEXT_X_START + TEXT_WIDTH));
+    wire in_text_v = (v_pixel >= TEXT_Y_START) && (v_pixel < (TEXT_Y_START + TEXT_HEIGHT));
     wire in_text_area = valid && in_text_h && in_text_v;
 
-    // Coordinates inside text window
-    wire [9:0] text_h_pixel = h_pixel - TEXT_X_OFFSET;
-    wire [9:0] text_v_pixel = v_pixel - TEXT_Y_OFFSET;
 
-    // 2x scaling: each font pixel is repeated 2x2 on screen, equivalent to /2 here
+    // calculate position
+    wire [9:0] text_h_pixel = h_pixel - TEXT_X_START;
+    wire [9:0] text_v_pixel = v_pixel - TEXT_Y_START;
+
     wire [9:0] font_h_pixel = text_h_pixel >> 1;
     wire [9:0] font_v_pixel = text_v_pixel >> 1;
 
-    // Character position based on unscaled font grid (still 8x16)
-    wire [6:0] char_col = font_h_pixel[9:3];      // / 8
-    wire [4:0] char_row = font_v_pixel[8:4];      // / 16
+    wire [6:0] char_col = font_h_pixel[9:3]; // / 8
+    wire [4:0] char_row = font_v_pixel[8:4]; // / 16
     wire [3:0] char_row_pixel = font_v_pixel[3:0];
     wire [2:0] char_col_pixel = font_h_pixel[2:0];
     
-    // Character memory address calculation (row*80 + col)
-    // row*80 = row*64 + row*16 = (row<<6) + (row<<4)
     wire [12:0] char_addr = {2'b0, char_row, 6'b0} + {4'b0, char_row, 4'b0} + {6'b0, char_col};
+    wire [12:0] char_addr_safe = (char_addr < 13'd2400) ? char_addr : 13'd0;
     
-    
+
     // Character memory: write in CPU clock domain, read in VGA clock domain.
     reg [7:0] chr_mem [0:2399];
     reg [7:0] char_code_reg;
@@ -122,21 +132,22 @@ module vga_display(
             chr_mem[i] = 8'h20;
         end
     end
-    
-    always @(posedge vga_clk) begin
-        char_code_reg <= chr_mem[char_addr];
-    end
-    
+
     always @(posedge cpu_clk) begin
         if (vga_write_enable && (vga_write_addr < 13'd2400)) begin
             chr_mem[vga_write_addr] <= vga_write_data;
         end
     end
     
+    always @(posedge vga_clk) begin
+        char_code_reg <= chr_mem[char_addr_safe];
+    end
+    
+
+
+
     // Font ROM
     reg [7:0] font_data_reg;
-    
-    // Font ROM存储
     reg [7:0] font_mem [0:2047];
     initial begin
         $readmemh("font_data.mem", font_mem);
@@ -145,20 +156,42 @@ module vga_display(
     // ascii * 16 = ascii << 4
     wire [10:0] font_addr = {char_code_reg[6:0], 4'b0} + char_row_pixel;
     
-    // 读取字体数据（寄存器输出，改善时序）
+    // Pipeline delay to align control with 2-cycle memory read latency.
+    reg [2:0] char_col_pixel_d1, char_col_pixel_d2;
+    reg       in_text_area_d1, in_text_area_d2;
+    reg       valid_d1, valid_d2;
+
+    always @(posedge vga_clk or posedge reset) begin
+        if (reset) begin
+            char_col_pixel_d1 <= 3'd0;
+            char_col_pixel_d2 <= 3'd0;
+            in_text_area_d1   <= 1'b0;
+            in_text_area_d2   <= 1'b0;
+            valid_d1          <= 1'b0;
+            valid_d2          <= 1'b0;
+        end else begin
+            char_col_pixel_d1 <= char_col_pixel;
+            in_text_area_d1   <= in_text_area;
+            valid_d1          <= valid;
+
+            char_col_pixel_d2 <= char_col_pixel_d1;
+            in_text_area_d2   <= in_text_area_d1;
+            valid_d2          <= valid_d1;
+        end
+    end
+
     always @(posedge vga_clk) begin
         font_data_reg <= font_mem[font_addr];
     end
     
     // Get pixel color (only draw in text area)
-    wire pixel_on = in_text_area && font_data_reg[7 - char_col_pixel];
+    wire pixel_on = in_text_area_d2 && font_data_reg[7 - char_col_pixel_d2];
     
     // Output color (white on black)
     reg [3:0] vga_r_reg, vga_g_reg, vga_b_reg;
     
     always @(posedge vga_clk) begin
-        if (valid) begin
-            // 正常模式：显示字符
+        if (valid_d2) begin
             vga_r_reg <= pixel_on ? 4'hF : 4'h0;
             vga_g_reg <= pixel_on ? 4'hF : 4'h0;
             vga_b_reg <= pixel_on ? 4'hF : 4'h0;

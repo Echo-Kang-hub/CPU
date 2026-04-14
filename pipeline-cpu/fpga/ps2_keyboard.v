@@ -8,10 +8,10 @@ module ps2_keyboard(
     input  wire ps2_clk,
     input  wire ps2_data,
     
-    input  wire       key_read_acknowledge,  // 读取确认（低有效）
-    output wire [7:0] key_code,              // 键盘扫描码
-    output wire       key_ready,             // 数据就绪
-    output wire       overflow               // FIFO溢出
+    input  wire       key_read_enable,  // 读取确认（低有效）
+    output wire [7:0] key_code,
+    output wire       key_ready,
+    output wire       overflow
 );
 
     // PS/2时钟同步和下降沿检测
@@ -22,9 +22,9 @@ module ps2_keyboard(
     reg [9:0] buffer;
     reg [3:0] bit_cnt;
     
-    // FIFO队列 (8字节)
+    // FIFO (8 bytes)
     reg [7:0] fifo [7:0];
-    reg [2:0] w_ptr, r_ptr;  // 写指针、读指针
+    reg [2:0] w_ptr, r_ptr;
     
     // 状态信号
     reg ready_reg;
@@ -35,7 +35,7 @@ module ps2_keyboard(
     assign key_code = fifo[r_ptr];
     assign overflow = overflow_reg;
     
-    // 对跨时钟域 key_read_acknowledge 做双触发同步后再检测下降沿
+    // 对跨时钟域 key_read_enable 做双触发同步后再检测下降沿
     reg key_read_sync0;
     reg key_read_sync1;
     reg key_read_d1;
@@ -57,7 +57,7 @@ module ps2_keyboard(
             ps2_clk_sync <= {ps2_clk_sync[1:0], ps2_clk};
 
             // 先把ack同步到本时钟域
-            key_read_sync0 <= key_read_acknowledge;
+            key_read_sync0 <= key_read_enable;
             key_read_sync1 <= key_read_sync0;
             key_read_d1 <= key_read_sync1;
             

@@ -7,39 +7,56 @@
 module MIO_BUS(
     input wire        clk,
     input wire        reset,
-    input wire [15:0] sw_i,               // switch input
+    input wire [15:0] sw_i, 
 
     // from CPU
     input wire        bus_write_enable,
-    input wire [31:0] bus_write_data,       // data from CPU
-    input wire [31:0] bus_write_addr,      // address for CPU
-    input wire [2:0]  bus_DM_Type,          // access pattern from CPU
+    input wire [31:0] bus_write_data,
+    input wire [31:0] bus_write_addr,
+    input wire [2:0]  bus_DM_Type,
     
     // from DM
-    input wire [31:0] DM_read_data,       // data from data memory
+    input wire [31:0] DM_read_data, 
 
     // Keyboard interface
-    input wire [7:0]  key_code,           // keyboard data
-    input wire        key_ready,          // key pressed flag
-    output wire       key_read,           // CPU read acknowledge
-    output wire       key_interrupt,      // keyboard interrupt to CPU
+    input wire [7:0]  key_code,
+    input wire        key_ready, 
+    output wire       key_read_enable, 
+    output wire       key_interrupt, 
     
     // VGA interface
-    output reg         vga_write_enable,            // VGA char write enable
-    output reg  [12:0] vga_write_addr,          // VGA char memory address
-    output reg  [7:0]  vga_write_data,    // VGA char write data
+    output reg         vga_write_enable, 
+    output reg  [12:0] vga_write_addr, 
+    output reg  [7:0]  vga_write_data, 
     
     // to CPU
-    output reg  [31:0] bus_read_data,       // data to CPU
+    output reg  [31:0] bus_read_data,
     // to DM
-    output reg         DM_write_enable,      // signal to write data memory
-    output reg  [31:0] DM_write_addr,        // byte address for data memory
-    output reg  [31:0] DM_write_data,        // data to data memory
-    output reg  [2:0]  DM_Type,              // access pattern for data memory
+    output reg         DM_write_enable, 
+    output reg  [31:0] DM_write_addr,
+    output reg  [31:0] DM_write_data,
+    output reg  [2:0]  DM_Type,
     // to SEG7x16
-    output reg  [31:0] cpuseg7_data,        // cpu seg7 data (from sw instruction)
-    output reg         seg7_write_enable    // signal to write seg7 display
+    output reg  [31:0] cpuseg7_data,  
+    output reg         seg7_write_enable 
 );
+
+    // MMIO map (canonical): 0xFFFF_0000 + offset
+    localparam [31:0] IO_BASE               = 32'hffff_0000;
+    localparam [31:0] SWITCH_ADDR           = IO_BASE + 32'h0004;
+    localparam [31:0] SEG7_ADDR             = IO_BASE + 32'h000c;
+    localparam [31:0] KBD_DATA_ADDR         = IO_BASE + 32'h0010;
+    localparam [31:0] KBD_STATUS_ADDR       = IO_BASE + 32'h0014;
+    localparam [31:0] KBD_INT_EN_ADDR       = IO_BASE + 32'h0018;
+    localparam [31:0] VGA_BASE_ADDR         = IO_BASE + 32'h0020;
+    localparam [12:0] VGA_CHAR_COUNT        = 13'd2400;
+    localparam [31:0] VGA_WINDOW_SIZE_BYTES = 32'd9600;
+    localparam [31:0] VGA_END_ADDR_EXCL     = VGA_BASE_ADDR + VGA_WINDOW_SIZE_BYTES;
+
+    wire is_kbd_data_read = (!bus_write_enable) && (bus_write_addr == KBD_DATA_ADDR);
+    wire is_vga_window = (bus_write_addr >= VGA_BASE_ADDR) && (bus_write_addr < VGA_END_ADDR_EXCL);
+    wire is_vga_word_aligned = (bus_write_addr[1:0] == 2'b00);
+    wire [12:0] vga_word_index = (bus_write_addr - VGA_BASE_ADDR) >> 2;
 
     // Keyboard interrupt enable register
     reg key_interrupt_enable;
@@ -49,23 +66,22 @@ module MIO_BUS(
     assign key_interrupt = key_ready & key_interrupt_enable;
     
     // Keyboard read acknowledgment - use sequential logic to generate falling edge
-    // This allows ps2_keyboard to reliably detect CPU reading the keyboard
-    reg key_read_reg;
+    reg key_read_enable_reg;
     
     always @(posedge clk or posedge reset) begin
         if (reset) begin
-            key_read_reg <= 1;
+            key_read_enable_reg <= 1;
         end
         else begin
-            if (!bus_write_enable && (bus_write_addr[31:0] == 32'hffff_0010)) begin
-                key_read_reg <= 0;   // CPU accesses keyboard port, pull low
+            if (is_kbd_data_read) begin
+                key_read_enable_reg <= 0;
             end
             else begin
-                key_read_reg <= 1;   // Otherwise keep high
+                key_read_enable_reg <= 1;
             end
         end
     end
-    assign key_read = key_read_reg;
+    assign key_read_enable = key_read_enable_reg;
     
     // RAM & IO decode signals
     always @* begin
@@ -82,37 +98,34 @@ module MIO_BUS(
         key_interrupt_write_enable = 0;
         
         case(bus_write_addr[31:0])
-            32'hffff_0004: begin  // switch
+            SWITCH_ADDR: begin  // switch
                 bus_read_data = {16'h0, sw_i};
             end
             
-            32'hffff_000c: begin  // seg7
+            SEG7_ADDR: begin  // seg7
                 cpuseg7_data = bus_write_data;
                 seg7_write_enable = bus_write_enable;
             end
             
-            32'hffff_0010: begin  // keyboard data port
+            KBD_DATA_ADDR: begin  // keyboard data port
                 bus_read_data = {24'h0, key_code};
             end
             
-            32'hffff_0014: begin  // keyboard status/interrupt enable
+            KBD_STATUS_ADDR: begin  // keyboard status/interrupt enable
                 bus_read_data = {30'h0, key_interrupt_enable, key_ready};
             end
             
-            32'hffff_0018: begin  // keyboard interrupt enable write
+            KBD_INT_EN_ADDR: begin  // keyboard interrupt enable write
                 key_interrupt_write_enable = bus_write_enable;
             end
             
             default: begin
-                // VGA char memory window (word-addressed):
-                // 2400 chars * 4 bytes = 9600 bytes, address range 0xFFFF0020 ~ 0xFFFF259F.
-                if ((bus_write_addr >= 32'hffff_0020) && (bus_write_addr < 32'hffff_25A0)) begin
-                    // VGA text window is write-only from CPU side.
-                    // Read from this range returns zero for deterministic behavior.
-                    vga_write_enable = bus_write_enable;
-                    vga_write_addr = (bus_write_addr - 32'hffff_0020) >> 2;
+                // VGA char memory window (word-addressed). write-only
+                if (is_vga_window) begin
+                    vga_write_enable = bus_write_enable && is_vga_word_aligned && (vga_word_index < VGA_CHAR_COUNT);
+                    vga_write_addr = vga_word_index;
                     vga_write_data = bus_write_data[7:0];
-                    if (!bus_write_enable)
+                    if (!bus_write_enable) // read-only
                         bus_read_data = 32'h0000_0000;
                 end else begin
                     DM_write_enable = bus_write_enable;

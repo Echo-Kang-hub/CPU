@@ -164,7 +164,7 @@ result:
 	bne	x4, x0, orig_h1
 	addi	x3, x3, 7
 orig_h1:
-	addi	x2, x30, 0x0040
+	addi	x2, x30, 0x0030
 	sw		x3, 0(x2)
 	
 	srli	x9, x8, 24
@@ -229,34 +229,34 @@ orig_h7:
 orig_h8:
 	sw		x3, 28(x2)
 
-	# Row 2: "Sorted: 0x"
-	add		x2, x30, x0
+	# Row 1: "Sorted: 0x"
+	addi	x2, x30, 0x0140
 	
 	addi	x3, x0, 0x53		# 'S'
-	sw		x3, 0x0080(x2)
+	sw		x3, 0(x2)
 	addi	x3, x0, 0x6F		# 'o'
-	sw		x3, 0x0084(x2)
+	sw		x3, 4(x2)
 	addi	x3, x0, 0x72		# 'r'
-	sw		x3, 0x0088(x2)
+	sw		x3, 8(x2)
 	addi	x3, x0, 0x74		# 't'
-	sw		x3, 0x008C(x2)
+	sw		x3, 12(x2)
 	addi	x3, x0, 0x65		# 'e'
-	sw		x3, 0x0090(x2)
+	sw		x3, 16(x2)
 	addi	x3, x0, 0x64		# 'd'
-	sw		x3, 0x0094(x2)
+	sw		x3, 20(x2)
 	addi	x3, x0, 0x3A		# ':'
-	sw		x3, 0x0098(x2)
+	sw		x3, 24(x2)
 	addi	x3, x0, 0x20		# ' '
-	sw		x3, 0x009C(x2)
+	sw		x3, 28(x2)
 	addi	x3, x0, 0x30		# '0'
-	sw		x3, 0x00A0(x2)
+	sw		x3, 32(x2)
 	addi	x3, x0, 0x78		# 'x'
-	sw		x3, 0x00A4(x2)
+	sw		x3, 36(x2)
 
-	# Display sorted student no at row 2
+	# Display sorted student no at row 1, col 12+
 	lw		x8, 4(x0)
 	
-	addi	x2, x30, 0x00C0
+	addi	x2, x30, 0x0168
 	
 	srli	x9, x8, 28
 	addi	x3, x9, 0x30
