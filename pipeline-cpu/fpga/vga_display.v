@@ -3,7 +3,7 @@
 `timescale 1ns / 1ps
 
 module vga_display(
-    input  wire vga_clk,  // 25MHz VGA pixel clock
+    input  wire vga_clk,
     input  wire cpu_clk,
     input  wire reset,
 
@@ -188,13 +188,14 @@ module vga_display(
         $readmemh("font_data.mem", font_mem);
     end
     
-    // ascii * 16 = ascii << 4
+    // ascii * 16
     wire [10:0] font_addr = {char_code_reg[6:0], 4'b0} + char_row_pixel;
     
     // Pipeline delay to align control with 2-cycle memory read latency.
     reg [2:0] char_col_pixel_d1, char_col_pixel_d2;
     reg       in_text_area_d1, in_text_area_d2;
     reg       valid_d1, valid_d2;
+    reg       hl_d1, hl_d2;
 
     always @(posedge vga_clk or posedge reset) begin
         if (reset) begin
@@ -204,14 +205,18 @@ module vga_display(
             in_text_area_d2   <= 1'b0;
             valid_d1          <= 1'b0;
             valid_d2          <= 1'b0;
+            hl_d1             <= 1'b0;
+            hl_d2             <= 1'b0;
         end else begin
             char_col_pixel_d1 <= char_col_pixel;
             in_text_area_d1   <= in_text_area;
             valid_d1          <= valid;
+            hl_d1             <= char_code_reg[7];
 
             char_col_pixel_d2 <= char_col_pixel_d1;
             in_text_area_d2   <= in_text_area_d1;
             valid_d2          <= valid_d1;
+            hl_d2             <= hl_d1;
         end
     end
 
@@ -227,9 +232,22 @@ module vga_display(
     
     always @(posedge vga_clk) begin
         if (valid_d2) begin
-            vga_r_reg <= pixel_on ? 4'hF : bg_rgb[11:8];
-            vga_g_reg <= pixel_on ? 4'hF : bg_rgb[7:4];
-            vga_b_reg <= pixel_on ? 4'hF : bg_rgb[3:0];
+            if (pixel_on) begin
+                if (hl_d2) begin
+                    // Dim yellow highlight for selected menu options.
+                    vga_r_reg <= 4'hC;
+                    vga_g_reg <= 4'hA;
+                    vga_b_reg <= 4'h2;
+                end else begin
+                    vga_r_reg <= 4'hF;
+                    vga_g_reg <= 4'hF;
+                    vga_b_reg <= 4'hF;
+                end
+            end else begin
+                vga_r_reg <= bg_rgb[11:8];
+                vga_g_reg <= bg_rgb[7:4];
+                vga_b_reg <= bg_rgb[3:0];
+            end
         end else begin
             vga_r_reg <= 4'h0;
             vga_g_reg <= 4'h0;

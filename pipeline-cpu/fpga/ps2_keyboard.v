@@ -50,12 +50,12 @@ module ps2_keyboard(
             // 同步PS/2时钟
             ps2_clk_sync <= {ps2_clk_sync[1:0], ps2_clk};
 
-            // 跨时钟域 key_read_enable 做双触发同步后再检测下降沿
+            // 跨时钟域
             key_read_enable_sync0 <= key_read_enable;
             key_read_enable_sync1 <= key_read_enable_sync0;
             key_read_enable_d1 <= key_read_enable_sync1;
             
-            // 处理读取确认 检测下降沿（从1变0）
+            // 读取确认 检测下降沿（从1变0）
             if (ready_reg && key_read_enable_d1 && !key_read_enable_sync1) begin
                 if (w_ptr != r_ptr) begin  // FIFO非空
                     r_ptr <= r_ptr + 3'd1;

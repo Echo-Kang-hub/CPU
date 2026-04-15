@@ -367,80 +367,80 @@ render_start_options:
     addi    x12, x0, 0x20
     jal     x5, put_char_at
 
-    # line 10: "> EXIT <"
+    # line 10: "> EXIT <" (highlight)
     addi    x10, x0, 15
     addi    x11, x0, 10
-    addi    x12, x0, 0x3E          # >
+    addi    x12, x0, 0xBE          # > + hl
     jal     x5, put_char_at
     addi    x10, x10, 1
     addi    x12, x0, 0x20
     jal     x5, put_char_at
     addi    x10, x10, 1
-    addi    x12, x0, 0x45          # E
+    addi    x12, x0, 0xC5          # E + hl
     jal     x5, put_char_at
     addi    x10, x10, 1
-    addi    x12, x0, 0x58          # X
+    addi    x12, x0, 0xD8          # X + hl
     jal     x5, put_char_at
     addi    x10, x10, 1
-    addi    x12, x0, 0x49          # I
+    addi    x12, x0, 0xC9          # I + hl
     jal     x5, put_char_at
     addi    x10, x10, 1
-    addi    x12, x0, 0x54          # T
+    addi    x12, x0, 0xD4          # T + hl
     jal     x5, put_char_at
     addi    x10, x10, 1
     addi    x12, x0, 0x20
     jal     x5, put_char_at
     addi    x10, x10, 1
-    addi    x12, x0, 0x3C          # <
+    addi    x12, x0, 0xBC          # < + hl
     jal     x5, put_char_at
 
     addi    x5, x30, 0
     jalr    x0, x5, 0
 
 rso_start_sel:
-    # line 8: "> START GAME <"
+    # line 8: "> START GAME <" (highlight)
     addi    x10, x0, 11
     addi    x11, x0, 8
-    addi    x12, x0, 0x3E          # >
+    addi    x12, x0, 0xBE          # > + hl
     jal     x5, put_char_at
     addi    x10, x10, 1
     addi    x12, x0, 0x20
     jal     x5, put_char_at
     addi    x10, x10, 1
-    addi    x12, x0, 0x53          # S
+    addi    x12, x0, 0xD3          # S + hl
     jal     x5, put_char_at
     addi    x10, x10, 1
-    addi    x12, x0, 0x54          # T
+    addi    x12, x0, 0xD4          # T + hl
     jal     x5, put_char_at
     addi    x10, x10, 1
-    addi    x12, x0, 0x41          # A
+    addi    x12, x0, 0xC1          # A + hl
     jal     x5, put_char_at
     addi    x10, x10, 1
-    addi    x12, x0, 0x52          # R
+    addi    x12, x0, 0xD2          # R + hl
     jal     x5, put_char_at
     addi    x10, x10, 1
-    addi    x12, x0, 0x54          # T
-    jal     x5, put_char_at
-    addi    x10, x10, 1
-    addi    x12, x0, 0x20
-    jal     x5, put_char_at
-    addi    x10, x10, 1
-    addi    x12, x0, 0x47          # G
-    jal     x5, put_char_at
-    addi    x10, x10, 1
-    addi    x12, x0, 0x41          # A
-    jal     x5, put_char_at
-    addi    x10, x10, 1
-    addi    x12, x0, 0x4D          # M
-    jal     x5, put_char_at
-    addi    x10, x10, 1
-    addi    x12, x0, 0x45          # E
+    addi    x12, x0, 0xD4          # T + hl
     jal     x5, put_char_at
     addi    x10, x10, 1
     addi    x12, x0, 0x20
     jal     x5, put_char_at
     addi    x10, x10, 1
-    addi    x12, x0, 0x3C          # <
+    addi    x12, x0, 0xC7          # G + hl
+    jal     x5, put_char_at
+    addi    x10, x10, 1
+    addi    x12, x0, 0xC1          # A + hl
+    jal     x5, put_char_at
+    addi    x10, x10, 1
+    addi    x12, x0, 0xCD          # M + hl
+    jal     x5, put_char_at
+    addi    x10, x10, 1
+    addi    x12, x0, 0xC5          # E + hl
+    jal     x5, put_char_at
+    addi    x10, x10, 1
+    addi    x12, x0, 0x20
+    jal     x5, put_char_at
+    addi    x10, x10, 1
+    addi    x12, x0, 0xBC          # < + hl
     jal     x5, put_char_at
 
     # line 10: "  EXIT      "
@@ -481,18 +481,66 @@ start_menu_loop:
 sm_loop:
     jal     x5, read_make_key_block
 
-    # Enter confirms current item
+    # Enter confirms current item (set2/set1/ascii)
     addi    x7, x0, 0x5A
     beq     x25, x7, sm_confirm
+    addi    x7, x0, 0x1C
+    beq     x25, x7, sm_confirm
+    addi    x7, x0, 0x0D
+    beq     x25, x7, sm_confirm
+    addi    x7, x0, 0x0A
+    beq     x25, x7, sm_confirm
 
-    # W/S/A/D toggles selection
+    # W/S/A/D toggles selection (Set-2 + Set-1 + ASCII fallback)
     addi    x7, x0, 0x1D          # W
+    beq     x25, x7, sm_toggle
+    addi    x7, x0, 0x11          # W (set1)
+    beq     x25, x7, sm_toggle
+    addi    x7, x0, 0x57          # 'W'
+    beq     x25, x7, sm_toggle
+    addi    x7, x0, 0x77          # 'w'
     beq     x25, x7, sm_toggle
     addi    x7, x0, 0x1B          # S
     beq     x25, x7, sm_toggle
+    addi    x7, x0, 0x1F          # S (set1)
+    beq     x25, x7, sm_toggle
+    addi    x7, x0, 0x53          # 'S'
+    beq     x25, x7, sm_toggle
+    addi    x7, x0, 0x73          # 's'
+    beq     x25, x7, sm_toggle
     addi    x7, x0, 0x1C          # A
     beq     x25, x7, sm_toggle
+    addi    x7, x0, 0x1E          # A (set1)
+    beq     x25, x7, sm_toggle
+    addi    x7, x0, 0x41          # 'A'
+    beq     x25, x7, sm_toggle
+    addi    x7, x0, 0x61          # 'a'
+    beq     x25, x7, sm_toggle
     addi    x7, x0, 0x23          # D
+    beq     x25, x7, sm_toggle
+    addi    x7, x0, 0x20          # D (set1)
+    beq     x25, x7, sm_toggle
+    addi    x7, x0, 0x44          # 'D'
+    beq     x25, x7, sm_toggle
+    addi    x7, x0, 0x64          # 'd'
+    beq     x25, x7, sm_toggle
+
+    # Arrow keys (set2 + set1 make codes after E0 prefix)
+    addi    x7, x0, 0x75          # Up
+    beq     x25, x7, sm_toggle
+    addi    x7, x0, 0x48          # Up (set1)
+    beq     x25, x7, sm_toggle
+    addi    x7, x0, 0x72          # Down
+    beq     x25, x7, sm_toggle
+    addi    x7, x0, 0x50          # Down (set1)
+    beq     x25, x7, sm_toggle
+    addi    x7, x0, 0x6B          # Left
+    beq     x25, x7, sm_toggle
+    addi    x7, x0, 0x4B          # Left (set1)
+    beq     x25, x7, sm_toggle
+    addi    x7, x0, 0x74          # Right
+    beq     x25, x7, sm_toggle
+    addi    x7, x0, 0x4D          # Right (set1)
     beq     x25, x7, sm_toggle
     jal     x0, sm_loop
 
@@ -642,71 +690,71 @@ render_over_options:
     addi    x12, x0, 0x20
     jal     x5, put_char_at
 
-    # line 10: "> EXIT <"
+    # line 10: "> EXIT <" (highlight)
     addi    x10, x0, 15
     addi    x11, x0, 10
-    addi    x12, x0, 0x3E          # >
+    addi    x12, x0, 0xBE          # > + hl
     jal     x5, put_char_at
     addi    x10, x10, 1
     addi    x12, x0, 0x20
     jal     x5, put_char_at
     addi    x10, x10, 1
-    addi    x12, x0, 0x45          # E
+    addi    x12, x0, 0xC5          # E + hl
     jal     x5, put_char_at
     addi    x10, x10, 1
-    addi    x12, x0, 0x58          # X
+    addi    x12, x0, 0xD8          # X + hl
     jal     x5, put_char_at
     addi    x10, x10, 1
-    addi    x12, x0, 0x49          # I
+    addi    x12, x0, 0xC9          # I + hl
     jal     x5, put_char_at
     addi    x10, x10, 1
-    addi    x12, x0, 0x54          # T
+    addi    x12, x0, 0xD4          # T + hl
     jal     x5, put_char_at
     addi    x10, x10, 1
     addi    x12, x0, 0x20
     jal     x5, put_char_at
     addi    x10, x10, 1
-    addi    x12, x0, 0x3C          # <
+    addi    x12, x0, 0xBC          # < + hl
     jal     x5, put_char_at
 
     addi    x5, x30, 0
     jalr    x0, x5, 0
 
 roo_restart_sel:
-    # line 8: "> RESTART <"
+    # line 8: "> RESTART <" (highlight)
     addi    x10, x0, 12
     addi    x11, x0, 8
-    addi    x12, x0, 0x3E          # >
+    addi    x12, x0, 0xBE          # > + hl
     jal     x5, put_char_at
     addi    x10, x10, 1
     addi    x12, x0, 0x20
     jal     x5, put_char_at
     addi    x10, x10, 1
-    addi    x12, x0, 0x52          # R
+    addi    x12, x0, 0xD2          # R + hl
     jal     x5, put_char_at
     addi    x10, x10, 1
-    addi    x12, x0, 0x45          # E
+    addi    x12, x0, 0xC5          # E + hl
     jal     x5, put_char_at
     addi    x10, x10, 1
-    addi    x12, x0, 0x53          # S
+    addi    x12, x0, 0xD3          # S + hl
     jal     x5, put_char_at
     addi    x10, x10, 1
-    addi    x12, x0, 0x54          # T
+    addi    x12, x0, 0xD4          # T + hl
     jal     x5, put_char_at
     addi    x10, x10, 1
-    addi    x12, x0, 0x41          # A
+    addi    x12, x0, 0xC1          # A + hl
     jal     x5, put_char_at
     addi    x10, x10, 1
-    addi    x12, x0, 0x52          # R
+    addi    x12, x0, 0xD2          # R + hl
     jal     x5, put_char_at
     addi    x10, x10, 1
-    addi    x12, x0, 0x54          # T
+    addi    x12, x0, 0xD4          # T + hl
     jal     x5, put_char_at
     addi    x10, x10, 1
     addi    x12, x0, 0x20
     jal     x5, put_char_at
     addi    x10, x10, 1
-    addi    x12, x0, 0x3C          # <
+    addi    x12, x0, 0xBC          # < + hl
     jal     x5, put_char_at
 
     # line 10: "  EXIT     "
@@ -747,18 +795,66 @@ over_menu_loop:
 om_loop:
     jal     x5, read_make_key_block
 
-    # Enter confirms current item
+    # Enter confirms current item (set2/set1/ascii)
     addi    x7, x0, 0x5A
     beq     x25, x7, om_confirm
+    addi    x7, x0, 0x1C
+    beq     x25, x7, om_confirm
+    addi    x7, x0, 0x0D
+    beq     x25, x7, om_confirm
+    addi    x7, x0, 0x0A
+    beq     x25, x7, om_confirm
 
-    # W/S/A/D toggles selection
+    # W/S/A/D toggles selection (Set-2 + Set-1 + ASCII fallback)
     addi    x7, x0, 0x1D          # W
+    beq     x25, x7, om_toggle
+    addi    x7, x0, 0x11          # W (set1)
+    beq     x25, x7, om_toggle
+    addi    x7, x0, 0x57          # 'W'
+    beq     x25, x7, om_toggle
+    addi    x7, x0, 0x77          # 'w'
     beq     x25, x7, om_toggle
     addi    x7, x0, 0x1B          # S
     beq     x25, x7, om_toggle
+    addi    x7, x0, 0x1F          # S (set1)
+    beq     x25, x7, om_toggle
+    addi    x7, x0, 0x53          # 'S'
+    beq     x25, x7, om_toggle
+    addi    x7, x0, 0x73          # 's'
+    beq     x25, x7, om_toggle
     addi    x7, x0, 0x1C          # A
     beq     x25, x7, om_toggle
+    addi    x7, x0, 0x1E          # A (set1)
+    beq     x25, x7, om_toggle
+    addi    x7, x0, 0x41          # 'A'
+    beq     x25, x7, om_toggle
+    addi    x7, x0, 0x61          # 'a'
+    beq     x25, x7, om_toggle
     addi    x7, x0, 0x23          # D
+    beq     x25, x7, om_toggle
+    addi    x7, x0, 0x20          # D (set1)
+    beq     x25, x7, om_toggle
+    addi    x7, x0, 0x44          # 'D'
+    beq     x25, x7, om_toggle
+    addi    x7, x0, 0x64          # 'd'
+    beq     x25, x7, om_toggle
+
+    # Arrow keys (set2 + set1 make codes after E0 prefix)
+    addi    x7, x0, 0x75          # Up
+    beq     x25, x7, om_toggle
+    addi    x7, x0, 0x48          # Up (set1)
+    beq     x25, x7, om_toggle
+    addi    x7, x0, 0x72          # Down
+    beq     x25, x7, om_toggle
+    addi    x7, x0, 0x50          # Down (set1)
+    beq     x25, x7, om_toggle
+    addi    x7, x0, 0x6B          # Left
+    beq     x25, x7, om_toggle
+    addi    x7, x0, 0x4B          # Left (set1)
+    beq     x25, x7, om_toggle
+    addi    x7, x0, 0x74          # Right
+    beq     x25, x7, om_toggle
+    addi    x7, x0, 0x4D          # Right (set1)
     beq     x25, x7, om_toggle
     jal     x0, om_loop
 
@@ -838,27 +934,56 @@ pk_set_break:
 pk_decode:
     lw      x9, 12(x18)            # current dir
 
-    # W (0x1D) => up(0), cannot from down(2)
+    # W set2(0x1D) / set1(0x11) / ASCII W/w => up(0)
     addi    x7, x0, 0x1D
+    beq     x25, x7, pk_go_up
+    addi    x7, x0, 0x11
+    beq     x25, x7, pk_go_up
+    addi    x7, x0, 0x57
+    beq     x25, x7, pk_go_up
+    addi    x7, x0, 0x77
     bne     x25, x7, pk_check_s
+pk_go_up:
     addi    x7, x0, 2
     beq     x9, x7, pk_done
     sw      x0, 12(x18)
     jalr    x0, x5, 0
 
 pk_check_s:
-    # S (0x1B) => down(2), cannot from up(0)
+    # S set2/set1/ASCII or ArrowDown set2/set1
     addi    x7, x0, 0x1B
+    beq     x25, x7, pk_go_down
+    addi    x7, x0, 0x1F
+    beq     x25, x7, pk_go_down
+    addi    x7, x0, 0x53
+    beq     x25, x7, pk_go_down
+    addi    x7, x0, 0x73
+    beq     x25, x7, pk_go_down
+    addi    x7, x0, 0x72
+    beq     x25, x7, pk_go_down
+    addi    x7, x0, 0x50
     bne     x25, x7, pk_check_a
+pk_go_down:
     beq     x9, x0, pk_done
     addi    x7, x0, 2
     sw      x7, 12(x18)
     jalr    x0, x5, 0
 
 pk_check_a:
-    # A (0x1C) => left(3), cannot from right(1)
+    # A set2/set1/ASCII or ArrowLeft set2/set1
     addi    x7, x0, 0x1C
+    beq     x25, x7, pk_go_left
+    addi    x7, x0, 0x1E
+    beq     x25, x7, pk_go_left
+    addi    x7, x0, 0x41
+    beq     x25, x7, pk_go_left
+    addi    x7, x0, 0x61
+    beq     x25, x7, pk_go_left
+    addi    x7, x0, 0x6B
+    beq     x25, x7, pk_go_left
+    addi    x7, x0, 0x4B
     bne     x25, x7, pk_check_d
+pk_go_left:
     addi    x7, x0, 1
     beq     x9, x7, pk_done
     addi    x7, x0, 3
@@ -866,13 +991,36 @@ pk_check_a:
     jalr    x0, x5, 0
 
 pk_check_d:
-    # D (0x23) => right(1), cannot from left(3)
+    # D set2/set1/ASCII or ArrowRight set2/set1
     addi    x7, x0, 0x23
-    bne     x25, x7, pk_done
+    beq     x25, x7, pk_go_right
+    addi    x7, x0, 0x20
+    beq     x25, x7, pk_go_right
+    addi    x7, x0, 0x44
+    beq     x25, x7, pk_go_right
+    addi    x7, x0, 0x64
+    beq     x25, x7, pk_go_right
+    addi    x7, x0, 0x74
+    beq     x25, x7, pk_go_right
+    addi    x7, x0, 0x4D
+    bne     x25, x7, pk_check_up_arrow
+pk_go_right:
     addi    x7, x0, 3
     beq     x9, x7, pk_done
     addi    x7, x0, 1
     sw      x7, 12(x18)
+    jalr    x0, x5, 0
+
+pk_check_up_arrow:
+    # ArrowUp set2(0x75)/set1(0x48) => up(0), cannot from down(2)
+    addi    x7, x0, 0x75
+    beq     x25, x7, pk_go_up_arrow
+    addi    x7, x0, 0x48
+    bne     x25, x7, pk_done
+pk_go_up_arrow:
+    addi    x7, x0, 2
+    beq     x9, x7, pk_done
+    sw      x0, 12(x18)
 
 pk_done:
     jalr    x0, x5, 0

@@ -242,23 +242,8 @@ su_done:
 # draw_title
 #################################################
 draw_title:
-    add     x2, x27, x0
-
-    addi    x3, x0, 0x54   # T
-    sw      x3, 0(x2)
-    addi    x3, x0, 0x79   # y
-    sw      x3, 4(x2)
-    addi    x3, x0, 0x70   # p
-    sw      x3, 8(x2)
-    addi    x3, x0, 0x65   # e
-    sw      x3, 12(x2)
-    addi    x3, x0, 0x3A   # :
-    sw      x3, 16(x2)
-    addi    x3, x0, 0x20   # ' '
-    sw      x3, 20(x2)
-
-    # Start typing area from row 1, col 0
-    addi    x21, x0, 1
+    # Full-screen typing: start from row 0, col 0
+    addi    x21, x0, 0
     addi    x20, x0, 0
 
     jalr    x0, x5, 0
@@ -353,6 +338,9 @@ put_char_raw:
 # input: x17 ascii
 #################################################
 put_char:
+    # Save caller return address, because we may call scroll_up
+    addi    x30, x5, 0
+
     # Inline write to avoid clobbering caller return address (x5)
     # idx = row*80 + col = row*64 + row*16 + col
     slli    x10, x21, 6
@@ -379,6 +367,7 @@ put_char:
     addi    x21, x0, 29
 
 pc_done:
+    addi    x5, x30, 0
     jalr    x0, x5, 0
 
 #################################################
