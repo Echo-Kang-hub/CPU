@@ -1,20 +1,21 @@
 ############################################################
 # snake_vga.asm
 #
-# VGA + Keyboard Snake Game (for pipeline-cpu)
+# VGA + Keyboard Snake Game (pipeline-cpu)
 #
 # MMIO map:
 #   0xFFFF_0010 : keyboard data (scan code)
 #   0xFFFF_0014 : keyboard status (bit0=ready)
 #   0xFFFF_0020 : VGA text base (word-addressed char cells)
 #
-# Features:
-#   - Start screen (press Enter or WASD to start)
-#   - WASD control
-#   - Wrap-around (pass through walls)
-#   - Score shown at top-right
-#   - Game over screen with final score
-#   - Press Enter to restart
+# Gameplay:
+#   - Visible border and inner play area
+#   - Start/Exit menu with keyboard selection highlight
+#   - Game Over menu with Restart/Exit selection highlight
+#   - WASD movement
+#   - Score and speed display
+#   - Pseudo-random food placement
+#   - Death on wall hit or self hit
 ############################################################
 
 .text
@@ -29,28 +30,127 @@ _start:
     # RAM base for game state
     addi    x18, x0, 0x0200       # vars base
 
-    # init persistent state
+    # persistent init
     addi    x7, x0, 1
-    sw      x7, 36(x18)           # seed = 1
-    sw      x0, 24(x18)           # break_pending = 0
+    sw      x7, 36(x18)           # seed
+    sw      x0, 24(x18)           # break_pending
+    sw      x0, 40(x18)           # menu_sel
 
 main_restart:
     jal     x5, draw_start_screen
-    jal     x5, wait_start_key
+    jal     x5, start_menu_loop   # x6=1 start, x6=0 exit
+    bne     x6, x0, start_game
+    jal     x0, program_exit
+
+start_game:
     jal     x5, init_game
 
 game_loop:
     jal     x5, delay_tick
     jal     x5, poll_key_nonblock
-    jal     x5, snake_step
-    beq     x6, x0, game_continue  # x6=1 => game over
+    jal     x5, snake_step        # x6=1 game over
+    beq     x6, x0, game_loop
 
     jal     x5, draw_game_over
-    jal     x5, wait_start_key
-    jal     x0, main_restart
+    jal     x5, over_menu_loop    # x6=1 restart, x6=0 exit
+    bne     x6, x0, main_restart
 
-game_continue:
-    jal     x0, game_loop
+program_exit:
+    jal     x5, clear_screen
+
+    # BYE
+    addi    x10, x0, 38
+    addi    x11, x0, 14
+    addi    x12, x0, 0x42          # B
+    jal     x5, put_char_at
+    addi    x10, x10, 1
+    addi    x12, x0, 0x59          # Y
+    jal     x5, put_char_at
+    addi    x10, x10, 1
+    addi    x12, x0, 0x45          # E
+    jal     x5, put_char_at
+
+halt_loop:
+    jal     x0, halt_loop
+
+############################################################
+# init_game
+# vars layout from x18=0x0200
+#  0 : food_x (word)
+#  4 : food_y
+#  8 : snake_len
+# 12 : direction (0=up,1=right,2=down,3=left)
+# 16 : score
+# 20 : game_over flag (reserved)
+# 24 : break_pending
+# 28 : tail_x
+# 32 : tail_y
+# 36 : seed
+# 40 : menu_sel
+# snake_x bytes: 0x0300..0x037F
+# snake_y bytes: 0x0380..0x03FF
+############################################################
+init_game:
+    addi    x30, x5, 0
+
+    jal     x5, clear_screen
+    jal     x5, draw_border
+
+    # score=0, game_over=0, break_pending=0
+    sw      x0, 16(x18)
+    sw      x0, 20(x18)
+    sw      x0, 24(x18)
+
+    # direction = right (1)
+    addi    x7, x0, 1
+    sw      x7, 12(x18)
+
+    # snake_len = 5
+    addi    x7, x0, 5
+    sw      x7, 8(x18)
+
+    # initial snake on row 15: (40,15)(39,15)(38,15)(37,15)(36,15)
+    addi    x14, x0, 0x0300
+    addi    x15, x0, 40
+    sb      x15, 0(x14)
+    addi    x15, x0, 39
+    sb      x15, 1(x14)
+    addi    x15, x0, 38
+    sb      x15, 2(x14)
+    addi    x15, x0, 37
+    sb      x15, 3(x14)
+    addi    x15, x0, 36
+    sb      x15, 4(x14)
+
+    addi    x14, x0, 0x0380
+    addi    x15, x0, 15
+    sb      x15, 0(x14)
+    sb      x15, 1(x14)
+    sb      x15, 2(x14)
+    sb      x15, 3(x14)
+    sb      x15, 4(x14)
+
+    # draw snake
+    addi    x10, x0, 40
+    addi    x11, x0, 15
+    addi    x12, x0, 0x3E          # '>' head
+    jal     x5, put_char_at
+
+    addi    x10, x0, 39
+    addi    x12, x0, 0x6F          # 'o' body
+    jal     x5, put_char_at
+    addi    x10, x0, 38
+    jal     x5, put_char_at
+    addi    x10, x0, 37
+    jal     x5, put_char_at
+    addi    x10, x0, 36
+    jal     x5, put_char_at
+
+    jal     x5, place_food
+    jal     x5, draw_score_speed
+
+    addi    x5, x30, 0
+    jalr    x0, x5, 0
 
 ############################################################
 # draw_start_screen
@@ -59,9 +159,9 @@ draw_start_screen:
     addi    x30, x5, 0
     jal     x5, clear_screen
 
-    # line: "SNAKE GAME"
+    # line: SNAKE GAME
     addi    x10, x0, 35
-    addi    x11, x0, 10
+    addi    x11, x0, 8
     addi    x12, x0, 0x53          # S
     jal     x5, put_char_at
     addi    x10, x10, 1
@@ -77,7 +177,7 @@ draw_start_screen:
     addi    x12, x0, 0x45          # E
     jal     x5, put_char_at
     addi    x10, x10, 1
-    addi    x12, x0, 0x20          # ' '
+    addi    x12, x0, 0x20
     jal     x5, put_char_at
     addi    x10, x10, 1
     addi    x12, x0, 0x47          # G
@@ -92,9 +192,9 @@ draw_start_screen:
     addi    x12, x0, 0x45          # E
     jal     x5, put_char_at
 
-    # line: "WASD TO MOVE"
+    # line: WASD TO MOVE
     addi    x10, x0, 34
-    addi    x11, x0, 13
+    addi    x11, x0, 11
     addi    x12, x0, 0x57          # W
     jal     x5, put_char_at
     addi    x10, x10, 1
@@ -131,43 +231,16 @@ draw_start_screen:
     addi    x12, x0, 0x45          # E
     jal     x5, put_char_at
 
-    # line: "PRESS ENTER TO START"
-    addi    x10, x0, 30
-    addi    x11, x0, 16
-    addi    x12, x0, 0x50          # P
+    # line: HIT WALL OR TAIL = GAME OVER
+    addi    x10, x0, 26
+    addi    x11, x0, 13
+    addi    x12, x0, 0x48          # H
     jal     x5, put_char_at
     addi    x10, x10, 1
-    addi    x12, x0, 0x52          # R
-    jal     x5, put_char_at
-    addi    x10, x10, 1
-    addi    x12, x0, 0x45          # E
-    jal     x5, put_char_at
-    addi    x10, x10, 1
-    addi    x12, x0, 0x53          # S
-    jal     x5, put_char_at
-    addi    x10, x10, 1
-    addi    x12, x0, 0x53          # S
-    jal     x5, put_char_at
-    addi    x10, x10, 1
-    addi    x12, x0, 0x20
-    jal     x5, put_char_at
-    addi    x10, x10, 1
-    addi    x12, x0, 0x45          # E
-    jal     x5, put_char_at
-    addi    x10, x10, 1
-    addi    x12, x0, 0x4E          # N
+    addi    x12, x0, 0x49          # I
     jal     x5, put_char_at
     addi    x10, x10, 1
     addi    x12, x0, 0x54          # T
-    jal     x5, put_char_at
-
-    # line: "OR W A S D"
-    addi    x10, x0, 35
-    addi    x11, x0, 18
-    addi    x12, x0, 0x4F          # O
-    jal     x5, put_char_at
-    addi    x10, x10, 1
-    addi    x12, x0, 0x52          # R
     jal     x5, put_char_at
     addi    x10, x10, 1
     addi    x12, x0, 0x20
@@ -176,22 +249,85 @@ draw_start_screen:
     addi    x12, x0, 0x57          # W
     jal     x5, put_char_at
     addi    x10, x10, 1
+    addi    x12, x0, 0x41          # A
+    jal     x5, put_char_at
+    addi    x10, x10, 1
+    addi    x12, x0, 0x4C          # L
+    jal     x5, put_char_at
+    addi    x10, x10, 1
+    addi    x12, x0, 0x4C          # L
+    jal     x5, put_char_at
+    addi    x10, x10, 1
     addi    x12, x0, 0x20
+    jal     x5, put_char_at
+    addi    x10, x10, 1
+    addi    x12, x0, 0x4F          # O
+    jal     x5, put_char_at
+    addi    x10, x10, 1
+    addi    x12, x0, 0x52          # R
+    jal     x5, put_char_at
+    addi    x10, x10, 1
+    addi    x12, x0, 0x20
+    jal     x5, put_char_at
+    addi    x10, x10, 1
+    addi    x12, x0, 0x54          # T
     jal     x5, put_char_at
     addi    x10, x10, 1
     addi    x12, x0, 0x41          # A
     jal     x5, put_char_at
     addi    x10, x10, 1
+    addi    x12, x0, 0x49          # I
+    jal     x5, put_char_at
+    addi    x10, x10, 1
+    addi    x12, x0, 0x4C          # L
+    jal     x5, put_char_at
+    addi    x10, x10, 1
     addi    x12, x0, 0x20
     jal     x5, put_char_at
     addi    x10, x10, 1
-    addi    x12, x0, 0x53          # S
+    addi    x12, x0, 0x3D          # =
     jal     x5, put_char_at
     addi    x10, x10, 1
     addi    x12, x0, 0x20
     jal     x5, put_char_at
     addi    x10, x10, 1
-    addi    x12, x0, 0x44          # D
+    addi    x12, x0, 0x47          # G
+    jal     x5, put_char_at
+    addi    x10, x10, 1
+    addi    x12, x0, 0x41          # A
+    jal     x5, put_char_at
+    addi    x10, x10, 1
+    addi    x12, x0, 0x4D          # M
+    jal     x5, put_char_at
+    addi    x10, x10, 1
+    addi    x12, x0, 0x45          # E
+    jal     x5, put_char_at
+    addi    x10, x10, 1
+    addi    x12, x0, 0x20
+    jal     x5, put_char_at
+    addi    x10, x10, 1
+    addi    x12, x0, 0x4F          # O
+    jal     x5, put_char_at
+    addi    x10, x10, 1
+    addi    x12, x0, 0x56          # V
+    jal     x5, put_char_at
+    addi    x10, x10, 1
+    addi    x12, x0, 0x45          # E
+    jal     x5, put_char_at
+    addi    x10, x10, 1
+    addi    x12, x0, 0x52          # R
+    jal     x5, put_char_at
+
+    # line: ENTER TO CONFIRM
+    addi    x10, x0, 32
+    addi    x11, x0, 15
+    addi    x12, x0, 0x45          # E
+    jal     x5, put_char_at
+    addi    x10, x10, 1
+    addi    x12, x0, 0x4E          # N
+    jal     x5, put_char_at
+    addi    x10, x10, 1
+    addi    x12, x0, 0x54          # T
     jal     x5, put_char_at
     addi    x10, x10, 1
     addi    x12, x0, 0x45          # E
@@ -212,6 +348,49 @@ draw_start_screen:
     addi    x12, x0, 0x20
     jal     x5, put_char_at
     addi    x10, x10, 1
+    addi    x12, x0, 0x43          # C
+    jal     x5, put_char_at
+    addi    x10, x10, 1
+    addi    x12, x0, 0x4F          # O
+    jal     x5, put_char_at
+    addi    x10, x10, 1
+    addi    x12, x0, 0x4E          # N
+    jal     x5, put_char_at
+    addi    x10, x10, 1
+    addi    x12, x0, 0x46          # F
+    jal     x5, put_char_at
+    addi    x10, x10, 1
+    addi    x12, x0, 0x49          # I
+    jal     x5, put_char_at
+    addi    x10, x10, 1
+    addi    x12, x0, 0x52          # R
+    jal     x5, put_char_at
+    addi    x10, x10, 1
+    addi    x12, x0, 0x4D          # M
+    jal     x5, put_char_at
+
+    # default menu selection: START
+    sw      x0, 40(x18)
+    jal     x5, render_start_options
+
+    addi    x5, x30, 0
+    jalr    x0, x5, 0
+
+############################################################
+# render_start_options
+# menu_sel: 0=START, 1=EXIT
+############################################################
+render_start_options:
+    addi    x30, x5, 0
+    lw      x7, 40(x18)
+    beq     x7, x0, rso_start_sel
+
+    # line 18: "  START GAME  "
+    addi    x10, x0, 33
+    addi    x11, x0, 18
+    addi    x12, x0, 0x20
+    jal     x5, put_char_at
+    addi    x10, x10, 1
     addi    x12, x0, 0x53          # S
     jal     x5, put_char_at
     addi    x10, x10, 1
@@ -226,132 +405,473 @@ draw_start_screen:
     addi    x10, x10, 1
     addi    x12, x0, 0x54          # T
     jal     x5, put_char_at
+    addi    x10, x10, 1
+    addi    x12, x0, 0x20
+    jal     x5, put_char_at
+    addi    x10, x10, 1
+    addi    x12, x0, 0x47          # G
+    jal     x5, put_char_at
+    addi    x10, x10, 1
+    addi    x12, x0, 0x41          # A
+    jal     x5, put_char_at
+    addi    x10, x10, 1
+    addi    x12, x0, 0x4D          # M
+    jal     x5, put_char_at
+    addi    x10, x10, 1
+    addi    x12, x0, 0x45          # E
+    jal     x5, put_char_at
+    addi    x10, x10, 1
+    addi    x12, x0, 0x20
+    jal     x5, put_char_at
+    addi    x10, x10, 1
+    addi    x12, x0, 0x20
+    jal     x5, put_char_at
+
+    # line 20: "> EXIT <"
+    addi    x10, x0, 36
+    addi    x11, x0, 20
+    addi    x12, x0, 0x3E          # >
+    jal     x5, put_char_at
+    addi    x10, x10, 1
+    addi    x12, x0, 0x20
+    jal     x5, put_char_at
+    addi    x10, x10, 1
+    addi    x12, x0, 0x45          # E
+    jal     x5, put_char_at
+    addi    x10, x10, 1
+    addi    x12, x0, 0x58          # X
+    jal     x5, put_char_at
+    addi    x10, x10, 1
+    addi    x12, x0, 0x49          # I
+    jal     x5, put_char_at
+    addi    x10, x10, 1
+    addi    x12, x0, 0x54          # T
+    jal     x5, put_char_at
+    addi    x10, x10, 1
+    addi    x12, x0, 0x20
+    jal     x5, put_char_at
+    addi    x10, x10, 1
+    addi    x12, x0, 0x3C          # <
+    jal     x5, put_char_at
+
+    addi    x5, x30, 0
+    jalr    x0, x5, 0
+
+rso_start_sel:
+    # line 18: "> START GAME <"
+    addi    x10, x0, 32
+    addi    x11, x0, 18
+    addi    x12, x0, 0x3E          # >
+    jal     x5, put_char_at
+    addi    x10, x10, 1
+    addi    x12, x0, 0x20
+    jal     x5, put_char_at
+    addi    x10, x10, 1
+    addi    x12, x0, 0x53          # S
+    jal     x5, put_char_at
+    addi    x10, x10, 1
+    addi    x12, x0, 0x54          # T
+    jal     x5, put_char_at
+    addi    x10, x10, 1
+    addi    x12, x0, 0x41          # A
+    jal     x5, put_char_at
+    addi    x10, x10, 1
+    addi    x12, x0, 0x52          # R
+    jal     x5, put_char_at
+    addi    x10, x10, 1
+    addi    x12, x0, 0x54          # T
+    jal     x5, put_char_at
+    addi    x10, x10, 1
+    addi    x12, x0, 0x20
+    jal     x5, put_char_at
+    addi    x10, x10, 1
+    addi    x12, x0, 0x47          # G
+    jal     x5, put_char_at
+    addi    x10, x10, 1
+    addi    x12, x0, 0x41          # A
+    jal     x5, put_char_at
+    addi    x10, x10, 1
+    addi    x12, x0, 0x4D          # M
+    jal     x5, put_char_at
+    addi    x10, x10, 1
+    addi    x12, x0, 0x45          # E
+    jal     x5, put_char_at
+    addi    x10, x10, 1
+    addi    x12, x0, 0x20
+    jal     x5, put_char_at
+    addi    x10, x10, 1
+    addi    x12, x0, 0x3C          # <
+    jal     x5, put_char_at
+
+    # line 20: "  EXIT      "
+    addi    x10, x0, 36
+    addi    x11, x0, 20
+    addi    x12, x0, 0x20
+    jal     x5, put_char_at
+    addi    x10, x10, 1
+    addi    x12, x0, 0x20
+    jal     x5, put_char_at
+    addi    x10, x10, 1
+    addi    x12, x0, 0x45          # E
+    jal     x5, put_char_at
+    addi    x10, x10, 1
+    addi    x12, x0, 0x58          # X
+    jal     x5, put_char_at
+    addi    x10, x10, 1
+    addi    x12, x0, 0x49          # I
+    jal     x5, put_char_at
+    addi    x10, x10, 1
+    addi    x12, x0, 0x54          # T
+    jal     x5, put_char_at
+    addi    x10, x10, 1
+    addi    x12, x0, 0x20
+    jal     x5, put_char_at
+    addi    x10, x10, 1
+    addi    x12, x0, 0x20
+    jal     x5, put_char_at
 
     addi    x5, x30, 0
     jalr    x0, x5, 0
 
 ############################################################
-# init_game
-# vars layout from x18=0x0200
-#  0 : food_x (word)
-#  4 : food_y
-#  8 : snake_len
-# 12 : direction (0=up,1=right,2=down,3=left)
-# 16 : score
-# 20 : game_over flag
-# 24 : break_pending
-# 28 : tail_x
-# 32 : tail_y
-# 36 : seed
-# snake_x bytes: 0x0300..0x037F
-# snake_y bytes: 0x0380..0x03FF
+# start_menu_loop
+# output: x6=1 start game, x6=0 exit
 ############################################################
-init_game:
+start_menu_loop:
+sm_loop:
+    jal     x5, read_make_key_block
+
+    # Enter confirms current item
+    addi    x7, x0, 0x5A
+    beq     x25, x7, sm_confirm
+
+    # W/S/A/D toggles selection
+    addi    x7, x0, 0x1D          # W
+    beq     x25, x7, sm_toggle
+    addi    x7, x0, 0x1B          # S
+    beq     x25, x7, sm_toggle
+    addi    x7, x0, 0x1C          # A
+    beq     x25, x7, sm_toggle
+    addi    x7, x0, 0x23          # D
+    beq     x25, x7, sm_toggle
+    jal     x0, sm_loop
+
+sm_toggle:
+    lw      x7, 40(x18)
+    xori    x7, x7, 1
+    sw      x7, 40(x18)
+    jal     x5, render_start_options
+    jal     x0, sm_loop
+
+sm_confirm:
+    lw      x7, 40(x18)
+    bne     x7, x0, sm_exit
+    addi    x6, x0, 1
+    jalr    x0, x5, 0
+
+sm_exit:
+    addi    x6, x0, 0
+    jalr    x0, x5, 0
+
+############################################################
+# draw_game_over
+############################################################
+draw_game_over:
     addi    x30, x5, 0
     jal     x5, clear_screen
 
-    # score=0, game_over=0, break_pending=0
-    sw      x0, 16(x18)
-    sw      x0, 20(x18)
-    sw      x0, 24(x18)
-
-    # direction = right (1)
-    addi    x7, x0, 1
-    sw      x7, 12(x18)
-
-    # snake_len = 5
-    addi    x7, x0, 5
-    sw      x7, 8(x18)
-
-    # initial snake on row 16: (40,16)(39,16)(38,16)(37,16)(36,16)
-    addi    x14, x0, 0x0300
-    addi    x15, x0, 40
-    sb      x15, 0(x14)
-    addi    x15, x0, 39
-    sb      x15, 1(x14)
-    addi    x15, x0, 38
-    sb      x15, 2(x14)
-    addi    x15, x0, 37
-    sb      x15, 3(x14)
-    addi    x15, x0, 36
-    sb      x15, 4(x14)
-
-    addi    x14, x0, 0x0380
-    addi    x15, x0, 16
-    sb      x15, 0(x14)
-    sb      x15, 1(x14)
-    sb      x15, 2(x14)
-    sb      x15, 3(x14)
-    sb      x15, 4(x14)
-
-    # draw snake
-    addi    x10, x0, 40
-    addi    x11, x0, 16
-    addi    x12, x0, 0x3E          # '>' head
+    # line: GAME OVER
+    addi    x10, x0, 35
+    addi    x11, x0, 9
+    addi    x12, x0, 0x47          # G
+    jal     x5, put_char_at
+    addi    x10, x10, 1
+    addi    x12, x0, 0x41          # A
+    jal     x5, put_char_at
+    addi    x10, x10, 1
+    addi    x12, x0, 0x4D          # M
+    jal     x5, put_char_at
+    addi    x10, x10, 1
+    addi    x12, x0, 0x45          # E
+    jal     x5, put_char_at
+    addi    x10, x10, 1
+    addi    x12, x0, 0x20
+    jal     x5, put_char_at
+    addi    x10, x10, 1
+    addi    x12, x0, 0x4F          # O
+    jal     x5, put_char_at
+    addi    x10, x10, 1
+    addi    x12, x0, 0x56          # V
+    jal     x5, put_char_at
+    addi    x10, x10, 1
+    addi    x12, x0, 0x45          # E
+    jal     x5, put_char_at
+    addi    x10, x10, 1
+    addi    x12, x0, 0x52          # R
     jal     x5, put_char_at
 
-    addi    x10, x0, 39
-    addi    x12, x0, 0x6F          # 'o' body
+    # line: FINAL SCORE:
+    addi    x10, x0, 31
+    addi    x11, x0, 13
+    addi    x12, x0, 0x46          # F
     jal     x5, put_char_at
-    addi    x10, x0, 38
+    addi    x10, x10, 1
+    addi    x12, x0, 0x49          # I
     jal     x5, put_char_at
-    addi    x10, x0, 37
+    addi    x10, x10, 1
+    addi    x12, x0, 0x4E          # N
     jal     x5, put_char_at
-    addi    x10, x0, 36
+    addi    x10, x10, 1
+    addi    x12, x0, 0x41          # A
+    jal     x5, put_char_at
+    addi    x10, x10, 1
+    addi    x12, x0, 0x4C          # L
+    jal     x5, put_char_at
+    addi    x10, x10, 1
+    addi    x12, x0, 0x20
+    jal     x5, put_char_at
+    addi    x10, x10, 1
+    addi    x12, x0, 0x53          # S
+    jal     x5, put_char_at
+    addi    x10, x10, 1
+    addi    x12, x0, 0x43          # C
+    jal     x5, put_char_at
+    addi    x10, x10, 1
+    addi    x12, x0, 0x4F          # O
+    jal     x5, put_char_at
+    addi    x10, x10, 1
+    addi    x12, x0, 0x52          # R
+    jal     x5, put_char_at
+    addi    x10, x10, 1
+    addi    x12, x0, 0x45          # E
+    jal     x5, put_char_at
+    addi    x10, x10, 1
+    addi    x12, x0, 0x3A          # :
     jal     x5, put_char_at
 
-    jal     x5, place_food
-    jal     x5, draw_score
+    addi    x10, x0, 43
+    addi    x11, x0, 13
+    jal     x5, draw_score3_at
+
+    # default menu selection: RESTART
+    sw      x0, 40(x18)
+    jal     x5, render_over_options
 
     addi    x5, x30, 0
     jalr    x0, x5, 0
 
 ############################################################
-# wait_start_key
+# render_over_options
+# menu_sel: 0=RESTART, 1=EXIT
 ############################################################
-wait_start_key:
-we_loop:
-    lw      x6, 0(x29)
-    andi    x6, x6, 1
-    beq     x6, x0, we_loop
+render_over_options:
+    addi    x30, x5, 0
+    lw      x7, 40(x18)
+    beq     x7, x0, roo_restart_sel
 
-    lw      x25, 0(x28)
+    # line 18: "  RESTART   "
+    addi    x10, x0, 34
+    addi    x11, x0, 18
+    addi    x12, x0, 0x20
+    jal     x5, put_char_at
+    addi    x10, x10, 1
+    addi    x12, x0, 0x52          # R
+    jal     x5, put_char_at
+    addi    x10, x10, 1
+    addi    x12, x0, 0x45          # E
+    jal     x5, put_char_at
+    addi    x10, x10, 1
+    addi    x12, x0, 0x53          # S
+    jal     x5, put_char_at
+    addi    x10, x10, 1
+    addi    x12, x0, 0x54          # T
+    jal     x5, put_char_at
+    addi    x10, x10, 1
+    addi    x12, x0, 0x41          # A
+    jal     x5, put_char_at
+    addi    x10, x10, 1
+    addi    x12, x0, 0x52          # R
+    jal     x5, put_char_at
+    addi    x10, x10, 1
+    addi    x12, x0, 0x54          # T
+    jal     x5, put_char_at
+    addi    x10, x10, 1
+    addi    x12, x0, 0x20
+    jal     x5, put_char_at
+    addi    x10, x10, 1
+    addi    x12, x0, 0x20
+    jal     x5, put_char_at
 
-    # handle F0 break prefix
-    addi    x7, x0, 0xF0
-    beq     x25, x7, we_set_break
+    # line 20: "> EXIT <"
+    addi    x10, x0, 36
+    addi    x11, x0, 20
+    addi    x12, x0, 0x3E          # >
+    jal     x5, put_char_at
+    addi    x10, x10, 1
+    addi    x12, x0, 0x20
+    jal     x5, put_char_at
+    addi    x10, x10, 1
+    addi    x12, x0, 0x45          # E
+    jal     x5, put_char_at
+    addi    x10, x10, 1
+    addi    x12, x0, 0x58          # X
+    jal     x5, put_char_at
+    addi    x10, x10, 1
+    addi    x12, x0, 0x49          # I
+    jal     x5, put_char_at
+    addi    x10, x10, 1
+    addi    x12, x0, 0x54          # T
+    jal     x5, put_char_at
+    addi    x10, x10, 1
+    addi    x12, x0, 0x20
+    jal     x5, put_char_at
+    addi    x10, x10, 1
+    addi    x12, x0, 0x3C          # <
+    jal     x5, put_char_at
 
-    # ignore next byte after F0
-    lw      x7, 24(x18)
-    beq     x7, x0, we_check_enter
-    sw      x0, 24(x18)
-    jal     x0, we_loop
+    addi    x5, x30, 0
+    jalr    x0, x5, 0
 
-we_set_break:
-    addi    x7, x0, 1
-    sw      x7, 24(x18)
-    jal     x0, we_loop
+roo_restart_sel:
+    # line 18: "> RESTART <"
+    addi    x10, x0, 33
+    addi    x11, x0, 18
+    addi    x12, x0, 0x3E          # >
+    jal     x5, put_char_at
+    addi    x10, x10, 1
+    addi    x12, x0, 0x20
+    jal     x5, put_char_at
+    addi    x10, x10, 1
+    addi    x12, x0, 0x52          # R
+    jal     x5, put_char_at
+    addi    x10, x10, 1
+    addi    x12, x0, 0x45          # E
+    jal     x5, put_char_at
+    addi    x10, x10, 1
+    addi    x12, x0, 0x53          # S
+    jal     x5, put_char_at
+    addi    x10, x10, 1
+    addi    x12, x0, 0x54          # T
+    jal     x5, put_char_at
+    addi    x10, x10, 1
+    addi    x12, x0, 0x41          # A
+    jal     x5, put_char_at
+    addi    x10, x10, 1
+    addi    x12, x0, 0x52          # R
+    jal     x5, put_char_at
+    addi    x10, x10, 1
+    addi    x12, x0, 0x54          # T
+    jal     x5, put_char_at
+    addi    x10, x10, 1
+    addi    x12, x0, 0x20
+    jal     x5, put_char_at
+    addi    x10, x10, 1
+    addi    x12, x0, 0x3C          # <
+    jal     x5, put_char_at
 
-we_check_enter:
-    # Enter
-    addi    x7, x0, 0x5A
-    beq     x25, x7, we_start_ok
+    # line 20: "  EXIT     "
+    addi    x10, x0, 36
+    addi    x11, x0, 20
+    addi    x12, x0, 0x20
+    jal     x5, put_char_at
+    addi    x10, x10, 1
+    addi    x12, x0, 0x20
+    jal     x5, put_char_at
+    addi    x10, x10, 1
+    addi    x12, x0, 0x45          # E
+    jal     x5, put_char_at
+    addi    x10, x10, 1
+    addi    x12, x0, 0x58          # X
+    jal     x5, put_char_at
+    addi    x10, x10, 1
+    addi    x12, x0, 0x49          # I
+    jal     x5, put_char_at
+    addi    x10, x10, 1
+    addi    x12, x0, 0x54          # T
+    jal     x5, put_char_at
+    addi    x10, x10, 1
+    addi    x12, x0, 0x20
+    jal     x5, put_char_at
+    addi    x10, x10, 1
+    addi    x12, x0, 0x20
+    jal     x5, put_char_at
 
-    # W / A / S / D can also start game
-    addi    x7, x0, 0x1D
-    beq     x25, x7, we_start_ok
-    addi    x7, x0, 0x1C
-    beq     x25, x7, we_start_ok
-    addi    x7, x0, 0x1B
-    beq     x25, x7, we_start_ok
-    addi    x7, x0, 0x23
-    bne     x25, x7, we_loop
-
-we_start_ok:
+    addi    x5, x30, 0
     jalr    x0, x5, 0
 
 ############################################################
-# poll_key_nonblock (WASD)
+# over_menu_loop
+# output: x6=1 restart, x6=0 exit
+############################################################
+over_menu_loop:
+om_loop:
+    jal     x5, read_make_key_block
+
+    # Enter confirms current item
+    addi    x7, x0, 0x5A
+    beq     x25, x7, om_confirm
+
+    # W/S/A/D toggles selection
+    addi    x7, x0, 0x1D          # W
+    beq     x25, x7, om_toggle
+    addi    x7, x0, 0x1B          # S
+    beq     x25, x7, om_toggle
+    addi    x7, x0, 0x1C          # A
+    beq     x25, x7, om_toggle
+    addi    x7, x0, 0x23          # D
+    beq     x25, x7, om_toggle
+    jal     x0, om_loop
+
+om_toggle:
+    lw      x7, 40(x18)
+    xori    x7, x7, 1
+    sw      x7, 40(x18)
+    jal     x5, render_over_options
+    jal     x0, om_loop
+
+om_confirm:
+    lw      x7, 40(x18)
+    bne     x7, x0, om_exit
+    addi    x6, x0, 1
+    jalr    x0, x5, 0
+
+om_exit:
+    addi    x6, x0, 0
+    jalr    x0, x5, 0
+
+############################################################
+# read_make_key_block
+# blocking read, ignores break sequence F0 xx
+# output: x25 = make code
+############################################################
+read_make_key_block:
+rk_wait_ready:
+    lw      x6, 0(x29)
+    andi    x6, x6, 1
+    beq     x6, x0, rk_wait_ready
+
+    lw      x25, 0(x28)
+
+    # F0 means next byte is break code
+    addi    x7, x0, 0xF0
+    beq     x25, x7, rk_set_break
+
+    # if previous F0 existed, skip this byte and continue
+    lw      x7, 24(x18)
+    beq     x7, x0, rk_return
+    sw      x0, 24(x18)
+    jal     x0, rk_wait_ready
+
+rk_set_break:
+    addi    x7, x0, 1
+    sw      x7, 24(x18)
+    jal     x0, rk_wait_ready
+
+rk_return:
+    jalr    x0, x5, 0
+
+############################################################
+# poll_key_nonblock (WASD in gameplay)
 ############################################################
 poll_key_nonblock:
     lw      x6, 0(x29)
@@ -425,6 +945,11 @@ snake_step:
     addi    x30, x5, 0
     addi    x6, x0, 0
 
+    # advance seed every frame to improve food randomness
+    lw      x14, 36(x18)
+    addi    x14, x14, 11
+    sw      x14, 36(x18)
+
     # len
     lw      x7, 8(x18)
 
@@ -471,9 +996,9 @@ ss_shift_done:
 
     # read head (index0)
     addi    x14, x0, 0x0300
-    lbu     x10, 0(x14)            # new_x from old head first
+    lbu     x10, 0(x14)
     addi    x14, x0, 0x0380
-    lbu     x11, 0(x14)            # new_y
+    lbu     x11, 0(x14)
 
     # move by direction
     lw      x9, 12(x18)
@@ -481,41 +1006,40 @@ ss_shift_done:
     # dir 0 up
     bne     x9, x0, ss_dir_right
     addi    x11, x11, -1
-    jal     x0, ss_wrap
+    jal     x0, ss_check_wall
 
 ss_dir_right:
     addi    x7, x0, 1
     bne     x9, x7, ss_dir_down
     addi    x10, x10, 1
-    jal     x0, ss_wrap
+    jal     x0, ss_check_wall
 
 ss_dir_down:
     addi    x7, x0, 2
     bne     x9, x7, ss_dir_left
     addi    x11, x11, 1
-    jal     x0, ss_wrap
+    jal     x0, ss_check_wall
 
 ss_dir_left:
     addi    x10, x10, -1
 
-ss_wrap:
-    # x wrap [0..79]
-    bge     x10, x0, ss_x_hi
-    addi    x10, x0, 79
-ss_x_hi:
-    addi    x7, x0, 80
-    blt     x10, x7, ss_y_lo
-    addi    x10, x0, 0
+ss_check_wall:
+    # Border is rectangle: left=2,right=77,top=2,bottom=28
+    # Valid inner play area: x in [3..76], y in [3..27]
+    addi    x7, x0, 3
+    blt     x10, x7, ss_hit_wall
+    addi    x7, x0, 77
+    bge     x10, x7, ss_hit_wall
+    addi    x7, x0, 3
+    blt     x11, x7, ss_hit_wall
+    addi    x7, x0, 28
+    bge     x11, x7, ss_hit_wall
+    jal     x0, ss_store_head
 
-ss_y_lo:
-    # y wrap [2..29] (rows 0..1 reserved for UI)
-    addi    x7, x0, 2
-    bge     x11, x7, ss_y_hi
-    addi    x11, x0, 29
-ss_y_hi:
-    addi    x7, x0, 30
-    blt     x11, x7, ss_store_head
-    addi    x11, x0, 2
+ss_hit_wall:
+    addi    x6, x0, 1
+    addi    x5, x30, 0
+    jalr    x0, x5, 0
 
 ss_store_head:
     # store new head to index0
@@ -581,17 +1105,20 @@ ss_head_draw:
     lw      x14, 4(x18)            # food_y
     bne     x11, x14, ss_not_eat
 
-    # eat: len++, score++, place food, redraw score
+    # eat: len++ (max127), score++, place food, redraw score/speed
     lw      x14, 8(x18)
+    addi    x15, x0, 127
+    bge     x14, x15, ss_skip_len_inc
     addi    x14, x14, 1
     sw      x14, 8(x18)
 
+ss_skip_len_inc:
     lw      x14, 16(x18)
     addi    x14, x14, 1
     sw      x14, 16(x18)
 
     jal     x5, place_food
-    jal     x5, draw_score
+    jal     x5, draw_score_speed
     addi    x5, x30, 0
     jalr    x0, x5, 0
 
@@ -601,40 +1128,45 @@ ss_not_eat:
     lw      x11, 32(x18)
     addi    x12, x0, 0x20          # ' '
     jal     x5, put_char_at
+
     addi    x5, x30, 0
     jalr    x0, x5, 0
 
 ############################################################
 # place_food
-# simple LCG-like stepping + snake overlap check
+# LCG-like stepping + snake overlap check
+# inner play area: x=[3..76], y=[3..27]
 ############################################################
 place_food:
     addi    x26, x5, 0
+
 pf_retry:
-    # seed = seed + 29
+    # seed = seed * 5 + 17
     lw      x7, 36(x18)
-    addi    x7, x7, 29
+    slli    x8, x7, 2
+    add     x7, x8, x7
+    addi    x7, x7, 17
     sw      x7, 36(x18)
 
-    # x = (seed % 78) + 1
+    # x = (seed % 74) + 3
     addi    x8, x7, 0
 pf_mod_x:
-    addi    x9, x0, 78
+    addi    x9, x0, 74
     blt     x8, x9, pf_mod_x_done
-    addi    x8, x8, -78
+    addi    x8, x8, -74
     jal     x0, pf_mod_x
 pf_mod_x_done:
-    addi    x10, x8, 1
+    addi    x10, x8, 3
 
-    # y = ((seed+17) % 28) + 2
-    addi    x8, x7, 17
+    # y = ((seed + 31) % 25) + 3
+    addi    x8, x7, 31
 pf_mod_y:
-    addi    x9, x0, 28
+    addi    x9, x0, 25
     blt     x8, x9, pf_mod_y_done
-    addi    x8, x8, -28
+    addi    x8, x8, -25
     jal     x0, pf_mod_y
 pf_mod_y_done:
-    addi    x11, x8, 2
+    addi    x11, x8, 3
 
     # overlap check with snake body
     lw      x12, 8(x18)            # len
@@ -666,13 +1198,15 @@ pf_ok:
     jalr    x0, x5, 0
 
 ############################################################
-# draw_score (top-right)
+# draw_score_speed
+# HUD at top row
 ############################################################
-draw_score:
+draw_score_speed:
     addi    x26, x5, 0
-    # "SCORE:" at row0, col64
+
+    # SCORE: at row0 col2
     addi    x11, x0, 0
-    addi    x10, x0, 64
+    addi    x10, x0, 2
 
     addi    x12, x0, 0x53          # S
     jal     x5, put_char_at
@@ -692,31 +1226,90 @@ draw_score:
     addi    x12, x0, 0x3A          # :
     jal     x5, put_char_at
 
-    # convert score to 3 digits
-    lw      x7, 16(x18)            # score
+    # score digits at col9..11
+    addi    x10, x0, 9
+    addi    x11, x0, 0
+    jal     x5, draw_score3_at
+
+    # SPD: at row0 col16
+    addi    x10, x0, 16
+    addi    x11, x0, 0
+    addi    x12, x0, 0x53          # S
+    jal     x5, put_char_at
+    addi    x10, x10, 1
+    addi    x12, x0, 0x50          # P
+    jal     x5, put_char_at
+    addi    x10, x10, 1
+    addi    x12, x0, 0x44          # D
+    jal     x5, put_char_at
+    addi    x10, x10, 1
+    addi    x12, x0, 0x3A          # :
+    jal     x5, put_char_at
+
+    # speed level = min(9, score/5 + 1)
+    lw      x7, 16(x18)
+    addi    x8, x0, 1
+    addi    x9, x0, 5
+dss_spd_loop:
+    blt     x7, x9, dss_spd_done
+    addi    x7, x7, -5
+    addi    x8, x8, 1
+    addi    x10, x0, 9
+    blt     x8, x10, dss_spd_loop
+    addi    x8, x0, 9
+
+dss_spd_done:
+    addi    x10, x0, 20
+    addi    x11, x0, 0
+    addi    x12, x8, 48
+    jal     x5, put_char_at
+
+    # hint line
+    addi    x10, x0, 60
+    addi    x11, x0, 0
+    addi    x12, x0, 0x57          # W
+    jal     x5, put_char_at
+    addi    x10, x10, 1
+    addi    x12, x0, 0x41          # A
+    jal     x5, put_char_at
+    addi    x10, x10, 1
+    addi    x12, x0, 0x53          # S
+    jal     x5, put_char_at
+    addi    x10, x10, 1
+    addi    x12, x0, 0x44          # D
+    jal     x5, put_char_at
+
+    addi    x5, x26, 0
+    jalr    x0, x5, 0
+
+############################################################
+# draw_score3_at
+# input: x10=col, x11=row
+# uses current score in 16(x18)
+############################################################
+draw_score3_at:
+    addi    x26, x5, 0
+
+    lw      x7, 16(x18)
     addi    x8, x0, 0              # hundreds
     addi    x9, x0, 0              # tens
 
     addi    x14, x0, 100
-sc_h_loop:
-    blt     x7, x14, sc_h_done
+ds3_h_loop:
+    blt     x7, x14, ds3_h_done
     addi    x7, x7, -100
     addi    x8, x8, 1
-    jal     x0, sc_h_loop
+    jal     x0, ds3_h_loop
 
-sc_h_done:
+ds3_h_done:
     addi    x14, x0, 10
-sc_t_loop:
-    blt     x7, x14, sc_t_done
+ds3_t_loop:
+    blt     x7, x14, ds3_t_done
     addi    x7, x7, -10
     addi    x9, x9, 1
-    jal     x0, sc_t_loop
+    jal     x0, ds3_t_loop
 
-sc_t_done:
-    # ones = x7
-    addi    x10, x0, 70
-    addi    x11, x0, 0
-
+ds3_t_done:
     addi    x12, x8, 48
     jal     x5, put_char_at
 
@@ -732,182 +1325,41 @@ sc_t_done:
     jalr    x0, x5, 0
 
 ############################################################
-# draw_game_over
+# draw_border
+# border: left=2,right=77,top=2,bottom=28
 ############################################################
-draw_game_over:
+draw_border:
     addi    x30, x5, 0
-    jal     x5, clear_screen
 
-    # "GAME OVER"
-    addi    x10, x0, 35
-    addi    x11, x0, 11
-    addi    x12, x0, 0x47          # G
-    jal     x5, put_char_at
-    addi    x10, x10, 1
-    addi    x12, x0, 0x41          # A
-    jal     x5, put_char_at
-    addi    x10, x10, 1
-    addi    x12, x0, 0x4D          # M
-    jal     x5, put_char_at
-    addi    x10, x10, 1
-    addi    x12, x0, 0x45          # E
-    jal     x5, put_char_at
-    addi    x10, x10, 1
-    addi    x12, x0, 0x20
-    jal     x5, put_char_at
-    addi    x10, x10, 1
-    addi    x12, x0, 0x4F          # O
-    jal     x5, put_char_at
-    addi    x10, x10, 1
-    addi    x12, x0, 0x56          # V
-    jal     x5, put_char_at
-    addi    x10, x10, 1
-    addi    x12, x0, 0x45          # E
-    jal     x5, put_char_at
-    addi    x10, x10, 1
-    addi    x12, x0, 0x52          # R
+    # top and bottom horizontal lines
+    addi    x10, x0, 2             # x
+db_h_loop:
+    addi    x11, x0, 2             # top y
+    addi    x12, x0, 0x23          # '#'
     jal     x5, put_char_at
 
-    # "FINAL SCORE:" line
-    addi    x10, x0, 31
-    addi    x11, x0, 14
-    addi    x12, x0, 0x46          # F
-    jal     x5, put_char_at
-    addi    x10, x10, 1
-    addi    x12, x0, 0x49          # I
-    jal     x5, put_char_at
-    addi    x10, x10, 1
-    addi    x12, x0, 0x4E          # N
-    jal     x5, put_char_at
-    addi    x10, x10, 1
-    addi    x12, x0, 0x41          # A
-    jal     x5, put_char_at
-    addi    x10, x10, 1
-    addi    x12, x0, 0x4C          # L
-    jal     x5, put_char_at
-    addi    x10, x10, 1
-    addi    x12, x0, 0x20
-    jal     x5, put_char_at
-    addi    x10, x10, 1
-    addi    x12, x0, 0x53          # S
-    jal     x5, put_char_at
-    addi    x10, x10, 1
-    addi    x12, x0, 0x43          # C
-    jal     x5, put_char_at
-    addi    x10, x10, 1
-    addi    x12, x0, 0x4F          # O
-    jal     x5, put_char_at
-    addi    x10, x10, 1
-    addi    x12, x0, 0x52          # R
-    jal     x5, put_char_at
-    addi    x10, x10, 1
-    addi    x12, x0, 0x45          # E
-    jal     x5, put_char_at
-    addi    x10, x10, 1
-    addi    x12, x0, 0x3A          # :
+    addi    x11, x0, 28            # bottom y
+    addi    x12, x0, 0x23
     jal     x5, put_char_at
 
-    # final score digits at col43..45 row14
-    lw      x7, 16(x18)
-    addi    x8, x0, 0
-    addi    x9, x0, 0
-
-    addi    x14, x0, 100
-go_h_loop:
-    blt     x7, x14, go_h_done
-    addi    x7, x7, -100
-    addi    x8, x8, 1
-    jal     x0, go_h_loop
-
-go_h_done:
-    addi    x14, x0, 10
-go_t_loop:
-    blt     x7, x14, go_t_done
-    addi    x7, x7, -10
-    addi    x9, x9, 1
-    jal     x0, go_t_loop
-
-go_t_done:
-    addi    x10, x0, 43
-    addi    x11, x0, 14
-
-    addi    x12, x8, 48
-    jal     x5, put_char_at
     addi    x10, x10, 1
-    addi    x12, x9, 48
-    jal     x5, put_char_at
-    addi    x10, x10, 1
-    addi    x12, x7, 48
+    addi    x7, x0, 78
+    blt     x10, x7, db_h_loop
+
+    # left and right vertical lines
+    addi    x11, x0, 3             # y
+db_v_loop:
+    addi    x10, x0, 2             # left x
+    addi    x12, x0, 0x23
     jal     x5, put_char_at
 
-    # "PRESS ENTER TO RESTART"
-    addi    x10, x0, 29
-    addi    x11, x0, 18
-    addi    x12, x0, 0x50          # P
+    addi    x10, x0, 77            # right x
+    addi    x12, x0, 0x23
     jal     x5, put_char_at
-    addi    x10, x10, 1
-    addi    x12, x0, 0x52          # R
-    jal     x5, put_char_at
-    addi    x10, x10, 1
-    addi    x12, x0, 0x45          # E
-    jal     x5, put_char_at
-    addi    x10, x10, 1
-    addi    x12, x0, 0x53          # S
-    jal     x5, put_char_at
-    addi    x10, x10, 1
-    addi    x12, x0, 0x53          # S
-    jal     x5, put_char_at
-    addi    x10, x10, 1
-    addi    x12, x0, 0x20
-    jal     x5, put_char_at
-    addi    x10, x10, 1
-    addi    x12, x0, 0x45          # E
-    jal     x5, put_char_at
-    addi    x10, x10, 1
-    addi    x12, x0, 0x4E          # N
-    jal     x5, put_char_at
-    addi    x10, x10, 1
-    addi    x12, x0, 0x54          # T
-    jal     x5, put_char_at
-    addi    x10, x10, 1
-    addi    x12, x0, 0x45          # E
-    jal     x5, put_char_at
-    addi    x10, x10, 1
-    addi    x12, x0, 0x52          # R
-    jal     x5, put_char_at
-    addi    x10, x10, 1
-    addi    x12, x0, 0x20
-    jal     x5, put_char_at
-    addi    x10, x10, 1
-    addi    x12, x0, 0x54          # T
-    jal     x5, put_char_at
-    addi    x10, x10, 1
-    addi    x12, x0, 0x4F          # O
-    jal     x5, put_char_at
-    addi    x10, x10, 1
-    addi    x12, x0, 0x20
-    jal     x5, put_char_at
-    addi    x10, x10, 1
-    addi    x12, x0, 0x52          # R
-    jal     x5, put_char_at
-    addi    x10, x10, 1
-    addi    x12, x0, 0x45          # E
-    jal     x5, put_char_at
-    addi    x10, x10, 1
-    addi    x12, x0, 0x53          # S
-    jal     x5, put_char_at
-    addi    x10, x10, 1
-    addi    x12, x0, 0x54          # T
-    jal     x5, put_char_at
-    addi    x10, x10, 1
-    addi    x12, x0, 0x41          # A
-    jal     x5, put_char_at
-    addi    x10, x10, 1
-    addi    x12, x0, 0x52          # R
-    jal     x5, put_char_at
-    addi    x10, x10, 1
-    addi    x12, x0, 0x54          # T
-    jal     x5, put_char_at
+
+    addi    x11, x11, 1
+    addi    x7, x0, 28
+    blt     x11, x7, db_v_loop
 
     addi    x5, x30, 0
     jalr    x0, x5, 0
@@ -948,9 +1400,23 @@ put_char_at:
 
 ############################################################
 # delay_tick
+# dynamic speed: score higher -> faster
 ############################################################
 delay_tick:
-    addi    x7, x0, 110
+    # outer = max(95, 220 - min(score*2, 125))
+    # This targets a slower initial speed (~5-6 cells/s on typical board clock).
+    lw      x7, 16(x18)            # score
+    slli    x8, x7, 1              # score*2
+    addi    x9, x0, 125
+    blt     x8, x9, dly_cap_ok
+    addi    x8, x0, 125
+
+dly_cap_ok:
+    addi    x7, x0, 220
+    sub     x7, x7, x8
+    addi    x9, x0, 95
+    bge     x7, x9, dly_outer
+    addi    x7, x0, 95
 
 dly_outer:
     addi    x8, x0, 255
