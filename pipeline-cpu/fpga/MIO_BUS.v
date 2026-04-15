@@ -28,6 +28,8 @@ module MIO_BUS(
     output reg         vga_write_enable, 
     output reg  [12:0] vga_write_addr, 
     output reg  [7:0]  vga_write_data, 
+    output reg  [12:0] vga_read_addr,
+    input  wire [7:0]  vga_read_data,
     
     // to CPU
     output reg  [31:0] bus_read_data,
@@ -95,6 +97,7 @@ module MIO_BUS(
         vga_write_enable = 0;
         vga_write_addr = 13'h0;
         vga_write_data = 8'h0;
+        vga_read_addr = 13'h0;
         key_interrupt_write_enable = 0;
         
         case(bus_write_addr[31:0])
@@ -120,13 +123,14 @@ module MIO_BUS(
             end
             
             default: begin
-                // VGA char memory window (word-addressed). write-only
+                // VGA char memory window (word-addressed)
                 if (is_vga_window) begin
                     vga_write_enable = bus_write_enable && is_vga_word_aligned && (vga_word_index < VGA_CHAR_COUNT);
                     vga_write_addr = vga_word_index;
                     vga_write_data = bus_write_data[7:0];
-                    if (!bus_write_enable) // read-only
-                        bus_read_data = 32'h0000_0000;
+                    vga_read_addr = vga_word_index;
+                    if (!bus_write_enable)
+                        bus_read_data = {24'h0, vga_read_data};
                 end else begin
                     DM_write_enable = bus_write_enable;
                     DM_write_addr = bus_write_addr;

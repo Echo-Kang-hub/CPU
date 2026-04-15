@@ -6,19 +6,22 @@ module vga_display(
     input  wire vga_clk,  // 25MHz VGA pixel clock
     input  wire cpu_clk,  // CPU/MMIO clock for character writes
     input  wire reset,
-    
-    // CPU write interface (CPU时钟域)
+
     input  wire        vga_write_enable,
     input  wire [12:0] vga_write_addr,
     input  wire [7:0]  vga_write_data,
+    input  wire [12:0] vga_read_addr,
+    output reg  [7:0]  vga_read_data,
     
-    // VGA output
     output wire [3:0]  vga_r,
     output wire [3:0]  vga_g,
     output wire [3:0]  vga_b,
     output wire        vga_hsync,
     output wire        vga_vsync
 );
+
+    // Set to 1 to enable image background from background.mem.
+    parameter BG_ENABLE = 1'b0;
 
     // Text rendering configuration
     parameter TEXT_SCALE    = 2;       // 2x scale: 8x16 font becomes 16x32 on screen
@@ -101,6 +104,30 @@ module vga_display(
     wire [9:0] h_pixel = h_valid ? (h_cnt - H_BACK) : 10'd0;
     wire [9:0] v_pixel = v_valid ? (v_cnt - V_BACK) : 10'd0;
 
+    // ===================== Background display block (easy to comment out) =====================
+    // Store 320x240 RGB444 and upscale to 640x480 by 2x nearest-neighbor.
+    // NOTE: background.mem should contain 320*240 = 76800 entries.
+    localparam BG_WIDTH  = 10'd320;
+    localparam BG_HEIGHT = 10'd240;
+    wire [9:0] bg_x = h_pixel >> 1;
+    wire [9:0] bg_y = v_pixel >> 1;
+    wire [16:0] bg_addr = bg_y * BG_WIDTH + bg_x;
+    reg [11:0] bg_mem [0:76799];
+    reg [11:0] bg_rgb_d1;
+    reg [11:0] bg_rgb_d2;
+
+    initial begin
+        $readmemh("background.mem", bg_mem);
+    end
+
+    always @(posedge vga_clk) begin
+        bg_rgb_d1 <= bg_mem[bg_addr];
+        bg_rgb_d2 <= bg_rgb_d1;
+    end
+
+    wire [11:0] bg_rgb = BG_ENABLE ? bg_rgb_d2 : 12'h000;
+    // ===================== End background display block =====================
+
     wire in_text_h = (h_pixel >= TEXT_X_START) && (h_pixel < (TEXT_X_START + TEXT_WIDTH));
     wire in_text_v = (v_pixel >= TEXT_Y_START) && (v_pixel < (TEXT_Y_START + TEXT_HEIGHT));
     wire in_text_area = valid && in_text_h && in_text_v;
@@ -137,6 +164,11 @@ module vga_display(
         if (vga_write_enable && (vga_write_addr < 13'd2400)) begin
             chr_mem[vga_write_addr] <= vga_write_data;
         end
+
+        if (vga_read_addr < 13'd2400)
+            vga_read_data <= chr_mem[vga_read_addr];
+        else
+            vga_read_data <= 8'h20;
     end
     
     always @(posedge vga_clk) begin
@@ -187,14 +219,14 @@ module vga_display(
     // Get pixel color (only draw in text area)
     wire pixel_on = in_text_area_d2 && font_data_reg[7 - char_col_pixel_d2];
     
-    // Output color (white on black)
+    // Output color: text over background
     reg [3:0] vga_r_reg, vga_g_reg, vga_b_reg;
     
     always @(posedge vga_clk) begin
         if (valid_d2) begin
-            vga_r_reg <= pixel_on ? 4'hF : 4'h0;
-            vga_g_reg <= pixel_on ? 4'hF : 4'h0;
-            vga_b_reg <= pixel_on ? 4'hF : 4'h0;
+            vga_r_reg <= pixel_on ? 4'hF : bg_rgb[11:8];
+            vga_g_reg <= pixel_on ? 4'hF : bg_rgb[7:4];
+            vga_b_reg <= pixel_on ? 4'hF : bg_rgb[3:0];
         end else begin
             vga_r_reg <= 4'h0;
             vga_g_reg <= 4'h0;

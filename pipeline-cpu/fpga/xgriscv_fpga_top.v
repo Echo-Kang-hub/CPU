@@ -69,6 +69,8 @@ module xgriscv_fpga_top(
     wire        vga_write_enable;
     wire [12:0] vga_write_addr;
     wire [7:0]  vga_write_data;
+    wire [12:0] vga_read_addr;
+    wire [7:0]  vga_read_data;
 
     wire vga_clk;
 
@@ -136,6 +138,8 @@ module xgriscv_fpga_top(
         .vga_write_enable (vga_write_enable),
         .vga_write_addr   (vga_write_addr),
         .vga_write_data   (vga_write_data),
+        .vga_read_addr    (vga_read_addr),
+        .vga_read_data    (vga_read_data),
 
         // to CPU
         .bus_read_data     (bus_read_data),
@@ -169,6 +173,8 @@ module xgriscv_fpga_top(
         .vga_write_enable        (vga_write_enable),
         .vga_write_addr          (vga_write_addr),
         .vga_write_data          (vga_write_data),
+        .vga_read_addr           (vga_read_addr),
+        .vga_read_data           (vga_read_data),
         .vga_r                   (vga_r),
         .vga_g                   (vga_g),
         .vga_b                   (vga_b),

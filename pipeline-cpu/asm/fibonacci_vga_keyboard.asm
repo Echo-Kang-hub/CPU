@@ -11,8 +11,8 @@
 # PS/2 set2 break sequence (F0 xx) is ignored
 #
 # Display:
-#   Row0: "Input n(0-31):"
-#   Row1: "n=__ fib=0x________"
+#   Row0: "Input n(0-31): _"
+#   Row1: "n=__ , fib=0x________" (fib field blank initially)
 #################################################
 
     lui     x31, 0xFFFF0
@@ -121,7 +121,7 @@ draw_static:
     # Row0 base: x30 + 0x000
     add     x2, x30, x0
 
-    # "Input n(0-31):"
+    # "Input n(0-31): _"
     addi    x3, x0, 0x49   # I
     sw      x3, 0(x2)
     addi    x3, x0, 0x6E   # n
@@ -150,11 +150,15 @@ draw_static:
     sw      x3, 48(x2)
     addi    x3, x0, 0x3A   # :
     sw      x3, 52(x2)
+    addi    x3, x0, 0x20   # space
+    sw      x3, 56(x2)
+    addi    x3, x0, 0x5F   # _
+    sw      x3, 60(x2)
 
     # Row1 base: x30 + 0x140
     addi    x2, x30, 0x0140
 
-    # "n=__ fib=0x________"
+    # "n=__ , fib=0x________"
     addi    x3, x0, 0x6E   # n
     sw      x3, 0(x2)
     addi    x3, x0, 0x3D   # =
@@ -163,29 +167,33 @@ draw_static:
     sw      x3, 8(x2)
     sw      x3, 12(x2)
     sw      x3, 16(x2)
-    addi    x3, x0, 0x66   # f
+    addi    x3, x0, 0x2C   # ,
     sw      x3, 20(x2)
-    addi    x3, x0, 0x69   # i
+    addi    x3, x0, 0x20   # space
     sw      x3, 24(x2)
-    addi    x3, x0, 0x62   # b
+    addi    x3, x0, 0x66   # f
     sw      x3, 28(x2)
-    addi    x3, x0, 0x3D   # =
+    addi    x3, x0, 0x69   # i
     sw      x3, 32(x2)
-    addi    x3, x0, 0x30   # 0
+    addi    x3, x0, 0x62   # b
     sw      x3, 36(x2)
-    addi    x3, x0, 0x78   # x
+    addi    x3, x0, 0x3D   # =
     sw      x3, 40(x2)
-
-    # Initialize 8 hex digits to '0'
-    addi    x3, x0, 0x30
+    addi    x3, x0, 0x30   # 0
     sw      x3, 44(x2)
+    addi    x3, x0, 0x78   # x
     sw      x3, 48(x2)
+
+    # Initialize 8 hex digits to spaces
+    addi    x3, x0, 0x20
     sw      x3, 52(x2)
     sw      x3, 56(x2)
     sw      x3, 60(x2)
     sw      x3, 64(x2)
     sw      x3, 68(x2)
     sw      x3, 72(x2)
+    sw      x3, 76(x2)
+    sw      x3, 80(x2)
 
     jalr    x0, x5, 0
 
@@ -226,7 +234,7 @@ n_draw_done:
 #################################################
 # draw_result_hex
 # Input : x7 = fib(n)
-# Output: row1 offsets 44..72 updated
+# Output: row1 offsets 52..80 updated
 #################################################
 draw_result_hex:
     addi    x2, x30, 0x0140
@@ -238,7 +246,7 @@ draw_result_hex:
     bne     x4, x0, rh1
     addi    x3, x3, 7
 rh1:
-    sw      x3, 44(x2)
+    sw      x3, 52(x2)
 
     srli    x8, x7, 24
     andi    x8, x8, 0x0F
@@ -247,7 +255,7 @@ rh1:
     bne     x4, x0, rh2
     addi    x3, x3, 7
 rh2:
-    sw      x3, 48(x2)
+    sw      x3, 56(x2)
 
     srli    x8, x7, 20
     andi    x8, x8, 0x0F
@@ -256,7 +264,7 @@ rh2:
     bne     x4, x0, rh3
     addi    x3, x3, 7
 rh3:
-    sw      x3, 52(x2)
+    sw      x3, 60(x2)
 
     srli    x8, x7, 16
     andi    x8, x8, 0x0F
@@ -265,7 +273,7 @@ rh3:
     bne     x4, x0, rh4
     addi    x3, x3, 7
 rh4:
-    sw      x3, 56(x2)
+    sw      x3, 64(x2)
 
     srli    x8, x7, 12
     andi    x8, x8, 0x0F
@@ -274,7 +282,7 @@ rh4:
     bne     x4, x0, rh5
     addi    x3, x3, 7
 rh5:
-    sw      x3, 60(x2)
+    sw      x3, 68(x2)
 
     srli    x8, x7, 8
     andi    x8, x8, 0x0F
@@ -283,7 +291,7 @@ rh5:
     bne     x4, x0, rh6
     addi    x3, x3, 7
 rh6:
-    sw      x3, 64(x2)
+    sw      x3, 72(x2)
 
     srli    x8, x7, 4
     andi    x8, x8, 0x0F
@@ -292,7 +300,7 @@ rh6:
     bne     x4, x0, rh7
     addi    x3, x3, 7
 rh7:
-    sw      x3, 68(x2)
+    sw      x3, 76(x2)
 
     andi    x8, x7, 0x0F
     addi    x3, x8, 0x30
@@ -300,7 +308,7 @@ rh7:
     bne     x4, x0, rh8
     addi    x3, x3, 7
 rh8:
-    sw      x3, 72(x2)
+    sw      x3, 80(x2)
 
     jalr    x0, x5, 0
 

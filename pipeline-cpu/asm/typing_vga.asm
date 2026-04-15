@@ -14,8 +14,10 @@
 #   - Backspace: erase previous character
 #   - Tab      : insert 4 spaces
 #   - Shift    : uppercase letters and symbol variants
+#   - CapsLock : letter case toggle
 #   - Handles PS/2 Set-2 break sequence (F0 xx)
 #   - Ignores extended keys (E0 xx)
+#   - Auto scroll when screen is full
 #################################################
 
     lui     x31, 0xFFFF0
@@ -28,6 +30,7 @@
     addi    x22, x0, 0            # shift_down flag
     addi    x23, x0, 0            # break_pending flag
     addi    x24, x0, 0            # ext_pending flag (E0)
+    addi    x26, x0, 0            # caps_lock flag
 
     jal     x5, clear_screen
     jal     x5, draw_title
@@ -83,6 +86,10 @@ check_shift_make:
     addi    x7, x0, 0x59
     beq     x25, x7, shift_down
 
+    # Caps Lock (toggle on make code 0x58)
+    addi    x7, x0, 0x58
+    beq     x25, x7, caps_toggle
+
     # Enter
     addi    x7, x0, 0x5A
     beq     x25, x7, do_enter
@@ -114,12 +121,17 @@ shift_down:
     addi    x22, x0, 1
     jal     x0, main_loop
 
+caps_toggle:
+    xori    x26, x26, 1
+    jal     x0, main_loop
+
 do_enter:
     addi    x20, x0, 0
     addi    x21, x21, 1
     addi    x7, x0, 30
     bne     x21, x7, main_loop
-    addi    x21, x0, 0
+    jal     x5, scroll_up
+    addi    x21, x0, 29
     jal     x0, main_loop
 
 do_backspace:
@@ -157,7 +169,8 @@ do_tab:
 #################################################
 clear_screen:
     addi    x12, x0, 0            # idx
-    addi    x13, x0, 2400         # total cells
+    addi    x13, x0, 75
+    slli    x13, x13, 5           # total cells = 2400
     addi    x14, x0, 0x20         # ' '
 
 cs_loop:
@@ -169,6 +182,46 @@ cs_loop:
     jal     x0, cs_loop
 
 cs_done:
+    jalr    x0, x5, 0
+
+#################################################
+# scroll_up
+# Shift rows [1..29] up to [0..28], clear last row
+#################################################
+scroll_up:
+    addi    x12, x0, 0            # dst idx
+    addi    x13, x0, 145
+    slli    x13, x13, 4           # 2320 = 29*80
+
+su_copy_loop:
+    beq     x12, x13, su_clear_last
+    addi    x14, x12, 80          # src idx = dst + 80
+
+    slli    x15, x12, 2           # dst byte offset
+    slli    x16, x14, 2           # src byte offset
+
+    add     x18, x27, x16         # src addr
+    lw      x19, 0(x18)
+    add     x18, x27, x15         # dst addr
+    sw      x19, 0(x18)
+
+    addi    x12, x12, 1
+    jal     x0, su_copy_loop
+
+su_clear_last:
+    addi    x14, x0, 0x20         # ' '
+    addi    x13, x0, 75
+    slli    x13, x13, 5           # 2400
+
+su_clear_loop:
+    beq     x12, x13, su_done
+    slli    x15, x12, 2
+    add     x16, x27, x15
+    sw      x14, 0(x16)
+    addi    x12, x12, 1
+    jal     x0, su_clear_loop
+
+su_done:
     jalr    x0, x5, 0
 
 #################################################
@@ -219,7 +272,18 @@ put_char_raw:
 # input: x17 ascii
 #################################################
 put_char:
-    jal     x5, put_char_raw
+    # Inline write to avoid clobbering caller return address (x5)
+    # idx = row*80 + col = row*64 + row*16 + col
+    slli    x10, x21, 6
+    slli    x11, x21, 4
+    add     x10, x10, x11
+    add     x10, x10, x20
+
+    # byte offset = idx*4
+    slli    x10, x10, 2
+    add     x10, x27, x10
+
+    sw      x17, 0(x10)
 
     # advance cursor
     addi    x20, x20, 1
@@ -230,7 +294,8 @@ put_char:
     addi    x21, x21, 1
     addi    x7, x0, 30
     bne     x21, x7, pc_done
-    addi    x21, x0, 0
+    jal     x5, scroll_up
+    addi    x21, x0, 29
 
 pc_done:
     jalr    x0, x5, 0
@@ -387,7 +452,7 @@ map_other:
     jal     x0, map_shift
 
 maybe_upper:
-    beq     x22, x0, st_done
+    beq     x22, x26, st_done      # uppercase only when shift XOR caps is 1
     addi    x17, x17, -32
 st_done:
     jalr    x0, x5, 0
