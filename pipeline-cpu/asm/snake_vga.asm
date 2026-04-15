@@ -478,8 +478,10 @@ rso_start_sel:
 # output: x6=1 start game, x6=0 exit
 ############################################################
 start_menu_loop:
+    addi    x30, x5, 0
 sm_loop:
     jal     x5, read_make_key_block
+    jal     x5, draw_key_debug
 
     # Enter confirms current item (set2/set1/ascii)
     addi    x7, x0, 0x5A
@@ -555,10 +557,12 @@ sm_confirm:
     lw      x7, 40(x18)
     bne     x7, x0, sm_exit
     addi    x6, x0, 1
+    addi    x5, x30, 0
     jalr    x0, x5, 0
 
 sm_exit:
     addi    x6, x0, 0
+    addi    x5, x30, 0
     jalr    x0, x5, 0
 
 ############################################################
@@ -792,8 +796,10 @@ roo_restart_sel:
 # output: x6=1 restart, x6=0 exit
 ############################################################
 over_menu_loop:
+    addi    x30, x5, 0
 om_loop:
     jal     x5, read_make_key_block
+    jal     x5, draw_key_debug
 
     # Enter confirms current item (set2/set1/ascii)
     addi    x7, x0, 0x5A
@@ -869,10 +875,12 @@ om_confirm:
     lw      x7, 40(x18)
     bne     x7, x0, om_exit
     addi    x6, x0, 1
+    addi    x5, x30, 0
     jalr    x0, x5, 0
 
 om_exit:
     addi    x6, x0, 0
+    addi    x5, x30, 0
     jalr    x0, x5, 0
 
 ############################################################
@@ -1407,6 +1415,49 @@ ds3_t_done:
 
     addi    x10, x10, 1
     addi    x12, x7, 48
+    jal     x5, put_char_at
+
+    addi    x5, x26, 0
+    jalr    x0, x5, 0
+
+############################################################
+# draw_key_debug
+# input: x25=last key code
+# Draw at row13: "K:xx"
+############################################################
+draw_key_debug:
+    addi    x26, x5, 0
+
+    # 'K:'
+    addi    x10, x0, 1
+    addi    x11, x0, 13
+    addi    x12, x0, 0x4B          # K
+    jal     x5, put_char_at
+    addi    x10, x10, 1
+    addi    x12, x0, 0x3A          # :
+    jal     x5, put_char_at
+
+    # high nibble
+    srli    x7, x25, 4
+    andi    x7, x7, 0x0F
+    addi    x12, x7, 0x30
+    addi    x8, x0, 10
+    blt     x7, x8, dkd_hi_ok
+    addi    x12, x12, 7
+dkd_hi_ok:
+    addi    x10, x0, 3
+    addi    x11, x0, 13
+    jal     x5, put_char_at
+
+    # low nibble
+    andi    x7, x25, 0x0F
+    addi    x12, x7, 0x30
+    addi    x8, x0, 10
+    blt     x7, x8, dkd_lo_ok
+    addi    x12, x12, 7
+dkd_lo_ok:
+    addi    x10, x0, 4
+    addi    x11, x0, 13
     jal     x5, put_char_at
 
     addi    x5, x26, 0
