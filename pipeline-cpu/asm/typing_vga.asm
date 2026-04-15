@@ -31,15 +31,24 @@
     addi    x23, x0, 0            # break_pending flag
     addi    x24, x0, 0            # ext_pending flag (E0)
     addi    x26, x0, 0            # caps_lock flag
+    addi    x1, x0, 0             # blink counter
+    addi    x4, x0, 0             # cursor visible flag (0/1)
 
     jal     x5, clear_screen
     jal     x5, draw_title
+    jal     x5, cursor_show
 
 main_loop:
     # Poll keyboard ready
     lw      x6, 0(x29)
     andi    x6, x6, 0x1
-    beq     x6, x0, main_loop
+    beq     x6, x0, no_key
+
+    # Hide cursor before consuming key
+    beq     x4, x0, key_read
+    jal     x5, cursor_hide
+
+key_read:
 
     # Read one scan code (also creates read-ack pulse in MIO_BUS)
     lw      x25, 0(x28)
@@ -109,6 +118,10 @@ check_shift_make:
     jal     x5, put_char
     jal     x0, main_loop
 
+no_key:
+    jal     x5, blink_tick
+    jal     x0, main_loop
+
 on_e0:
     addi    x24, x0, 1
     jal     x0, main_loop
@@ -137,6 +150,7 @@ do_enter:
 do_backspace:
     # Move cursor backward one cell
     bne     x20, x0, bs_dec_col
+    beq     x21, x0, main_loop
     bne     x21, x0, bs_prev_row
     # At (0,0): wrap to last cell
     addi    x21, x0, 29
@@ -247,6 +261,73 @@ draw_title:
     addi    x21, x0, 1
     addi    x20, x0, 0
 
+    jalr    x0, x5, 0
+
+#################################################
+# cursor_show / cursor_hide / blink_tick
+#################################################
+cursor_show:
+    # idx = row*80 + col = row*64 + row*16 + col
+    slli    x10, x21, 6
+    slli    x11, x21, 4
+    add     x10, x10, x11
+    add     x10, x10, x20
+    slli    x10, x10, 2
+    add     x10, x27, x10
+
+    addi    x17, x0, 0x5F         # '_'
+    sw      x17, 0(x10)
+    addi    x4, x0, 1
+    addi    x1, x0, 0
+    jalr    x0, x5, 0
+
+cursor_hide:
+    slli    x10, x21, 6
+    slli    x11, x21, 4
+    add     x10, x10, x11
+    add     x10, x10, x20
+    slli    x10, x10, 2
+    add     x10, x27, x10
+
+    addi    x17, x0, 0x20         # ' '
+    sw      x17, 0(x10)
+    addi    x4, x0, 0
+    addi    x1, x0, 0
+    jalr    x0, x5, 0
+
+blink_tick:
+    addi    x1, x1, 1
+    addi    x7, x0, 1
+    slli    x7, x7, 22            # blink period threshold
+    bne     x1, x7, bt_done
+    addi    x1, x0, 0
+
+    beq     x4, x0, bt_turn_on
+
+    # turn off cursor
+    slli    x10, x21, 6
+    slli    x11, x21, 4
+    add     x10, x10, x11
+    add     x10, x10, x20
+    slli    x10, x10, 2
+    add     x10, x27, x10
+    addi    x17, x0, 0x20
+    sw      x17, 0(x10)
+    addi    x4, x0, 0
+    jal     x0, bt_done
+
+bt_turn_on:
+    slli    x10, x21, 6
+    slli    x11, x21, 4
+    add     x10, x10, x11
+    add     x10, x10, x20
+    slli    x10, x10, 2
+    add     x10, x27, x10
+    addi    x17, x0, 0x5F
+    sw      x17, 0(x10)
+    addi    x4, x0, 1
+
+bt_done:
     jalr    x0, x5, 0
 
 #################################################

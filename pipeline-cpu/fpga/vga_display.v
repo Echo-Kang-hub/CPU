@@ -4,7 +4,7 @@
 
 module vga_display(
     input  wire vga_clk,  // 25MHz VGA pixel clock
-    input  wire cpu_clk,  // CPU/MMIO clock for character writes
+    input  wire cpu_clk,
     input  wire reset,
 
     input  wire        vga_write_enable,
@@ -104,7 +104,8 @@ module vga_display(
     wire [9:0] h_pixel = h_valid ? (h_cnt - H_BACK) : 10'd0;
     wire [9:0] v_pixel = v_valid ? (v_cnt - V_BACK) : 10'd0;
 
-    // ===================== Background display block (easy to comment out) =====================
+
+
     // Store 320x240 RGB444 and upscale to 640x480 by 2x nearest-neighbor.
     // NOTE: background.mem should contain 320*240 = 76800 entries.
     localparam BG_WIDTH  = 10'd320;
@@ -126,7 +127,9 @@ module vga_display(
     end
 
     wire [11:0] bg_rgb = BG_ENABLE ? bg_rgb_d2 : 12'h000;
-    // ===================== End background display block =====================
+
+
+
 
     wire in_text_h = (h_pixel >= TEXT_X_START) && (h_pixel < (TEXT_X_START + TEXT_WIDTH));
     wire in_text_v = (v_pixel >= TEXT_Y_START) && (v_pixel < (TEXT_Y_START + TEXT_HEIGHT));

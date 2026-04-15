@@ -39,7 +39,7 @@ module soc_top(
     );
          
     imem U_IM ( 
-        .a               (instr_addr[10:2]), 
+        .a               (instr_addr[12:2]), 
         .spo             (instr)
     );
          

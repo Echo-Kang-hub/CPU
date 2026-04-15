@@ -43,7 +43,7 @@ module MIO_BUS(
     output reg         seg7_write_enable 
 );
 
-    // MMIO map (canonical): 0xFFFF_0000 + offset
+    // MMIO map: 0xFFFF_0000 + offset
     localparam [31:0] IO_BASE               = 32'hffff_0000;
     localparam [31:0] SWITCH_ADDR           = IO_BASE + 32'h0004;
     localparam [31:0] SEG7_ADDR             = IO_BASE + 32'h000c;

@@ -3,16 +3,13 @@
 +incdir+../rtl/top
 +incdir+../rtl/utils
 +incdir+../rtl/hazard
++incdir+../fpga
 
-soc_top_tb.v
+tb_interrupt_vga_keyboard.v
 
-../rtl/core/IF_stage.v
-../rtl/core/ID_stage.v
-../rtl/core/EX_stage.v
-../rtl/core/MA_stage.v
-../rtl/core/WB_stage.v
-../rtl/core/pipeline_top.v
-../rtl/top/soc_top.v
+../fpga/MULTI_CH32.v
+../fpga/xgriscv_fpga_top.v
+
 ../rtl/hazard/forwarding.v
 ../rtl/hazard/hazard_detect.v
 
@@ -22,7 +19,5 @@ soc_top_tb.v
 ../rtl/utils/RF.v
 ../rtl/utils/EXT.v
 ../rtl/utils/ctrl.v
-../rtl/utils/dm.v
-../rtl/utils/imem.v
 
-// iverilog -o sim.out -c sim.f
+// iverilog -o sim.vvp -c sim.f

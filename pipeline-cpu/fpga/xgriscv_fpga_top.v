@@ -59,13 +59,11 @@ module xgriscv_fpga_top(
     wire        key_interrupt;
     wire        overflow;
 
-    // Synchronize PS/2 outputs from clk domain into CPU bus domain.
     reg [7:0] key_code_sync0;
     reg [7:0] key_code_sync1;
     reg       key_ready_sync0;
     reg       key_ready_sync1;
     
-    // VGA signals
     wire        vga_write_enable;
     wire [12:0] vga_write_addr;
     wire [7:0]  vga_write_data;
@@ -104,7 +102,7 @@ module xgriscv_fpga_top(
     );
 
     imem U_IM (
-        .a               (PC[10:2]),
+        .a               (PC[12:2]),
         .spo             (instr)
     );
 
