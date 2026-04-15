@@ -55,7 +55,7 @@ module xgriscv_fpga_top(
     // Keyboard signals
     wire [7:0]  key_code;
     wire        key_ready;
-    wire        key_read;
+    wire        key_read_enable;
     wire        key_interrupt;
     wire        overflow;
 
@@ -118,7 +118,7 @@ module xgriscv_fpga_top(
     // I/O management (MIO_BUS)
     MIO_BUS U_MIO (
         .clk              (cpu_clk),
-        .reset           (reset),
+        .reset            (reset),
         .sw_i             (sw_i),
         // from CPU
         .bus_write_enable (bus_write_enable),
