@@ -1,0 +1,26 @@
+# Verilog simulation waveform and dump files
+*.vcd
+*.vpd
+*.fst
+*.lxt
+*.lxt2
+*.ghw
+*.wlf
+*.view
+
+# Compiled simulation binaries and outputs
+*.vvp
+simv
+simv.daidir/
+a.out
+csrc/
+ucli.key
+
+# Common simulator runtime files
+transcript
+modelsim.ini
+
+# Local simulation build/temp directories
+temp/
+**/temp/
+icarus/

@@ -25,8 +25,8 @@
     addi    x29, x31, 0x0014      # KBD status
     addi    x27, x31, 0x0020      # VGA base
 
-    addi    x20, x0, 0            # cursor col (0..79)
-    addi    x21, x0, 0            # cursor row (0..29)
+    addi    x20, x0, 0            # cursor col (0..37 visible)
+    addi    x21, x0, 0            # cursor row (0..13 visible)
     addi    x22, x0, 0            # shift_down flag
     addi    x23, x0, 0            # break_pending flag
     addi    x24, x0, 0            # ext_pending flag (E0)
@@ -141,10 +141,10 @@ caps_toggle:
 do_enter:
     addi    x20, x0, 0
     addi    x21, x21, 1
-    addi    x7, x0, 30
+    addi    x7, x0, 14
     bne     x21, x7, main_loop
     jal     x5, scroll_up
-    addi    x21, x0, 29
+    addi    x21, x0, 13
     jal     x0, main_loop
 
 do_backspace:
@@ -153,13 +153,13 @@ do_backspace:
     beq     x21, x0, main_loop
     bne     x21, x0, bs_prev_row
     # At (0,0): wrap to last cell
-    addi    x21, x0, 29
-    addi    x20, x0, 79
+    addi    x21, x0, 13
+    addi    x20, x0, 37
     jal     x0, bs_erase
 
 bs_prev_row:
     addi    x21, x21, -1
-    addi    x20, x0, 79
+    addi    x20, x0, 37
     jal     x0, bs_erase
 
 bs_dec_col:
@@ -200,12 +200,12 @@ cs_done:
 
 #################################################
 # scroll_up
-# Shift rows [1..29] up to [0..28], clear last row
+# Shift rows [1..13] up to [0..12], clear last visible row
 #################################################
 scroll_up:
     addi    x12, x0, 0            # dst idx
-    addi    x13, x0, 145
-    slli    x13, x13, 4           # 2320 = 29*80
+    addi    x13, x0, 65
+    slli    x13, x13, 4           # 1040 = 13*80 (visible copy range)
 
 su_copy_loop:
     beq     x12, x13, su_clear_last
@@ -224,8 +224,8 @@ su_copy_loop:
 
 su_clear_last:
     addi    x14, x0, 0x20         # ' '
-    addi    x13, x0, 75
-    slli    x13, x13, 5           # 2400
+    addi    x13, x0, 35
+    slli    x13, x13, 5           # 1120 = 14*80 (clear visible last row)
 
 su_clear_loop:
     beq     x12, x13, su_done
@@ -283,7 +283,7 @@ cursor_hide:
 blink_tick:
     addi    x1, x1, 1
     addi    x7, x0, 1
-    slli    x7, x7, 22            # blink period threshold
+    slli    x7, x7, 18            # blink period threshold (~2x faster than previous)
     bne     x1, x7, bt_done
     addi    x1, x0, 0
 
@@ -356,15 +356,15 @@ put_char:
 
     # advance cursor
     addi    x20, x20, 1
-    addi    x7, x0, 80
+    addi    x7, x0, 38
     bne     x20, x7, pc_done
 
     addi    x20, x0, 0
     addi    x21, x21, 1
-    addi    x7, x0, 30
+    addi    x7, x0, 14
     bne     x21, x7, pc_done
     jal     x5, scroll_up
-    addi    x21, x0, 29
+    addi    x21, x0, 13
 
 pc_done:
     addi    x5, x30, 0

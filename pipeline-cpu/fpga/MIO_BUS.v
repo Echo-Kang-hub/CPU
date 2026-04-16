@@ -11,6 +11,7 @@ module MIO_BUS(
 
     // from CPU
     input wire        bus_write_enable,
+    input wire        bus_read_enable,
     input wire [31:0] bus_write_data,
     input wire [31:0] bus_write_addr,
     input wire [2:0]  bus_DM_Type,
@@ -55,7 +56,7 @@ module MIO_BUS(
     localparam [31:0] VGA_WINDOW_SIZE_BYTES = 32'd9600;
     localparam [31:0] VGA_END_ADDR_EXCL     = VGA_BASE_ADDR + VGA_WINDOW_SIZE_BYTES;
 
-    wire is_kbd_data_read = (!bus_write_enable) && (bus_write_addr == KBD_DATA_ADDR);
+    wire is_kbd_data_read = bus_read_enable && (bus_write_addr == KBD_DATA_ADDR);
     wire is_vga_window = (bus_write_addr >= VGA_BASE_ADDR) && (bus_write_addr < VGA_END_ADDR_EXCL);
     wire is_vga_word_aligned = (bus_write_addr[1:0] == 2'b00);
     wire [12:0] vga_word_index = (bus_write_addr - VGA_BASE_ADDR) >> 2;
@@ -84,6 +85,9 @@ module MIO_BUS(
     end
 
     wire kbd_read_pulse;
+    // Generate a one-cycle acknowledge pulse on each KBD data read edge.
+    // Do not gate with key_ready here; ps2_keyboard already checks ready_reg,
+    // and extra gating can miss pops due to CDC timing on key_ready.
     assign kbd_read_pulse = is_kbd_data_read && (!is_kbd_data_read_d1);
     
     always @(posedge clk or posedge reset) begin
@@ -145,7 +149,7 @@ module MIO_BUS(
                     vga_write_addr = vga_word_index;
                     vga_write_data = bus_write_data[7:0];
                     vga_read_addr = vga_word_index;
-                    if (!bus_write_enable)
+                    if (bus_read_enable && is_vga_word_aligned && (vga_word_index < VGA_CHAR_COUNT))
                         bus_read_data = {24'h0, vga_read_data};
                 end else begin
                     DM_write_enable = bus_write_enable;

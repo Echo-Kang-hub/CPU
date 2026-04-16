@@ -19,6 +19,7 @@ module pipeline_top(
     input  wire [31:0] instr,
 
     output wire        bus_write_enable,
+    output wire        bus_read_enable,
     output wire [31:0] bus_write_addr,
     output wire [31:0] bus_write_data,
     output wire [2:0]  bus_DM_Type,
@@ -214,6 +215,7 @@ module pipeline_top(
         .DM_write_addr          (bus_write_addr),
         .DM_write_data          (bus_write_data),
         .DM_write_enable        (bus_write_enable),
+        .DM_read_enable         (bus_read_enable),
         .DM_read_data           (bus_read_data),
         .EXMA_RegWrite          (EXMA_RegWrite),
         .EXMA_rd                (EXMA_rd),

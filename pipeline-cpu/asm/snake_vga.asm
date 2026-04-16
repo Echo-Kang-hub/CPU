@@ -34,6 +34,7 @@ _start:
     addi    x7, x0, 1
     sw      x7, 36(x18)           # seed
     sw      x0, 24(x18)           # break_pending
+    sw      x0, 44(x18)           # ext_pending
     sw      x0, 40(x18)           # menu_sel
 
 main_restart:
@@ -44,13 +45,16 @@ main_restart:
 
 start_game:
     jal     x5, init_game
+    jal     x5, flush_kbd_buffer
 
 game_loop:
-    jal     x5, delay_tick
     jal     x5, poll_key_nonblock
     jal     x5, snake_step        # x6=1 game over
-    beq     x6, x0, game_loop
+    bne     x6, x0, game_over_enter
+    jal     x5, delay_tick
+    jal     x0, game_loop
 
+game_over_enter:
     jal     x5, draw_game_over
     jal     x5, over_menu_loop    # x6=1 restart, x6=0 exit
     bne     x6, x0, main_restart
@@ -100,6 +104,7 @@ init_game:
     sw      x0, 16(x18)
     sw      x0, 20(x18)
     sw      x0, 24(x18)
+    sw      x0, 44(x18)
 
     # direction = right (1)
     addi    x7, x0, 1
@@ -309,6 +314,21 @@ draw_start_screen:
     addi    x12, x0, 0x4D          # M
     jal     x5, put_char_at
 
+    # debug placeholder: K:-- at row0 (always visible in text area)
+    addi    x10, x0, 32
+    addi    x11, x0, 0
+    addi    x12, x0, 0x4B          # K
+    jal     x5, put_char_at
+    addi    x10, x10, 1
+    addi    x12, x0, 0x3A          # :
+    jal     x5, put_char_at
+    addi    x10, x10, 1
+    addi    x12, x0, 0x2D          # -
+    jal     x5, put_char_at
+    addi    x10, x10, 1
+    addi    x12, x0, 0x2D          # -
+    jal     x5, put_char_at
+
     # default menu selection: START
     sw      x0, 40(x18)
     jal     x5, render_start_options
@@ -321,13 +341,16 @@ draw_start_screen:
 # menu_sel: 0=START, 1=EXIT
 ############################################################
 render_start_options:
-    addi    x30, x5, 0
+    addi    x26, x5, 0
     lw      x7, 40(x18)
     beq     x7, x0, rso_start_sel
 
-    # line 8: "  START GAME  "
+    # line 8: clear full span of START option (overwrite old '>')
     addi    x10, x0, 12
     addi    x11, x0, 8
+    addi    x12, x0, 0x20
+    jal     x5, put_char_at
+    addi    x10, x10, 1
     addi    x12, x0, 0x20
     jal     x5, put_char_at
     addi    x10, x10, 1
@@ -366,6 +389,9 @@ render_start_options:
     addi    x10, x10, 1
     addi    x12, x0, 0x20
     jal     x5, put_char_at
+    addi    x10, x10, 1
+    addi    x12, x0, 0x20
+    jal     x5, put_char_at
 
     # line 10: "> EXIT <" (highlight)
     addi    x10, x0, 15
@@ -394,12 +420,12 @@ render_start_options:
     addi    x12, x0, 0xBC          # < + hl
     jal     x5, put_char_at
 
-    addi    x5, x30, 0
+    addi    x5, x26, 0
     jalr    x0, x5, 0
 
 rso_start_sel:
     # line 8: "> START GAME <" (highlight)
-    addi    x10, x0, 11
+    addi    x10, x0, 12
     addi    x11, x0, 8
     addi    x12, x0, 0xBE          # > + hl
     jal     x5, put_char_at
@@ -470,7 +496,7 @@ rso_start_sel:
     addi    x12, x0, 0x20
     jal     x5, put_char_at
 
-    addi    x5, x30, 0
+    addi    x5, x26, 0
     jalr    x0, x5, 0
 
 ############################################################
@@ -485,8 +511,6 @@ sm_loop:
 
     # Enter confirms current item (set2/set1/ascii)
     addi    x7, x0, 0x5A
-    beq     x25, x7, sm_confirm
-    addi    x7, x0, 0x1C
     beq     x25, x7, sm_confirm
     addi    x7, x0, 0x0D
     beq     x25, x7, sm_confirm
@@ -657,13 +681,16 @@ draw_game_over:
 # menu_sel: 0=RESTART, 1=EXIT
 ############################################################
 render_over_options:
-    addi    x30, x5, 0
+    addi    x26, x5, 0
     lw      x7, 40(x18)
     beq     x7, x0, roo_restart_sel
 
-    # line 8: "  RESTART   "
-    addi    x10, x0, 13
+    # line 8: clear full span of RESTART option (overwrite old '>')
+    addi    x10, x0, 12
     addi    x11, x0, 8
+    addi    x12, x0, 0x20
+    jal     x5, put_char_at
+    addi    x10, x10, 1
     addi    x12, x0, 0x20
     jal     x5, put_char_at
     addi    x10, x10, 1
@@ -721,7 +748,7 @@ render_over_options:
     addi    x12, x0, 0xBC          # < + hl
     jal     x5, put_char_at
 
-    addi    x5, x30, 0
+    addi    x5, x26, 0
     jalr    x0, x5, 0
 
 roo_restart_sel:
@@ -788,7 +815,7 @@ roo_restart_sel:
     addi    x12, x0, 0x20
     jal     x5, put_char_at
 
-    addi    x5, x30, 0
+    addi    x5, x26, 0
     jalr    x0, x5, 0
 
 ############################################################
@@ -803,8 +830,6 @@ om_loop:
 
     # Enter confirms current item (set2/set1/ascii)
     addi    x7, x0, 0x5A
-    beq     x25, x7, om_confirm
-    addi    x7, x0, 0x1C
     beq     x25, x7, om_confirm
     addi    x7, x0, 0x0D
     beq     x25, x7, om_confirm
@@ -884,8 +909,32 @@ om_exit:
     jalr    x0, x5, 0
 
 ############################################################
+# flush_kbd_buffer
+# Drain pending keyboard bytes (e.g., Enter break sequence)
+# before gameplay starts, then reset prefix flags.
+############################################################
+flush_kbd_buffer:
+    addi    x30, x5, 0
+    addi    x7, x0, 32            # safety cap
+
+fkb_loop:
+    lw      x6, 0(x29)
+    andi    x6, x6, 1
+    beq     x6, x0, fkb_done
+
+    lw      x25, 0(x28)           # pop one pending byte
+    addi    x7, x7, -1
+    bne     x7, x0, fkb_loop
+
+fkb_done:
+    sw      x0, 24(x18)           # break_pending = 0
+    sw      x0, 44(x18)           # ext_pending = 0
+    addi    x5, x30, 0
+    jalr    x0, x5, 0
+
+############################################################
 # read_make_key_block
-# blocking read, ignores break sequence F0 xx
+# blocking read, handles Set-2 prefixes E0/F0 and returns make code
 # output: x25 = make code
 ############################################################
 read_make_key_block:
@@ -896,14 +945,35 @@ rk_wait_ready:
 
     lw      x25, 0(x28)
 
+    # E0 means next byte is extended key code
+    addi    x7, x0, 0xE0
+    beq     x25, x7, rk_set_ext
+
     # F0 means next byte is break code
     addi    x7, x0, 0xF0
     beq     x25, x7, rk_set_break
 
-    # if previous F0 existed, skip this byte and continue
+    # if previous F0 existed, skip this break data byte and continue
     lw      x7, 24(x18)
-    beq     x7, x0, rk_return
+    beq     x7, x0, rk_check_ext_make
     sw      x0, 24(x18)
+
+    # extended break sequence E0 F0 xx: clear ext_pending too
+    lw      x7, 44(x18)
+    beq     x7, x0, rk_wait_ready
+    sw      x0, 44(x18)
+    jal     x0, rk_wait_ready
+
+rk_check_ext_make:
+    # extended make sequence E0 xx: clear ext_pending then return xx
+    lw      x7, 44(x18)
+    beq     x7, x0, rk_return
+    sw      x0, 44(x18)
+    jal     x0, rk_return
+
+rk_set_ext:
+    addi    x7, x0, 1
+    sw      x7, 44(x18)
     jal     x0, rk_wait_ready
 
 rk_set_break:
@@ -926,12 +996,32 @@ poll_key_nonblock:
 pk_read:
     lw      x25, 0(x28)
 
+    addi    x7, x0, 0xE0
+    beq     x25, x7, pk_set_ext
+
     addi    x7, x0, 0xF0
     beq     x25, x7, pk_set_break
 
     lw      x7, 24(x18)
-    beq     x7, x0, pk_decode
+    beq     x7, x0, pk_check_ext_make
     sw      x0, 24(x18)
+
+    # extended break sequence E0 F0 xx: clear ext_pending too
+    lw      x7, 44(x18)
+    beq     x7, x0, pk_done
+    sw      x0, 44(x18)
+    jalr    x0, x5, 0
+
+pk_check_ext_make:
+    # extended make sequence E0 xx: consume ext flag and decode xx
+    lw      x7, 44(x18)
+    beq     x7, x0, pk_decode
+    sw      x0, 44(x18)
+    jal     x0, pk_decode
+
+pk_set_ext:
+    addi    x7, x0, 1
+    sw      x7, 44(x18)
     jalr    x0, x5, 0
 
 pk_set_break:
@@ -1423,14 +1513,14 @@ ds3_t_done:
 ############################################################
 # draw_key_debug
 # input: x25=last key code
-# Draw at row13: "K:xx"
+# Draw at row0,right side: "K:xx"
 ############################################################
 draw_key_debug:
     addi    x26, x5, 0
 
     # 'K:'
-    addi    x10, x0, 1
-    addi    x11, x0, 13
+    addi    x10, x0, 32
+    addi    x11, x0, 0
     addi    x12, x0, 0x4B          # K
     jal     x5, put_char_at
     addi    x10, x10, 1
@@ -1445,8 +1535,8 @@ draw_key_debug:
     blt     x7, x8, dkd_hi_ok
     addi    x12, x12, 7
 dkd_hi_ok:
-    addi    x10, x0, 3
-    addi    x11, x0, 13
+    addi    x10, x0, 34
+    addi    x11, x0, 0
     jal     x5, put_char_at
 
     # low nibble
@@ -1456,8 +1546,8 @@ dkd_hi_ok:
     blt     x7, x8, dkd_lo_ok
     addi    x12, x12, 7
 dkd_lo_ok:
-    addi    x10, x0, 4
-    addi    x11, x0, 13
+    addi    x10, x0, 35
+    addi    x11, x0, 0
     jal     x5, put_char_at
 
     addi    x5, x26, 0
@@ -1468,7 +1558,7 @@ dkd_lo_ok:
 # border: left=1,right=36,top=1,bottom=12
 ############################################################
 draw_border:
-    addi    x30, x5, 0
+    addi    x26, x5, 0
 
     # top and bottom horizontal lines
     addi    x10, x0, 1             # x
@@ -1500,7 +1590,7 @@ db_v_loop:
     addi    x7, x0, 12
     blt     x11, x7, db_v_loop
 
-    addi    x5, x30, 0
+    addi    x5, x26, 0
     jalr    x0, x5, 0
 
 ############################################################
@@ -1542,6 +1632,13 @@ put_char_at:
 # dynamic speed: score higher -> faster
 ############################################################
 delay_tick:
+    # If SW15 selects ultra-slow CPU clock, skip software busy-wait.
+    # Otherwise one frame can take hours and appears completely frozen.
+    lw      x11, 4(x31)           # switch register (0xFFFF0004)
+    srli    x11, x11, 15          # move SW15 to bit0
+    andi    x11, x11, 0x1
+    bne     x11, x0, dly_done
+
     # outer = max(95, 220 - min(score*2, 125))
     # This targets a slower initial speed (~5-6 cells/s on typical board clock).
     lw      x7, 16(x18)            # score
@@ -1567,4 +1664,5 @@ dly_inner:
     addi    x7, x7, -1
     bne     x7, x0, dly_outer
 
+dly_done:
     jalr    x0, x5, 0

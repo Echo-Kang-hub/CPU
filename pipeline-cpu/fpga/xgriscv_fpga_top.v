@@ -35,6 +35,7 @@ module xgriscv_fpga_top(
     wire [31:0] PC;
 
     wire        bus_write_enable;
+    wire        bus_read_enable;
     wire [31:0] bus_write_addr;
     wire [31:0] bus_write_data;
     wire [2:0]  bus_DM_Type;
@@ -55,7 +56,7 @@ module xgriscv_fpga_top(
     // Keyboard signals
     wire [7:0]  key_code;
     wire        key_ready;
-    wire        key_read_enable;
+    wire        key_read_acknowledge;
     wire        key_interrupt;
     wire        overflow;
 
@@ -92,6 +93,7 @@ module xgriscv_fpga_top(
         .instr_addr       (PC),
         .instr            (instr),
         .bus_write_enable (bus_write_enable),
+        .bus_read_enable  (bus_read_enable),
         .bus_write_addr   (bus_write_addr),
         .bus_write_data   (bus_write_data),
         .bus_DM_Type      (bus_DM_Type),
@@ -122,6 +124,7 @@ module xgriscv_fpga_top(
         .sw_i             (sw_i),
         // from CPU
         .bus_write_enable (bus_write_enable),
+        .bus_read_enable  (bus_read_enable),
         .bus_write_addr   (bus_write_addr),
         .bus_write_data   (bus_write_data),
         .bus_DM_Type      (bus_DM_Type),

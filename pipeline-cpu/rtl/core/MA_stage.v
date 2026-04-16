@@ -19,6 +19,7 @@ module MA_stage(
 
     // DM
     output wire        DM_write_enable,
+    output wire        DM_read_enable,
     output wire [2:0]  DMType,
     output wire [31:0] DM_write_addr,
     output wire [31:0] DM_write_data,
@@ -78,6 +79,8 @@ module MA_stage(
     assign DMType = MA_DMType;
     // DM write only for non-CSR access
     assign DM_write_enable    = MA_MemWrite && MA_valid && !is_csr_access;
+    // True load/read cycle in MA stage (non-CSR)
+    assign DM_read_enable     = (MA_MemtoReg == `MemtoReg_MEM) && MA_valid && !is_csr_access;
     assign DM_write_addr      = MA_aluout;
 
     // forwarding
