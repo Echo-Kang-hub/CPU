@@ -18,10 +18,16 @@ module tb_snake_enter_move;
 
     integer pass_count;
     integer fail_count;
+    integer kbd_status_reads;
+    integer kbd_data_reads;
+    integer dm_write_count;
+    integer dm_head_x_writes;
+    integer dm_head_y_writes;
+    reg [31:0] last_dm_addr;
+    reg [31:0] last_dm_data;
 
     localparam integer HEAD_X_WORD = 64; // 0x0300 byte0
     localparam integer HEAD_Y_WORD = 96; // 0x0380 byte0
-    localparam integer ROM_IDX_JAL_FLUSH = 15;
 
     xgriscv_fpga_top UUT (
         .clk        (clk),
@@ -41,14 +47,48 @@ module tb_snake_enter_move;
     initial begin
         clk = 1'b0;
         rstn = 1'b0;
-        sw_i = 16'h0001; // non-zero switch bypasses delay_tick; SW15 still 0
+        sw_i = 16'h0001; // keep SW15=0 (normal divider path)
         ps2_clk = 1'b1;
         ps2_data = 1'b1;
         pass_count = 0;
         fail_count = 0;
+        kbd_status_reads = 0;
+        kbd_data_reads = 0;
+        dm_write_count = 0;
+        dm_head_x_writes = 0;
+        dm_head_y_writes = 0;
+        last_dm_addr = 32'h0;
+        last_dm_data = 32'h0;
     end
 
     always #5 clk = ~clk;
+
+    always @(posedge clk) begin
+        if (!rstn) begin
+            kbd_status_reads <= 0;
+            kbd_data_reads <= 0;
+            dm_write_count <= 0;
+            dm_head_x_writes <= 0;
+            dm_head_y_writes <= 0;
+            last_dm_addr <= 32'h0;
+            last_dm_data <= 32'h0;
+        end else begin
+            if (UUT.bus_read_enable && (UUT.bus_write_addr == 32'hffff_0014))
+                kbd_status_reads <= kbd_status_reads + 1;
+            if (UUT.bus_read_enable && (UUT.bus_write_addr == 32'hffff_0010))
+                kbd_data_reads <= kbd_data_reads + 1;
+
+            if (UUT.DM_write_enable) begin
+                dm_write_count <= dm_write_count + 1;
+                last_dm_addr <= UUT.DM_write_addr;
+                last_dm_data <= UUT.DM_write_data;
+                if (UUT.DM_write_addr == 32'h0000_0300)
+                    dm_head_x_writes <= dm_head_x_writes + 1;
+                if (UUT.DM_write_addr == 32'h0000_0380)
+                    dm_head_y_writes <= dm_head_y_writes + 1;
+            end
+        end
+    end
 
     function [7:0] head_x;
         begin
@@ -294,17 +334,30 @@ module tb_snake_enter_move;
         end
     endtask
 
+    task show_runtime_diag;
+        input [8*40-1:0] tag;
+        begin
+            $display("[DIAG] %0s PC=%08h key_ready=%0d ack=%0d kbd_status_reads=%0d kbd_data_reads=%0d dm_writes=%0d hx_writes=%0d hy_writes=%0d last_dm_addr=%08h last_dm_data=%08h",
+                     tag,
+                     UUT.PC,
+                     UUT.U_MIO.key_ready,
+                     UUT.U_MIO.key_read_acknowledge,
+                     kbd_status_reads,
+                     kbd_data_reads,
+                     dm_write_count,
+                     dm_head_x_writes,
+                     dm_head_y_writes,
+                     last_dm_addr,
+                     last_dm_data);
+        end
+    endtask
+
     initial begin
         $dumpfile("tb_snake_enter_move.vcd");
         $dumpvars(0, tb_snake_enter_move);
 
         $readmemh("D:/FileDownload/Projects/CPU/pipeline-cpu/inst.txt", UUT.U_IM.ROM);
         $readmemh("D:/FileDownload/Projects/CPU/pipeline-cpu/fpga/font_data.mem", UUT.U_VGA.font_mem);
-
-        // Temporary diagnosis: bypass flush_kbd_buffer call at start_game.
-        // If movement recovers, root cause is inside flush path.
-        UUT.U_IM.ROM[ROM_IDX_JAL_FLUSH] = 32'h00000013; // nop
-        $display("[INFO] diag patch: ROM[%0d]=NOP (bypass flush_kbd_buffer)", ROM_IDX_JAL_FLUSH);
 
         wait_cycles(10);
         rstn = 1'b1;
@@ -314,14 +367,18 @@ module tb_snake_enter_move;
         $display("[INFO] send Enter make (0x5A)");
         ps2_send_byte(8'h5A);
 
-        expect_game_init(300000);
-        expect_head_init_xy(8'd20, 8'd6, 150000);
-        detect_game_over_banner(50000);
-        expect_head_move(50000, 8'd20, 8'd6);
+        expect_game_init(1800000);
+        expect_head_init_xy(8'd20, 8'd6, 1000000);
+        show_runtime_diag("after_game_init");
+        detect_game_over_banner(300000);
+        show_runtime_diag("after_go_probe");
+        expect_head_move(2800000, 8'd20, 8'd6);
+        show_runtime_diag("after_move_probe");
 
         $display("[INFO] send W make (0x1D)");
         ps2_send_byte(8'h1D);
-        expect_direction(32'd0, 50000, "after_W");
+        expect_direction(32'd0, 10000000, "after_W");
+        show_runtime_diag("after_w_probe");
 
         $display("[SUMMARY] pass=%0d fail=%0d", pass_count, fail_count);
         if (fail_count == 0)

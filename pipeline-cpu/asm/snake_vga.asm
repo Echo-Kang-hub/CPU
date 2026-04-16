@@ -1388,7 +1388,7 @@ pf_ok:
 # HUD at top row
 ############################################################
 draw_score_speed:
-    addi    x26, x5, 0
+    addi    x24, x5, 0
 
     # SCORE: at row0 col2
     addi    x11, x0, 0
@@ -1465,7 +1465,7 @@ dss_spd_done:
     addi    x12, x0, 0x44          # D
     jal     x5, put_char_at
 
-    addi    x5, x26, 0
+    addi    x5, x24, 0
     jalr    x0, x5, 0
 
 ############################################################
