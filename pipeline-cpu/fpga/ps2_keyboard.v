@@ -3,12 +3,12 @@
 `timescale 1ns / 1ps
 
 module ps2_keyboard(
-    input  wire clk,
-    input  wire reset,
-    input  wire ps2_clk,
-    input  wire ps2_data,
+    input  wire       clk,
+    input  wire       reset,
+    input  wire       ps2_clk,
+    input  wire       ps2_data,
     
-    input  wire       key_read_enable,  // 读取确认（低有效）
+    input  wire       key_read_acknowledge,
     output wire [7:0] key_code,
     output wire       key_ready,
     output wire       overflow
@@ -30,9 +30,9 @@ module ps2_keyboard(
     assign key_code = fifo[r_ptr];
     assign overflow = overflow_reg;
     
-    reg key_read_enable_sync0;
-    reg key_read_enable_sync1;
-    reg key_read_enable_d1;
+    reg key_read_acknowledge_sync0;
+    reg key_read_acknowledge_sync1;
+    reg key_read_acknowledge_d1;
     
     always @(posedge clk) begin
         if (reset) begin
@@ -42,21 +42,21 @@ module ps2_keyboard(
             r_ptr <= 3'd0;
             ready_reg <= 1'b0;
             overflow_reg <= 1'b0;
-            key_read_enable_sync0 <= 1'b1;
-            key_read_enable_sync1 <= 1'b1;
-            key_read_enable_d1 <= 1;
+            key_read_acknowledge_sync0 <= 1'b0;
+            key_read_acknowledge_sync1 <= 1'b0;
+            key_read_acknowledge_d1 <= 1'b0;
         end
         else begin
             // 同步PS/2时钟
             ps2_clk_sync <= {ps2_clk_sync[1:0], ps2_clk};
 
             // 跨时钟域
-            key_read_enable_sync0 <= key_read_enable;
-            key_read_enable_sync1 <= key_read_enable_sync0;
-            key_read_enable_d1 <= key_read_enable_sync1;
+            key_read_acknowledge_sync0 <= key_read_acknowledge;
+            key_read_acknowledge_sync1 <= key_read_acknowledge_sync0;
+            key_read_acknowledge_d1 <= key_read_acknowledge_sync1;
             
-            // 读取确认 检测下降沿（从1变0）
-            if (ready_reg && key_read_enable_d1 && !key_read_enable_sync1) begin
+            // 读取确认
+            if (ready_reg && !key_read_acknowledge_d1 && key_read_acknowledge_sync1) begin
                 if (w_ptr != r_ptr) begin  // FIFO非空
                     r_ptr <= r_ptr + 3'd1;
                     if ((r_ptr + 3'd1) == w_ptr) begin  // 读取后FIFO空

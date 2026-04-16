@@ -9,7 +9,7 @@ module vga_display(
 
     input  wire        vga_write_enable,
     input  wire [12:0] vga_write_addr,
-    input  wire [7:0]  vga_write_data,
+    input  wire [7:0]  vga_write_data, // ascii
     input  wire [12:0] vga_read_addr,
     output reg  [7:0]  vga_read_data,
     
@@ -20,20 +20,19 @@ module vga_display(
     output wire        vga_vsync
 );
 
-    // Set to 1 to enable image background from background.mem.
     parameter BG_ENABLE = 1'b0;
 
-    // Text rendering configuration
-    parameter TEXT_SCALE    = 2;       // 2x scale: 8x16 font becomes 16x32 on screen
-    parameter TEXT_X_OFFSET = 10'd16;  // left margin in pixels
-    parameter TEXT_Y_OFFSET = 10'd16;  // top margin in pixels
+    // Text
+    parameter TEXT_SCALE    = 2;
+    parameter TEXT_X_OFFSET = 10'd16;
+    parameter TEXT_Y_OFFSET = 10'd16;
 
     localparam CHAR_WIDTH   = 10'd8;
     localparam CHAR_HEIGHT  = 10'd16;
     localparam CELL_WIDTH   = CHAR_WIDTH * TEXT_SCALE;
     localparam CELL_HEIGHT  = CHAR_HEIGHT * TEXT_SCALE;
 
-    // Reserve margins on both sides, then center the effective text viewport.
+    // Margin
     localparam AVAIL_WIDTH  = (H_DISPLAY > (TEXT_X_OFFSET << 1)) ? (H_DISPLAY - (TEXT_X_OFFSET << 1)) : 10'd0;
     localparam AVAIL_HEIGHT = (V_DISPLAY > (TEXT_Y_OFFSET << 1)) ? (V_DISPLAY - (TEXT_Y_OFFSET << 1)) : 10'd0;
     localparam TEXT_COLS    = AVAIL_WIDTH / CELL_WIDTH;
@@ -43,7 +42,7 @@ module vga_display(
     localparam TEXT_X_START = TEXT_X_OFFSET + ((AVAIL_WIDTH - TEXT_WIDTH) >> 1);
     localparam TEXT_Y_START = TEXT_Y_OFFSET + ((AVAIL_HEIGHT - TEXT_HEIGHT) >> 1);
 
-    // VGA timing parameters (640x480 @ 60Hz)
+    // VGA ：640x480 @ 60Hz
     parameter H_TOTAL   = 10'd800;
     parameter H_SYNC    = 10'd96;
     parameter H_BACK    = 10'd144;
@@ -106,8 +105,8 @@ module vga_display(
 
 
 
-    // Store 320x240 RGB444 and upscale to 640x480 by 2x nearest-neighbor.
-    // NOTE: background.mem should contain 320*240 = 76800 entries.
+    // 320x240 -> 640x480
+    // 320*240 = 76800 entries.
     localparam BG_WIDTH  = 10'd320;
     localparam BG_HEIGHT = 10'd240;
     wire [9:0] bg_x = h_pixel >> 1;
@@ -152,7 +151,7 @@ module vga_display(
     wire [12:0] char_addr_safe = (char_addr < 13'd2400) ? char_addr : 13'd0;
     
 
-    // Character memory: write in CPU clock domain, read in VGA clock domain.
+    // Character memory：write in cpu_clk, read in vga_clk
     reg [7:0] chr_mem [0:2399];
     reg [7:0] char_code_reg;
 
@@ -224,7 +223,7 @@ module vga_display(
         font_data_reg <= font_mem[font_addr];
     end
     
-    // Get pixel color (only draw in text area)
+    // Get pixel color (only in text area)
     wire pixel_on = in_text_area_d2 && font_data_reg[7 - char_col_pixel_d2];
     
     // Output color: text over background
@@ -234,7 +233,6 @@ module vga_display(
         if (valid_d2) begin
             if (pixel_on) begin
                 if (hl_d2) begin
-                    // Dim yellow highlight for selected menu options.
                     vga_r_reg <= 4'hC;
                     vga_g_reg <= 4'hA;
                     vga_b_reg <= 4'h2;

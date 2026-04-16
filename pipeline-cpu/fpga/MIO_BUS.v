@@ -21,7 +21,7 @@ module MIO_BUS(
     // Keyboard interface
     input wire [7:0]  key_code,
     input wire        key_ready, 
-    output wire       key_read_enable, 
+    output wire       key_read_acknowledge, 
     output wire       key_interrupt, 
     
     // VGA interface
@@ -67,26 +67,42 @@ module MIO_BUS(
     // Keyboard interrupt: key_ready AND interrupt enable
     assign key_interrupt = key_ready & key_interrupt_enable;
     
-    // Keyboard read acknowledgment - use sequential logic to generate falling edge
-    reg key_read_enable_reg;
+
+
+
+    // Keyboard read acknowledgment
+    reg key_read_acknowledge_reg;
+    reg is_kbd_data_read_d1;
+
+    always @(posedge clk or posedge reset) begin
+        if (reset) begin
+            is_kbd_data_read_d1 <= 1'b0;
+        end
+        else begin
+            is_kbd_data_read_d1 <= is_kbd_data_read;
+        end
+    end
+
+    wire kbd_read_pulse;
+    assign kbd_read_pulse = is_kbd_data_read && (!is_kbd_data_read_d1);
     
     always @(posedge clk or posedge reset) begin
         if (reset) begin
-            key_read_enable_reg <= 1;
+            key_read_acknowledge_reg <= 1'b0;
         end
         else begin
-            if (is_kbd_data_read) begin
-                key_read_enable_reg <= 0;
-            end
-            else begin
-                key_read_enable_reg <= 1;
-            end
+            key_read_acknowledge_reg <= kbd_read_pulse;
         end
     end
-    assign key_read_enable = key_read_enable_reg;
+
+    assign key_read_acknowledge = key_read_acknowledge_reg;
     
+
+
+
+
     // RAM & IO decode signals
-    always @* begin
+    always @(*) begin
         DM_write_addr = 32'h0;
         DM_write_data = 32'h0;
         cpuseg7_data = 32'h0;
