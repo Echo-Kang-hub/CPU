@@ -190,7 +190,7 @@ module vga_display(
     // ascii * 16
     wire [10:0] font_addr = {char_code_reg[6:0], 4'b0} + char_row_pixel;
     
-    // Pipeline delay to align control with 2-cycle memory read latency.
+    // 2-cycle memory read latency
     reg [2:0] char_col_pixel_d1, char_col_pixel_d2;
     reg       in_text_area_d1, in_text_area_d2;
     reg       valid_d1, valid_d2;
@@ -237,7 +237,6 @@ module vga_display(
                          (char_base_d2 == 7'h5E) || // ^ head
                          (char_base_d2 == 7'h76);   // v head
     
-    // Output color: text over background
     reg [3:0] vga_r_reg, vga_g_reg, vga_b_reg;
     
     always @(posedge vga_clk) begin

@@ -209,9 +209,7 @@ module xgriscv_fpga_top(
         .o_sel         (disp_an_o)
     );
 
-    // CPU clock select switch:
-    // 0: ignore SW15, always fast clock
-    // 1: SW15=1 slow clock, SW15=0 fast clock
+    // CPU clock select switch
     localparam USE_SW15_CPU_CLK = 1'b0;
 
     // Clock divider

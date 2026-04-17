@@ -65,7 +65,7 @@ module MIO_BUS(
     reg key_interrupt_enable;
     reg key_interrupt_write_enable;
     
-    // Keyboard interrupt: key_ready AND interrupt enable
+    // Keyboard interrupt
     assign key_interrupt = key_ready & key_interrupt_enable;
     
 
@@ -85,9 +85,7 @@ module MIO_BUS(
     end
 
     wire kbd_read_pulse;
-    // Generate a one-cycle acknowledge pulse on each KBD data read edge.
-    // Do not gate with key_ready here; ps2_keyboard already checks ready_reg,
-    // and extra gating can miss pops due to CDC timing on key_ready.
+    // key_ready在此是跨时钟的，而且ps2_keyboard模块已经考虑key_ready，这里不用引入key_ready
     assign kbd_read_pulse = is_kbd_data_read && (!is_kbd_data_read_d1);
     
     always @(posedge clk or posedge reset) begin
@@ -107,17 +105,22 @@ module MIO_BUS(
 
     // RAM & IO decode signals
     always @(*) begin
+        // to DM
         DM_write_addr = 32'h0;
         DM_write_data = 32'h0;
-        cpuseg7_data = 32'h0;
-        bus_read_data = 32'h0;
-        seg7_write_enable = 0;
         DM_write_enable = 0;
         DM_Type = 3'b0;
+        // to SEG7x16
+        seg7_write_enable = 0;
+        cpuseg7_data = 32'h0;
+        // to CPU
+        bus_read_data = 32'h0;
+        // to VGA
         vga_write_enable = 0;
         vga_write_addr = 13'h0;
         vga_write_data = 8'h0;
         vga_read_addr = 13'h0;
+        
         key_interrupt_write_enable = 0;
         
         case(bus_write_addr[31:0])
