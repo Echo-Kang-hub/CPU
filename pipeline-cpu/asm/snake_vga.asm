@@ -1883,20 +1883,20 @@ delay_tick:
     andi    x11, x11, 0x1
     bne     x11, x0, dly_done
 
-    # outer = max(350, 800 - min(score*8, 450))
-    # With inner=2000 this is about 2x faster than previous setting.
+    # outer = max(175, 400 - min(score*4, 225))
+    # This doubles initial speed while keeping a similar acceleration curve.
     lw      x7, 16(x18)            # score
-    slli    x8, x7, 3              # score*8
-    addi    x9, x0, 450
+    slli    x8, x7, 2              # score*4
+    addi    x9, x0, 225
     blt     x8, x9, dly_cap_ok
-    addi    x8, x0, 450
+    addi    x8, x0, 225
 
 dly_cap_ok:
-    addi    x7, x0, 800
+    addi    x7, x0, 400
     sub     x7, x7, x8
-    addi    x9, x0, 350
+    addi    x9, x0, 175
     bge     x7, x9, dly_outer
-    addi    x7, x0, 350
+    addi    x7, x0, 175
 
 dly_outer:
     addi    x8, x0, 2000

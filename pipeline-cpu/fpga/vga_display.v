@@ -195,6 +195,7 @@ module vga_display(
     reg       in_text_area_d1, in_text_area_d2;
     reg       valid_d1, valid_d2;
     reg       hl_d1, hl_d2;
+    reg [6:0] char_base_d1, char_base_d2;
 
     always @(posedge vga_clk or posedge reset) begin
         if (reset) begin
@@ -206,16 +207,20 @@ module vga_display(
             valid_d2          <= 1'b0;
             hl_d1             <= 1'b0;
             hl_d2             <= 1'b0;
+            char_base_d1      <= 7'd0;
+            char_base_d2      <= 7'd0;
         end else begin
             char_col_pixel_d1 <= char_col_pixel;
             in_text_area_d1   <= in_text_area;
             valid_d1          <= valid;
             hl_d1             <= char_code_reg[7];
+            char_base_d1      <= char_code_reg[6:0];
 
             char_col_pixel_d2 <= char_col_pixel_d1;
             in_text_area_d2   <= in_text_area_d1;
             valid_d2          <= valid_d1;
             hl_d2             <= hl_d1;
+            char_base_d2      <= char_base_d1;
         end
     end
 
@@ -225,6 +230,12 @@ module vga_display(
     
     // Get pixel color (only in text area)
     wire pixel_on = in_text_area_d2 && font_data_reg[7 - char_col_pixel_d2];
+    wire is_food_char  = (char_base_d2 == 7'h2A);
+    wire is_snake_char = (char_base_d2 == 7'h6F) || // o body
+                         (char_base_d2 == 7'h3E) || // > head
+                         (char_base_d2 == 7'h3C) || // < head
+                         (char_base_d2 == 7'h5E) || // ^ head
+                         (char_base_d2 == 7'h76);   // v head
     
     // Output color: text over background
     reg [3:0] vga_r_reg, vga_g_reg, vga_b_reg;
@@ -236,6 +247,14 @@ module vga_display(
                     vga_r_reg <= 4'hC;
                     vga_g_reg <= 4'hA;
                     vga_b_reg <= 4'h2;
+                end else if (is_food_char) begin
+                    vga_r_reg <= 4'hF;
+                    vga_g_reg <= 4'h1;
+                    vga_b_reg <= 4'h1;
+                end else if (is_snake_char) begin
+                    vga_r_reg <= 4'h1;
+                    vga_g_reg <= 4'hF;
+                    vga_b_reg <= 4'h1;
                 end else begin
                     vga_r_reg <= 4'hF;
                     vga_g_reg <= 4'hF;
