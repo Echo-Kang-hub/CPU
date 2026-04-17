@@ -13,10 +13,11 @@
 
 - **IDE**: VSCode
 - **FPGA 开发工具**: Vivado 18.3
-- **RISC-V 汇编器**: Venus (生成机器码 inst.txt)
+- **RISC-V 汇编器**: Venus (生成机器码)
   - Venus 将汇编程序转换为十六进制机器码
-  - 输出格式：每行 32-bit 十六进制指令
+  - 输出格式：每行 32-bit 指令 (0x...)
 - **仿真工具**: Icarus Verilog (iverilog) + GTKWave
+- **建议**: Linux 环境下可使用 RISC-V GNU 工具链 (riscv32-unknown-elf-*)，配合脚本自动化构建
 
 ### 项目结构
 
@@ -76,15 +77,9 @@ RISCV-Pipelined-SoC/
 
 安装必要工具：
 
-- Vivado 18.3 (添加到系统 PATH)
-- Venus RISC-V 模拟器 (用于生成机器码)
+- Vivado 18.3
+- Venus RISC-V 模拟器
 - Icarus Verilog (仿真用)
-
-验证命令：
-```bash
-vivado -version
-iverilog -V
-```
 
 ### 2. 仿真测试
 
@@ -181,21 +176,6 @@ cd pipeline-cpu
 - PS2: J15, J16
 
 完整约束见 `pipeline-cpu/xdc/Nexys4DDR_CPU.xdc`
-
-## 常见问题
-
-1. **报错 "未检测到 RISC-V GNU 工具链"**
-   - 确保 riscv32-unknown-elf-* 在系统 PATH 中
-
-2. **imem 无法加载程序**
-   - 使用 `build_program_image.ps1` 生成 `inst.txt`，不要直接放 asm
-
-3. **FPGA 黑屏**
-   - 检查 font_data.mem 是否在工程中
-   - 检查程序是否往 0xFFFF0020 区间写入
-
-4. **VGA 无显示**
-   - 确认程序烧录到正确的 bitstream 文件中
 
 ## 版权与贡献
 
