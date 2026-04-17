@@ -119,22 +119,34 @@ cd pipeline-cpu
 | 程序 | 功能 | 特性 |
 |------|------|------|
 | fibonacci | 计算斐波那契数列 | CPU 计算 |
+| fibonacci_keyboard | 斐波那契数列 (键盘输入) | 键盘键入、VGA 显示 |
 | sorting | 排序算法 | CPU 计算 |
 | snake | 贪吃蛇游戏 | 键盘控制、VGA 显示 |
 | typing_vga | 打字练习 | 键盘键入、VGA 显示 |
+| keyboard_vga | 键盘测试 | 键盘键入、VGA 显示 |
 
 程序文件位于 `pipeline-cpu/coe/` 目录 (.coe) 和 `pipeline-cpu/test/` 目录 (.asm)。
 
 ### 程序切换流程
 
-1. 使用 Venus 将 .asm 汇编文件转换为机器码
-2. 生成的 inst.txt 放入 Vivado 工程
-3. 重新综合、实现、生成 bitstream
-4. 下载到开发板
+1. Venus 输出机器码 (0x... 格式)
+2. 使用脚本转换为纯 hex 和 .coe 格式
+3. 放入 Vivado 工程，重新综合、实现、下载
 
-或使用脚本自动构建：
+### 脚本工具
+
+位于 `pipeline-cpu/scripts/` 目录：
+
+| 脚本 | 功能 |
+|------|------|
+| `prep-machine-code.py` | 将 0x 前缀机器码转为纯 hex 格式 |
+| `prep-coe-code.py` | 将纯 hex 格式转为 Vivado .coe 文件 |
+| `build_program_image.ps1` | 一键构建程序镜像 |
+
+快速构建：
 ```powershell
-.\scripts\build_program_image.ps1 -Program snake
+cd pipeline-cpu
+.\scripts\build_program_image.ps1 -Program fibonacci_vga
 ```
 
 ## 技术文档
