@@ -686,8 +686,8 @@ draw_game_over:
 render_over_options:
     addi    x26, x5, 0
 
-    # row 8: "  RESTART  "
-    addi    x10, x0, 12
+    # row 8: "  RESTART  " (centered)
+    addi    x10, x0, 13
     addi    x11, x0, 8
     addi    x12, x0, 0x20
     jal     x5, put_char_at
@@ -722,8 +722,8 @@ render_over_options:
     addi    x12, x0, 0x20
     jal     x5, put_char_at
 
-    # row 10: "  START MENU  "
-    addi    x10, x0, 11
+    # row 10: "  START MENU  " (centered)
+    addi    x10, x0, 12
     addi    x11, x0, 10
     addi    x12, x0, 0x20
     jal     x5, put_char_at
@@ -802,7 +802,7 @@ render_over_options:
 
 roo_restart_sel:
     # line 8: "> RESTART <" (highlight)
-    addi    x10, x0, 12
+    addi    x10, x0, 13
     addi    x11, x0, 8
     addi    x12, x0, 0xBE          # > + hl
     jal     x5, put_char_at
@@ -842,7 +842,7 @@ roo_restart_sel:
 
 roo_menu_sel:
     # line 10: "> START MENU <" (highlight)
-    addi    x10, x0, 11
+    addi    x10, x0, 12
     addi    x11, x0, 10
     addi    x12, x0, 0xBE          # > + hl
     jal     x5, put_char_at
@@ -1120,10 +1120,15 @@ rk_return:
 # poll_key_nonblock (WASD in gameplay)
 ############################################################
 poll_key_nonblock:
-    lw      x6, 0(x29)
-    andi    x6, x6, 1
-    bne     x6, x0, pk_read
-    jalr    x0, x5, 0
+    addi    x30, x5, 0
+    addi    x6, x0, 24            # max bytes consumed per frame
+
+pk_check_ready:
+    beq     x6, x0, pk_return
+    lw      x14, 0(x29)
+    andi    x14, x14, 1
+    bne     x14, x0, pk_read
+    jal     x0, pk_return
 
 pk_read:
     lw      x25, 0(x28)
@@ -1142,7 +1147,7 @@ pk_read:
     lw      x7, 44(x18)
     beq     x7, x0, pk_done
     sw      x0, 44(x18)
-    jalr    x0, x5, 0
+    jal     x0, pk_done
 
 pk_check_ext_make:
     # extended make sequence E0 xx: consume ext flag and decode xx
@@ -1154,12 +1159,12 @@ pk_check_ext_make:
 pk_set_ext:
     addi    x7, x0, 1
     sw      x7, 44(x18)
-    jalr    x0, x5, 0
+    jal     x0, pk_done
 
 pk_set_break:
     addi    x7, x0, 1
     sw      x7, 24(x18)
-    jalr    x0, x5, 0
+    jal     x0, pk_done
 
 pk_decode:
     lw      x9, 12(x18)            # current dir
@@ -1177,7 +1182,7 @@ pk_go_up:
     addi    x7, x0, 2
     beq     x9, x7, pk_done
     sw      x0, 12(x18)
-    jalr    x0, x5, 0
+    jal     x0, pk_return
 
 pk_check_s:
     # S set2/set1/ASCII or ArrowDown set2/set1
@@ -1197,7 +1202,7 @@ pk_go_down:
     beq     x9, x0, pk_done
     addi    x7, x0, 2
     sw      x7, 12(x18)
-    jalr    x0, x5, 0
+    jal     x0, pk_return
 
 pk_check_a:
     # A set2/set1/ASCII or ArrowLeft set2/set1
@@ -1218,7 +1223,7 @@ pk_go_left:
     beq     x9, x7, pk_done
     addi    x7, x0, 3
     sw      x7, 12(x18)
-    jalr    x0, x5, 0
+    jal     x0, pk_return
 
 pk_check_d:
     # D set2/set1/ASCII or ArrowRight set2/set1
@@ -1239,7 +1244,7 @@ pk_go_right:
     beq     x9, x7, pk_done
     addi    x7, x0, 1
     sw      x7, 12(x18)
-    jalr    x0, x5, 0
+    jal     x0, pk_return
 
 pk_check_up_arrow:
     # ArrowUp set2(0x75)/set1(0x48) => up(0), cannot from down(2)
@@ -1251,8 +1256,14 @@ pk_go_up_arrow:
     addi    x7, x0, 2
     beq     x9, x7, pk_done
     sw      x0, 12(x18)
+    jal     x0, pk_return
 
 pk_done:
+    addi    x6, x6, -1
+    jal     x0, pk_check_ready
+
+pk_return:
+    addi    x5, x30, 0
     jalr    x0, x5, 0
 
 ############################################################
@@ -1423,10 +1434,22 @@ ss_head_draw:
     lw      x14, 4(x18)            # food_y
     bne     x11, x14, ss_not_eat
 
-    # eat: len++ (max127), score++, place food, redraw score/speed
+    # eat: len++ (max127), append new tail at old tail coord, score++, place food
     lw      x14, 8(x18)
     addi    x15, x0, 127
     bge     x14, x15, ss_skip_len_inc
+
+    # new segment index is old len; initialize it to preserved old tail
+    addi    x17, x0, 0x0300
+    add     x17, x17, x14
+    lw      x16, 28(x18)
+    sb      x16, 0(x17)
+
+    addi    x17, x0, 0x0380
+    add     x17, x17, x14
+    lw      x16, 32(x18)
+    sb      x16, 0(x17)
+
     addi    x14, x14, 1
     sw      x14, 8(x18)
 
@@ -1437,6 +1460,7 @@ ss_skip_len_inc:
 
     jal     x5, place_food
     jal     x5, draw_score_speed
+    jal     x5, redraw_snake_food
     addi    x5, x30, 0
     jalr    x0, x5, 0
 
@@ -1446,6 +1470,9 @@ ss_not_eat:
     lw      x11, 32(x18)
     addi    x12, x0, 0x20          # ' '
     jal     x5, put_char_at
+
+    # Full redraw to self-heal any missed MMIO writes (avoid ghost tail trails)
+    jal     x5, redraw_snake_food
 
     addi    x5, x30, 0
     jalr    x0, x5, 0
@@ -1466,8 +1493,10 @@ pf_retry:
     addi    x7, x7, 17
     sw      x7, 36(x18)
 
+    # bound seed before modulo-by-subtraction to avoid long stalls after restart
+    andi    x8, x7, 0x3FF
+
     # x = (seed % 34) + 2
-    addi    x8, x7, 0
 pf_mod_x:
     addi    x9, x0, 34
     blt     x8, x9, pf_mod_x_done
@@ -1477,7 +1506,8 @@ pf_mod_x_done:
     addi    x10, x8, 2
 
     # y = ((seed + 31) % 10) + 2
-    addi    x8, x7, 31
+    andi    x8, x7, 0x3FF
+    addi    x8, x8, 31
 pf_mod_y:
     addi    x9, x0, 10
     blt     x8, x9, pf_mod_y_done
@@ -1512,6 +1542,88 @@ pf_ok:
 
     addi    x12, x0, 0x2A          # '*'
     jal     x5, put_char_at
+    addi    x5, x26, 0
+    jalr    x0, x5, 0
+
+############################################################
+# redraw_snake_food
+# Repaint inner play area + food + snake from RAM state.
+# This removes visual ghosting if incremental MMIO writes are dropped.
+############################################################
+redraw_snake_food:
+    addi    x26, x5, 0
+
+    # clear inner area: x=[2..35], y=[2..11]
+    addi    x11, x0, 2
+rsf_row_loop:
+    addi    x10, x0, 2
+rsf_col_loop:
+    addi    x12, x0, 0x20
+    jal     x5, put_char_at
+    addi    x10, x10, 1
+    addi    x7, x0, 36
+    blt     x10, x7, rsf_col_loop
+
+    addi    x11, x11, 1
+    addi    x7, x0, 12
+    blt     x11, x7, rsf_row_loop
+
+    # redraw food
+    lw      x10, 0(x18)
+    lw      x11, 4(x18)
+    addi    x12, x0, 0x2A          # '*'
+    jal     x5, put_char_at
+
+    # redraw body: i=1..len-1
+    lw      x7, 8(x18)
+    addi    x8, x0, 1
+rsf_body_loop:
+    beq     x8, x7, rsf_head
+
+    addi    x14, x0, 0x0300
+    add     x15, x14, x8
+    lbu     x10, 0(x15)
+
+    addi    x14, x0, 0x0380
+    add     x15, x14, x8
+    lbu     x11, 0(x15)
+
+    addi    x12, x0, 0x6F          # 'o'
+    jal     x5, put_char_at
+
+    addi    x8, x8, 1
+    jal     x0, rsf_body_loop
+
+rsf_head:
+    addi    x14, x0, 0x0300
+    lbu     x10, 0(x14)
+    addi    x14, x0, 0x0380
+    lbu     x11, 0(x14)
+
+    lw      x9, 12(x18)
+    addi    x12, x0, 0x3E          # default '>'
+    bne     x9, x0, rsf_head_right
+    addi    x12, x0, 0x5E          # '^'
+    jal     x0, rsf_head_draw
+
+rsf_head_right:
+    addi    x7, x0, 1
+    bne     x9, x7, rsf_head_down
+    addi    x12, x0, 0x3E          # '>'
+    jal     x0, rsf_head_draw
+
+rsf_head_down:
+    addi    x7, x0, 2
+    bne     x9, x7, rsf_head_left
+    addi    x12, x0, 0x76          # 'v'
+    jal     x0, rsf_head_draw
+
+rsf_head_left:
+    addi    x12, x0, 0x3C          # '<'
+
+rsf_head_draw:
+    jal     x5, put_char_at
+
     addi    x5, x26, 0
     jalr    x0, x5, 0
 
@@ -1771,23 +1883,23 @@ delay_tick:
     andi    x11, x11, 0x1
     bne     x11, x0, dly_done
 
-    # outer = max(95, 220 - min(score*2, 125))
-    # This targets a slower initial speed (~5-6 cells/s on typical board clock).
+    # outer = max(350, 800 - min(score*8, 450))
+    # With inner=2000 this is about 2x faster than previous setting.
     lw      x7, 16(x18)            # score
-    slli    x8, x7, 1              # score*2
-    addi    x9, x0, 125
+    slli    x8, x7, 3              # score*8
+    addi    x9, x0, 450
     blt     x8, x9, dly_cap_ok
-    addi    x8, x0, 125
+    addi    x8, x0, 450
 
 dly_cap_ok:
-    addi    x7, x0, 220
+    addi    x7, x0, 800
     sub     x7, x7, x8
-    addi    x9, x0, 95
+    addi    x9, x0, 350
     bge     x7, x9, dly_outer
-    addi    x7, x0, 95
+    addi    x7, x0, 350
 
 dly_outer:
-    addi    x8, x0, 255
+    addi    x8, x0, 2000
 
 dly_inner:
     addi    x8, x8, -1

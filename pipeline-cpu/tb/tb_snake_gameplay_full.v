@@ -1,7 +1,11 @@
 `timescale 1ns / 1ps
 
 `ifdef TB_FAST_CLK
-module CLK_DIV(
+module CLK_DIV #(
+    parameter USE_SW15_CLK_SEL = 1'b0,
+    parameter FAST_CLKDIV_BIT  = 2,
+    parameter SLOW_CLKDIV_BIT  = 25
+)(
     input wire clk,
     input wire rst,
     input wire SW15,
@@ -355,22 +359,22 @@ module tb_snake_gameplay_full;
         begin
             hit = 1'b0;
             for (i = 0; i < max_cycles; i = i + 1) begin
-                if ((base_chr(chr_at(8, 14)) == 8'h52) &&
-                    (base_chr(chr_at(8, 15)) == 8'h45) &&
-                    (base_chr(chr_at(8, 16)) == 8'h53) &&
-                    (base_chr(chr_at(8, 17)) == 8'h54) &&
-                    (base_chr(chr_at(8, 18)) == 8'h41) &&
-                    (base_chr(chr_at(8, 19)) == 8'h52) &&
-                    (base_chr(chr_at(8, 20)) == 8'h54) &&
-                    (base_chr(chr_at(10, 13)) == 8'h53) &&
-                    (base_chr(chr_at(10, 14)) == 8'h54) &&
-                    (base_chr(chr_at(10, 15)) == 8'h41) &&
-                    (base_chr(chr_at(10, 16)) == 8'h52) &&
-                    (base_chr(chr_at(10, 17)) == 8'h54) &&
-                    (base_chr(chr_at(10, 19)) == 8'h4D) &&
-                    (base_chr(chr_at(10, 20)) == 8'h45) &&
-                    (base_chr(chr_at(10, 21)) == 8'h4E) &&
-                    (base_chr(chr_at(10, 22)) == 8'h55) &&
+                if ((base_chr(chr_at(8, 15)) == 8'h52) &&
+                    (base_chr(chr_at(8, 16)) == 8'h45) &&
+                    (base_chr(chr_at(8, 17)) == 8'h53) &&
+                    (base_chr(chr_at(8, 18)) == 8'h54) &&
+                    (base_chr(chr_at(8, 19)) == 8'h41) &&
+                    (base_chr(chr_at(8, 20)) == 8'h52) &&
+                    (base_chr(chr_at(8, 21)) == 8'h54) &&
+                    (base_chr(chr_at(10, 14)) == 8'h53) &&
+                    (base_chr(chr_at(10, 15)) == 8'h54) &&
+                    (base_chr(chr_at(10, 16)) == 8'h41) &&
+                    (base_chr(chr_at(10, 17)) == 8'h52) &&
+                    (base_chr(chr_at(10, 18)) == 8'h54) &&
+                    (base_chr(chr_at(10, 20)) == 8'h4D) &&
+                    (base_chr(chr_at(10, 21)) == 8'h45) &&
+                    (base_chr(chr_at(10, 22)) == 8'h4E) &&
+                    (base_chr(chr_at(10, 23)) == 8'h55) &&
                     (base_chr(chr_at(12, 17)) == 8'h45) &&
                     (base_chr(chr_at(12, 18)) == 8'h58) &&
                     (base_chr(chr_at(12, 19)) == 8'h49) &&
@@ -384,12 +388,12 @@ module tb_snake_gameplay_full;
             if (hit)
                 pass_msg(tag);
             else begin
-                $display("[INFO] over row8 cols12..22 = %02h %02h %02h %02h %02h %02h %02h %02h %02h %02h %02h",
-                         chr_at(8,12), chr_at(8,13), chr_at(8,14), chr_at(8,15), chr_at(8,16), chr_at(8,17),
-                         chr_at(8,18), chr_at(8,19), chr_at(8,20), chr_at(8,21), chr_at(8,22));
-                $display("[INFO] over row10 cols11..23 = %02h %02h %02h %02h %02h %02h %02h %02h %02h %02h %02h %02h %02h",
-                         chr_at(10,11), chr_at(10,12), chr_at(10,13), chr_at(10,14), chr_at(10,15), chr_at(10,16),
-                         chr_at(10,17), chr_at(10,18), chr_at(10,19), chr_at(10,20), chr_at(10,21), chr_at(10,22), chr_at(10,23));
+                $display("[INFO] over row8 cols13..23 = %02h %02h %02h %02h %02h %02h %02h %02h %02h %02h %02h",
+                         chr_at(8,13), chr_at(8,14), chr_at(8,15), chr_at(8,16), chr_at(8,17), chr_at(8,18),
+                         chr_at(8,19), chr_at(8,20), chr_at(8,21), chr_at(8,22), chr_at(8,23));
+                $display("[INFO] over row10 cols12..24 = %02h %02h %02h %02h %02h %02h %02h %02h %02h %02h %02h %02h %02h",
+                         chr_at(10,12), chr_at(10,13), chr_at(10,14), chr_at(10,15), chr_at(10,16), chr_at(10,17),
+                         chr_at(10,18), chr_at(10,19), chr_at(10,20), chr_at(10,21), chr_at(10,22), chr_at(10,23), chr_at(10,24));
                 $display("[INFO] over row12 cols15..22 = %02h %02h %02h %02h %02h %02h %02h %02h",
                          chr_at(12,15), chr_at(12,16), chr_at(12,17), chr_at(12,18), chr_at(12,19), chr_at(12,20), chr_at(12,21), chr_at(12,22));
                 fail_msg({tag, " layout drift"});
@@ -407,20 +411,20 @@ module tb_snake_gameplay_full;
             hit = 1'b0;
             for (i = 0; i < max_cycles; i = i + 1) begin
                 if (sel == 2'd0) begin
-                    if ((base_chr(chr_at(8, 12)) == 8'h3E) &&
-                        (base_chr(chr_at(8, 22)) == 8'h3C) &&
-                        (base_chr(chr_at(10, 11)) == 8'h20) &&
-                        (base_chr(chr_at(10, 24)) == 8'h20) &&
+                    if ((base_chr(chr_at(8, 13)) == 8'h3E) &&
+                        (base_chr(chr_at(8, 23)) == 8'h3C) &&
+                        (base_chr(chr_at(10, 12)) == 8'h20) &&
+                        (base_chr(chr_at(10, 25)) == 8'h20) &&
                         (base_chr(chr_at(12, 15)) == 8'h20) &&
                         (base_chr(chr_at(12, 22)) == 8'h20)) begin
                         hit = 1'b1;
                         i = max_cycles;
                     end
                 end else if (sel == 2'd1) begin
-                    if ((base_chr(chr_at(10, 11)) == 8'h3E) &&
-                        (base_chr(chr_at(10, 24)) == 8'h3C) &&
-                        (base_chr(chr_at(8, 12)) == 8'h20) &&
-                        (base_chr(chr_at(8, 22)) == 8'h20) &&
+                    if ((base_chr(chr_at(10, 12)) == 8'h3E) &&
+                        (base_chr(chr_at(10, 25)) == 8'h3C) &&
+                        (base_chr(chr_at(8, 13)) == 8'h20) &&
+                        (base_chr(chr_at(8, 23)) == 8'h20) &&
                         (base_chr(chr_at(12, 15)) == 8'h20) &&
                         (base_chr(chr_at(12, 22)) == 8'h20)) begin
                         hit = 1'b1;
@@ -429,10 +433,10 @@ module tb_snake_gameplay_full;
                 end else begin
                     if ((base_chr(chr_at(12, 15)) == 8'h3E) &&
                         (base_chr(chr_at(12, 22)) == 8'h3C) &&
-                        (base_chr(chr_at(8, 12)) == 8'h20) &&
-                        (base_chr(chr_at(8, 22)) == 8'h20) &&
-                        (base_chr(chr_at(10, 11)) == 8'h20) &&
-                        (base_chr(chr_at(10, 24)) == 8'h20)) begin
+                        (base_chr(chr_at(8, 13)) == 8'h20) &&
+                        (base_chr(chr_at(8, 23)) == 8'h20) &&
+                        (base_chr(chr_at(10, 12)) == 8'h20) &&
+                        (base_chr(chr_at(10, 25)) == 8'h20)) begin
                         hit = 1'b1;
                         i = max_cycles;
                     end
@@ -443,8 +447,8 @@ module tb_snake_gameplay_full;
             if (hit)
                 pass_msg(tag);
             else begin
-                $display("[INFO] over markers restart(8,12/22)=%02h/%02h menu(10,11/24)=%02h/%02h exit(12,15/22)=%02h/%02h",
-                         chr_at(8,12), chr_at(8,22), chr_at(10,11), chr_at(10,24), chr_at(12,15), chr_at(12,22));
+                $display("[INFO] over markers restart(8,13/23)=%02h/%02h menu(10,12/25)=%02h/%02h exit(12,15/22)=%02h/%02h",
+                         chr_at(8,13), chr_at(8,23), chr_at(10,12), chr_at(10,25), chr_at(12,15), chr_at(12,22));
                 fail_msg({tag, " visual mismatch"});
             end
         end
