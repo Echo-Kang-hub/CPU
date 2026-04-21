@@ -194,7 +194,7 @@ module vga_display(
     reg [2:0] char_col_pixel_d1, char_col_pixel_d2;
     reg       in_text_area_d1, in_text_area_d2;
     reg       valid_d1, valid_d2;
-    reg       hl_d1, hl_d2;
+    reg       highlight_d1, highlight_d2;
     reg [6:0] char_base_d1, char_base_d2;
 
     always @(posedge vga_clk or posedge reset) begin
@@ -205,21 +205,21 @@ module vga_display(
             in_text_area_d2   <= 1'b0;
             valid_d1          <= 1'b0;
             valid_d2          <= 1'b0;
-            hl_d1             <= 1'b0;
-            hl_d2             <= 1'b0;
+            highlight_d1      <= 1'b0;
+            highlight_d2      <= 1'b0;
             char_base_d1      <= 7'd0;
             char_base_d2      <= 7'd0;
         end else begin
             char_col_pixel_d1 <= char_col_pixel;
             in_text_area_d1   <= in_text_area;
             valid_d1          <= valid;
-            hl_d1             <= char_code_reg[7];
+            highlight_d1      <= char_code_reg[7];
             char_base_d1      <= char_code_reg[6:0];
 
             char_col_pixel_d2 <= char_col_pixel_d1;
             in_text_area_d2   <= in_text_area_d1;
             valid_d2          <= valid_d1;
-            hl_d2             <= hl_d1;
+            highlight_d2      <= highlight_d1;
             char_base_d2      <= char_base_d1;
         end
     end
@@ -242,7 +242,7 @@ module vga_display(
     always @(posedge vga_clk) begin
         if (valid_d2) begin
             if (pixel_on) begin
-                if (hl_d2) begin
+                if (highlight_d2) begin
                     vga_r_reg <= 4'hC;
                     vga_g_reg <= 4'hA;
                     vga_b_reg <= 4'h2;
