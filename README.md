@@ -120,6 +120,17 @@ cd pipeline-cpu
 | typing_vga | 打字练习 | 键盘键入、VGA 显示 |
 | keyboard_vga | 键盘测试 | 键盘键入、VGA 显示 |
 
+### 贪吃蛇实测画面
+
+<p align="center">
+  <img src="images/snake/menu.jpg" alt="Snake Menu" width="45%" />
+  <img src="images/snake/game1.jpg" alt="Snake Gameplay 1" width="45%" />
+</p>
+<p align="center">
+  <img src="images/snake/game2.jpg" alt="Snake Gameplay 2" width="45%" />
+  <img src="images/snake/over.jpg" alt="Snake Game Over" width="45%" />
+</p>
+
 程序文件位于 `pipeline-cpu/coe/` 目录 (.coe) 和 `pipeline-cpu/test/` 目录 (.asm)。
 
 ### 程序切换流程
