@@ -222,7 +222,7 @@ module xgriscv_fpga_top(
         .Clk_CPU       (cpu_clk)
     );
     
-    // VGA 25MHz pixel clock (100MHz / 4), independent from CPU debug clock.
+    // VGA 25MHz
     reg [1:0] clk_div_cnt;
     always @(posedge clk or posedge reset) begin
         if (reset)
