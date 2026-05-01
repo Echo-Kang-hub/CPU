@@ -26,6 +26,11 @@ RISCV-Pipelined-SoC/
 ├── single-cycle-cpu/     # 单周期 CPU 参考实现
 ├── pipeline-cpu/         # 主流水线 CPU 实现
 │   ├── rtl/              # RTL 源代码
+│   │   ├── core/         # 流水线各阶段 (IF/ID/EX/MA/WB)
+│   │   ├── hazard/       # 数据转发与冒险检测
+│   │   ├── include/      # 宏定义头文件
+│   │   ├── top/          # SoC 顶层模块
+│   │   └── utils/        # 通用模块 (ALU/CSR/Controller/RegFile/ Memory 等)
 │   ├── fpga/             # FPGA 顶层及外设
 │   ├── tb/               # Testbench
 │   ├── sim/              # 仿真脚本
