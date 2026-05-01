@@ -75,7 +75,6 @@ module pipeline_top(
     wire        IDEX_RegWrite;
     wire [4:0]  IDEX_rd;
     wire        EXMA_MemRead;
-    wire        stall;
 
     // Interrupt
     wire        interrupt_taken;
