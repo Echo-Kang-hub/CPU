@@ -72,7 +72,7 @@ module IF_stage(
     assign IF_to_ID_valid = IF_ready_go; 
     assign IF_to_ID_bus   = {PC_addr, instr}; 
 
-// interrupt
+    // interrupt
     wire ext_interrupt_pending = mie[11] & mip[11] & global_interrupt_enable;
     assign interrupt_taken = ext_interrupt_pending & ID_allowin;
     assign current_PC = PC_addr;

@@ -12,11 +12,11 @@
     `timescale 1ns / 1ps
 
 module xgriscv_fpga_top(
-        input  wire        clk,
-        input  wire        rstn,
-        input  wire [15:0] sw_i,
-        output wire [7:0]  disp_seg_o,
-        output wire [7:0]  disp_an_o,
+    input  wire        clk,
+    input  wire        rstn,
+    input  wire [15:0] sw_i,
+    output wire [7:0]  disp_seg_o,
+    output wire [7:0]  disp_an_o,
     
     // PS/2 keyboard interface
     input wire        ps2_clk,

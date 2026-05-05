@@ -52,7 +52,7 @@ module WB_stage(
         WB_PC_plus_4,
         WB_MemtoReg, WB_RegWrite, WB_rd} = MA_to_WB_bus_reg;
 
-    assign RF_write_enable_out    = WB_valid && WB_RegWrite; 
+    assign RF_write_enable_out = WB_valid && WB_RegWrite; 
     assign RF_write_addr_out = WB_rd;
 
     assign RF_write_data_out = (WB_MemtoReg == `MemtoReg_MEM) ? WB_DM_read_data : 

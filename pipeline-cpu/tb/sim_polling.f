@@ -4,11 +4,10 @@
 +incdir+../rtl/hazard
 +incdir+../fpga
 
-tb_interrupt_vga_keyboard.v
+tb_polling_keyboard.v
 
 // FPGA top (includes CLK_DIV, MIO_BUS, SEG7x16, imem, dmem,
 //           pipeline_top, ps2_keyboard, vga_display via `include chain)
-// pipeline_top includes: IF_stage, ID_stage, EX_stage, MA_stage, WB_stage, csr_regs
 ../fpga/xgriscv_fpga_top.v
 
 // Instantiated but NOT included by xgriscv_fpga_top.v
@@ -26,5 +25,5 @@ tb_interrupt_vga_keyboard.v
 ../rtl/hazard/forwarding.v
 ../rtl/hazard/hazard_detect.v
 
-// iverilog -o sim.vvp -c sim.f
-// vvp sim.vvp
+// iverilog -o sim_polling.vvp -c sim_polling.f
+// vvp sim_polling.vvp
