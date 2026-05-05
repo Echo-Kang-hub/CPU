@@ -76,6 +76,24 @@ RISCV-Pipelined-SoC/
 - 完整 SoC 顶层
 - 已验证可运行程序：fibonacci、sorting、snake、typing_vga
 
+### SoC 系统架构
+
+<p align="center">
+  <img src="images/soc_connection.png" alt="SoC 系统模块连接图" width="80%" />
+</p>
+
+SoC 以流水线 CPU 为核心，通过 MMIO 总线控制器连接各外设模块：
+
+| 模块 | 实例名 | 说明 |
+|------|--------|------|
+| 五级流水线 CPU | U\_CPU | RV32I 指令集，~12.5MHz (100MHz 8 分频) |
+| 指令存储器 | U\_IM | ROM 2048×32 |
+| 数据存储器 | U\_DM | RAM 128×32 |
+| MMIO 总线控制器 | U\_MIO | 地址译码与外设路由 |
+| PS/2 键盘控制器 | U\_KBD | 8 级 FIFO，支持中断 |
+| VGA 文本显示控制器 | U\_VGA | 640×480，8×16 字体，25MHz 时钟域 |
+| 七段数码管驱动 | U\_7SEG + U\_Multi | 8 通道调试显示 |
+
 ## 快速开始
 
 ### 1. 环境准备
